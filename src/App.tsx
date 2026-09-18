@@ -1468,6 +1468,38 @@ CMD ["nginx", "-g", "daemon off;"]`}
                           </button>
                         </div>
                       </div>
+
+                      {/* Nginx Reverse Proxy Config helper */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-[#1a6838] uppercase font-mono flex items-center gap-1.5">
+                            <Server className="w-3.5 h-3.5" />
+                            <span>Sinu serveri Nginx Reverse Proxy seadistus (nt /saaguvalgus/ või domeen)</span>
+                          </span>
+                          <button
+                            onClick={() => copyToClipboard(`location /saaguvalgus/ {
+    proxy_pass http://127.0.0.1:3002/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}`, 'nginx-proxy')}
+                            className="px-2.5 py-1 rounded-lg bg-[#f4f8f5] hover:bg-[#e8f1eb] text-xs font-semibold text-[#1a6838] border border-[#8ab897]/40 flex items-center gap-1"
+                          >
+                            {copiedDockerCmd === 'nginx-proxy' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                            <span>{copiedDockerCmd === 'nginx-proxy' ? 'Kopeeritud!' : 'Kopeeri'}</span>
+                          </button>
+                        </div>
+                        <pre className="p-4 rounded-xl bg-stone-900 text-stone-100 text-xs font-mono overflow-x-auto leading-relaxed border border-stone-800">
+{`location /saaguvalgus/ {
+    proxy_pass http://127.0.0.1:3002/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}`}
+                        </pre>
+                      </div>
                     </div>
                   )}
 
