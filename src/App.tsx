@@ -199,6 +199,14 @@ export default function App() {
     }
   };
 
+  useEffect(() => {
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
   const handleCopyEmail = () => {
     navigator.clipboard.writeText(content.contactEmail);
     setCopiedEmail(true);
@@ -227,10 +235,6 @@ export default function App() {
         setIsSpeaking(true);
       }
     }
-  };
-
-  const handlePrint = () => {
-    window.print();
   };
 
   const copyToClipboard = (text: string, label: string) => {
@@ -271,29 +275,13 @@ export default function App() {
             </button>
           </nav>
 
-          {/* Actions: Admin & Print & Prayer */}
+          {/* Top Action: Päästepalve */}
           <div className="flex items-center gap-2 sm:gap-3">
             <button
-              onClick={() => setIsAdminOpen(true)}
-              title="Ava Admin Paneel (Muuda sisu / Portainer)"
-              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-[#f4f8f5] hover:bg-[#e8f1eb] text-[#1a6838] border border-[#8ab897]/40 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-colors shadow-2xs"
-            >
-              <Settings className="w-4 h-4 text-[#1a6838]" />
-              <span className="hidden sm:inline">Admin</span>
-            </button>
-
-            <button
-              onClick={handlePrint}
-              className="hidden lg:flex px-3 py-2 rounded-xl bg-white hover:bg-[#f4f8f5] text-[#1a6838] border border-[#8ab897]/40 text-xs font-bold items-center gap-1.5 transition-colors shadow-2xs"
-            >
-              <Printer className="w-3.5 h-3.5 text-[#1a6838]" />
-              <span>Prindi</span>
-            </button>
-
-            <button
               onClick={() => scrollTo('paastepalve')}
-              className="px-3.5 py-2 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all shadow-xs"
+              className="px-4 py-2 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all shadow-xs"
             >
+              <Flame className="w-4 h-4 text-emerald-300" />
               <span>Päästepalve</span>
             </button>
           </div>
@@ -704,6 +692,7 @@ export default function App() {
                   onSubmit={(e) => {
                     e.preventDefault();
                     setFormSent(true);
+                    setFormData({ name: '', email: '', message: '' });
                   }} 
                   className="space-y-4"
                 >
@@ -768,9 +757,9 @@ export default function App() {
             <button onClick={() => scrollTo('kusimused')} className="hover:text-[#1a6838]">3 Põhiküsimust</button>
             <button onClick={() => scrollTo('paastepalve')} className="hover:text-[#1a6838]">Päästepalve</button>
             <button onClick={() => scrollTo('kirjastus')} className="hover:text-[#1a6838]">Kirjastus</button>
-            <button onClick={() => setIsAdminOpen(true)} className="hover:text-[#1a6838] flex items-center gap-1">
-              <Settings className="w-3.5 h-3.5" />
-              <span>Admin & Portainer</span>
+            <button onClick={() => setIsAdminOpen(true)} className="hover:text-[#1a6838] flex items-center gap-1 opacity-80 hover:opacity-100">
+              <Lock className="w-3 h-3 text-[#1a6838]" />
+              <span>Admin</span>
             </button>
             <a href={`mailto:${content.contactEmail}`} className="hover:text-[#1a6838]">{content.contactEmail}</a>
           </div>
