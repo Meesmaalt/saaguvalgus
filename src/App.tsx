@@ -1363,7 +1363,7 @@ export default function App() {
                           <li>Mine vasakult menüüst <strong>Stacks</strong> &gt; vajuta <strong>«Add stack»</strong>.</li>
                           <li>Pane nimeks näiteks <code className="bg-white px-1.5 py-0.5 rounded border font-mono">saaguvalgus</code>.</li>
                           <li>Vali <strong>«Web editor»</strong> ja kleebi sinna allolev <code className="bg-white px-1.5 py-0.5 rounded border font-mono">docker-compose.yml</code> sisu.</li>
-                          <li>Vajuta all <strong>«Deploy the stack»</strong>. Valmis! Leht töötab pordil <strong>3000</strong> (või sinu valitud pordil).</li>
+                          <li>Vajuta all <strong>«Deploy the stack»</strong>. Valmis! Leht töötab pordil <strong>3002</strong> (või sinu valitud pordil).</li>
                         </ol>
                       </div>
 
@@ -1386,7 +1386,7 @@ services:
     container_name: saaguvalgus_web
     restart: unless-stopped
     ports:
-      - "3000:80"
+      - "3002:80"
     environment:
       - NODE_ENV=production`, 'compose')}
                             className="px-2.5 py-1 rounded-lg bg-[#f4f8f5] hover:bg-[#e8f1eb] text-xs font-semibold text-[#1a6838] border border-[#8ab897]/40 flex items-center gap-1"
@@ -1407,7 +1407,7 @@ services:
     container_name: saaguvalgus_web
     restart: unless-stopped
     ports:
-      - "3000:80"
+      - "3002:80"
     environment:
       - NODE_ENV=production`}
                         </pre>

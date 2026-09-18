@@ -9,6 +9,6 @@ services:
     container_name: saaguvalgus_web
     restart: unless-stopped
     ports:
-      - "3000:80"
+      - "3002:80"
     environment:
       - NODE_ENV=production
