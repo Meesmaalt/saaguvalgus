@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: 'Lora', Georgia, Cambria, serif;
+  --font-display: 'Cinzel', serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-script: 'Caveat', cursive, sans-serif;
+
+  --color-brand-dark: #1a6838;
+  --color-brand-sage: #8ab897;
+  --color-brand-light: #f4f8f5;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+  }
+  .font-display {
+    font-family: var(--font-display);
+  }
+  .font-serif {
+    font-family: var(--font-serif);
+  }
+  .font-script {
+    font-family: var(--font-script);
+  }
+}
+
+.cross-pattern {
+  background-image: radial-gradient(rgba(26, 104, 56, 0.08) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+

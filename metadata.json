@@ -1,0 +1,6 @@
+{
+  "name": "Saagu Valgus - Valgus või Pimedus",
+  "description": "Vastused elu põhiküsimustele, vaimulikud teemad, tõestisündinud tunnistused, kirjastus Saagu Valgus raamatud ja trükised.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
