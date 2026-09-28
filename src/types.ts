@@ -2,6 +2,7 @@ export interface BibleVerse {
   ref: string;
   text: string;
   theme?: string;
+  isPrimary?: boolean;
 }
 
 export interface QuestionItem {
@@ -13,6 +14,7 @@ export interface QuestionItem {
   biblicalAnswer: string;
   bibleVerses: BibleVerse[];
   practicalSteps?: string[];
+  category?: 'hook' | 'theological' | 'practical';
 }
 
 export interface BookItem {
@@ -66,7 +68,9 @@ export interface SiteContent {
   heroTitle: string;
   heroHighlight: string;
   heroDescription: string;
+  primaryVerse: BibleVerse;
   coreVerses: BibleVerse[];
+  centralQuestions: QuestionItem[];
   tractQuestions: QuestionItem[];
   cleanlinessTitle: string;
   cleanlinessSubtitle: string;
