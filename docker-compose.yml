@@ -5,10 +5,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: saaguvalgus-web:latest
+    pull_policy: build
     container_name: saaguvalgus_web
     restart: unless-stopped
     ports:
       - "3002:80"
     environment:
       - NODE_ENV=production
+
