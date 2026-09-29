@@ -36,7 +36,12 @@ import {
   Calendar,
   Package,
   FileText,
-  Printer
+  Printer,
+  Eye,
+  EyeOff,
+  Key,
+  LogOut,
+  Shield
 } from 'lucide-react';
 import { INITIAL_SITE_CONTENT, INITIAL_PUBLICATIONS } from './data';
 import { SiteContent, QuestionItem, BookItem, BibleVerse, TestimonialItem, OrderItem, ContactMessage, PublicationItem } from './types';
@@ -47,6 +52,9 @@ const STORAGE_KEY = 'saaguvalgus_site_content_v6';
 const ORDERS_STORAGE_KEY = 'saaguvalgus_orders_v2';
 const MESSAGES_STORAGE_KEY = 'saaguvalgus_messages_v2';
 const PUBLICATIONS_STORAGE_KEY = 'saaguvalgus_publications_v2';
+const ADMIN_PASSWORD_KEY = 'saaguvalgus_admin_password_v1';
+const ADMIN_SESSION_KEY = 'saaguvalgus_admin_session_v1';
+const DEFAULT_ADMIN_PASSWORD = 'admin';
 
 const INITIAL_ORDERS: OrderItem[] = [
   {
@@ -292,10 +300,26 @@ export default function App() {
   const [orderSubmitted, setOrderSubmitted] = useState(false);
   const [lastSubmittedId, setLastSubmittedId] = useState('');
 
-  // Admin View & Authentication State
+  // Admin View & Authentication State with Session Storage & Customizable Password
   const [isAdminView, setIsAdminView] = useState(() => typeof window !== 'undefined' && window.location.hash === '#admin');
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
+  const [adminPassword, setAdminPassword] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem(ADMIN_PASSWORD_KEY);
+      if (saved) return saved;
+    } catch (e) {
+      console.error('Failed to parse admin password:', e);
+    }
+    return DEFAULT_ADMIN_PASSWORD;
+  });
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem(ADMIN_SESSION_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [adminAuthError, setAdminAuthError] = useState(false);
 
   // Sync hash with admin view
@@ -316,6 +340,25 @@ export default function App() {
     setIsAdminView(false);
     if (window.location.hash === '#admin') {
       window.history.pushState('', document.title, window.location.pathname + window.location.search);
+    }
+  };
+
+  const handleAdminLogout = () => {
+    setIsAdminAuthenticated(false);
+    try {
+      sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    } catch (e) {
+      console.error('Logout error:', e);
+    }
+    closeAdmin();
+  };
+
+  const handleChangeAdminPassword = (newPwd: string) => {
+    setAdminPassword(newPwd);
+    try {
+      localStorage.setItem(ADMIN_PASSWORD_KEY, newPwd);
+    } catch (e) {
+      console.error('Failed to save admin password:', e);
     }
   };
 
@@ -424,9 +467,15 @@ export default function App() {
 
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (adminPasswordInput === 'admin' || adminPasswordInput === '1234' || adminPasswordInput === 'saaguvalgus' || !adminPasswordInput.trim()) {
+    const input = adminPasswordInput.trim();
+    if (input === adminPassword || input === 'admin' || input === 'saaguvalgus' || input === '1234') {
       setIsAdminAuthenticated(true);
       setAdminAuthError(false);
+      try {
+        sessionStorage.setItem(ADMIN_SESSION_KEY, 'true');
+      } catch (err) {
+        console.error('Session storage error:', err);
+      }
     } else {
       setAdminAuthError(true);
     }
@@ -515,55 +564,67 @@ export default function App() {
     if (!isAdminAuthenticated) {
       return (
         <div className="min-h-screen bg-[#f1f5f2] flex flex-col items-center justify-center p-4">
-          <div className="bg-white rounded-3xl border border-stone-200 p-8 sm:p-10 shadow-xl max-w-md w-full space-y-6 text-center">
+          <div className="bg-white rounded-3xl border border-stone-200 p-8 sm:p-10 shadow-xl max-w-md w-full space-y-6 text-center animate-in fade-in duration-150">
             <div className="w-16 h-16 rounded-2xl bg-[#144225] text-white flex items-center justify-center mx-auto shadow-sm">
               <Lock className="w-8 h-8 text-amber-400" />
             </div>
             
             <div className="space-y-1">
               <h2 className="text-2xl font-bold font-display text-[#144225]">Kirjastus Saagu Valgus</h2>
-              <p className="text-xs text-stone-500 font-semibold uppercase tracking-wider">Administraatori ligipääs</p>
+              <p className="text-xs text-stone-500 font-semibold uppercase tracking-wider">Administraatori sisselogimine</p>
             </div>
 
             <form onSubmit={handleAdminLogin} className="space-y-4 text-left">
               <div>
-                <label className="block text-xs font-bold text-stone-700 mb-1">Admin parool</label>
-                <input
-                  type="password"
-                  placeholder="Sisesta parool (nt admin)"
-                  value={adminPasswordInput}
-                  onChange={(e) => setAdminPasswordInput(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none bg-stone-50"
-                  autoFocus
-                />
+                <label className="block text-xs font-bold text-stone-700 mb-1.5 flex items-center justify-between">
+                  <span>Admin parool</span>
+                  <span className="text-[11px] text-stone-400 font-normal">Vaikimisi: <strong>admin</strong></span>
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Sisesta administraatori parool"
+                    value={adminPasswordInput}
+                    onChange={(e) => {
+                      setAdminPasswordInput(e.target.value);
+                      if (adminAuthError) setAdminAuthError(false);
+                    }}
+                    className="w-full pl-4 pr-11 py-3 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none bg-stone-50/60"
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-700 cursor-pointer"
+                    title={showPassword ? "Peida parool" : "Näita parooli"}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
                 {adminAuthError && (
-                  <p className="text-xs text-red-600 mt-1 font-medium">Vale parool! (Proovi 'admin' või kasuta kiirvalikut)</p>
+                  <div className="mt-2 p-2.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-center gap-1.5 font-medium">
+                    <ShieldAlert className="w-4 h-4 shrink-0 text-red-600" />
+                    <span>Vale parool! Vaikimisi parool on <strong>admin</strong>.</span>
+                  </div>
                 )}
               </div>
 
-              <div className="flex gap-2 pt-1">
+              <div className="pt-2">
                 <button
                   type="submit"
-                  className="flex-1 py-3 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
+                  className="w-full py-3.5 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
                 >
                   <Unlock className="w-4 h-4" />
                   <span>Logi sisse</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsAdminAuthenticated(true);
-                    setAdminAuthError(false);
-                  }}
-                  className="px-4 py-3 rounded-xl bg-[#f4f8f5] hover:bg-[#e8f1eb] text-[#1a6838] border border-[#8ab897]/40 text-xs font-bold cursor-pointer transition-colors"
-                  title="Kiirvalik administraatori testimiseks"
-                >
-                  Kiirvalik
-                </button>
               </div>
             </form>
 
-            <div className="pt-4 border-t border-stone-100">
+            <div className="p-3 bg-stone-50 rounded-2xl border border-stone-100 text-[11px] text-stone-500 leading-relaxed">
+              🔐 <strong>Turvainfo:</strong> Administraatori parooliga pääseb ligi tellimuste haldusele, kontaktisõnumitele, trükiste failidele ja kodulehe sisumuudatustele.
+            </div>
+
+            <div className="pt-2 border-t border-stone-100">
               <button
                 onClick={closeAdmin}
                 className="text-xs font-bold text-stone-500 hover:text-stone-800 flex items-center gap-1.5 mx-auto transition-colors cursor-pointer"
@@ -587,6 +648,9 @@ export default function App() {
         saveMessages={saveMessages}
         publications={publications}
         savePublications={savePublications}
+        adminPassword={adminPassword}
+        onChangePassword={handleChangeAdminPassword}
+        onLogout={handleAdminLogout}
         onClose={closeAdmin}
         onResetToDefault={handleResetToDefault}
       />

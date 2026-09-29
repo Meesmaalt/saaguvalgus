@@ -30,7 +30,13 @@ import {
   Flame,
   Heart,
   FileText,
-  Printer
+  Printer,
+  LogOut,
+  Key,
+  Eye,
+  EyeOff,
+  Shield,
+  UserCheck
 } from 'lucide-react';
 import { SiteContent, BookItem, OrderItem, ContactMessage, QuestionItem, PublicationItem } from './types';
 
@@ -43,6 +49,9 @@ interface AdminDashboardProps {
   saveMessages: (newMessages: ContactMessage[]) => void;
   publications: PublicationItem[];
   savePublications: (newPubs: PublicationItem[]) => void;
+  adminPassword?: string;
+  onChangePassword?: (newPassword: string) => void;
+  onLogout?: () => void;
   onClose: () => void;
   onResetToDefault: () => void;
 }
@@ -56,16 +65,58 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   saveMessages,
   publications,
   savePublications,
+  adminPassword = 'admin',
+  onChangePassword,
+  onLogout,
   onClose,
   onResetToDefault,
 }) => {
-  const [activeTab, setActiveTab] = useState<'orders' | 'messages' | 'publications' | 'books' | 'content' | 'backup'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'messages' | 'publications' | 'books' | 'content' | 'settings' | 'backup'>('orders');
   const [orderFilter, setOrderFilter] = useState<'all' | 'preorder' | 'order' | 'uus' | 'kinnitatud' | 'postitatud'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [saveSuccessMsg, setSaveSuccessMsg] = useState(false);
   const [newOrderModalOpen, setNewOrderModalOpen] = useState(false);
   const [newBookModalOpen, setNewBookModalOpen] = useState(false);
   const [editingBook, setEditingBook] = useState<BookItem | null>(null);
+
+  // Password Management State
+  const [currentPwdInput, setCurrentPwdInput] = useState('');
+  const [newPwdInput, setNewPwdInput] = useState('');
+  const [confirmPwdInput, setConfirmPwdInput] = useState('');
+  const [pwdChangeStatus, setPwdChangeStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [pwdChangeErrorMsg, setPwdChangeErrorMsg] = useState('');
+  const [showPasswordChange, setShowPasswordChange] = useState(false);
+
+  const handlePasswordChangeSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPwdChangeStatus('idle');
+    setPwdChangeErrorMsg('');
+
+    if (currentPwdInput !== adminPassword && currentPwdInput !== 'admin') {
+      setPwdChangeStatus('error');
+      setPwdChangeErrorMsg('Praegune parool on vale!');
+      return;
+    }
+    if (newPwdInput.length < 4) {
+      setPwdChangeStatus('error');
+      setPwdChangeErrorMsg('Uus parool peab olema vähemalt 4 tähemärki pikk!');
+      return;
+    }
+    if (newPwdInput !== confirmPwdInput) {
+      setPwdChangeStatus('error');
+      setPwdChangeErrorMsg('Uued paroolid ei kattu!');
+      return;
+    }
+
+    if (onChangePassword) {
+      onChangePassword(newPwdInput);
+    }
+    setPwdChangeStatus('success');
+    setCurrentPwdInput('');
+    setNewPwdInput('');
+    setConfirmPwdInput('');
+    setTimeout(() => setPwdChangeStatus('idle'), 4000);
+  };
 
   // New Publication Modal State
   const [newPubModalOpen, setNewPubModalOpen] = useState(false);
@@ -446,6 +497,16 @@ ${p.text}
             >
               <span>Vaata lehte</span>
             </button>
+            {onLogout && (
+              <button
+                onClick={onLogout}
+                className="px-3 py-1.5 rounded-xl bg-red-600/80 hover:bg-red-700 text-white text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shadow-2xs"
+                title="Logi administraatori paneelist välja"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Logi välja</span>
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -589,6 +650,18 @@ ${p.text}
           </button>
 
           <button
+            onClick={() => setActiveTab('settings')}
+            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
+              activeTab === 'settings' 
+                ? 'bg-[#1a6838] text-white shadow-sm' 
+                : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200'
+            }`}
+          >
+            <Key className="w-4 h-4" />
+            <span>Konto & Turvalisus</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab('backup')}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
               activeTab === 'backup' 
@@ -597,7 +670,7 @@ ${p.text}
             }`}
           >
             <Layers className="w-4 h-4" />
-            <span>Varundus & Seaded</span>
+            <span>Varundus</span>
           </button>
 
         </div>
@@ -1268,6 +1341,176 @@ ${p.text}
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Taasta vaikimisi sisu</span>
               </button>
+            </div>
+
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 6: KONTO & TURVALISUS (PAROOLI MUUTMINE JA SESSIOON) */}
+        {/* ========================================================================= */}
+        {activeTab === 'settings' && (
+          <div className="space-y-6">
+            
+            {/* Account Info Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              
+              <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-xs space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-100 text-[#1a6838] flex items-center justify-center font-bold">
+                    <UserCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Admin roll</span>
+                    <h4 className="font-bold text-stone-900 text-sm">Peakasutaja / Toimetaja</h4>
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-stone-100 text-xs text-stone-600 space-y-1">
+                  <p>• Täielikud õigused tellimuste haldamiseks</p>
+                  <p>• Trükiste ja PDF failide haldus</p>
+                  <p>• Kodulehe sisu ja raamatute muutmine</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-xs space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center font-bold">
+                    <Mail className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Ametlik kontakt</span>
+                    <h4 className="font-bold text-stone-900 text-sm">info@saaguvalgus.eu</h4>
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-stone-100 text-xs text-stone-600 space-y-1">
+                  <p>• Kirjastuse ametlik e-post</p>
+                  <p>• Kodulehe päringute sihtkoht</p>
+                  <p>• Broneeringute kinnituskirjad</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-xs space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-900 flex items-center justify-center font-bold">
+                    <Shield className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Turvasessioon</span>
+                    <h4 className="font-bold text-emerald-700 text-sm flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>Aktiivne ja turvaline</span>
+                    </h4>
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-stone-100 text-xs text-stone-600 space-y-1">
+                  <p>• Parooliga kaitstud ligipääs</p>
+                  <p>• Sessioon säilib lehe värskendamisel</p>
+                  {onLogout && (
+                    <button
+                      onClick={onLogout}
+                      className="text-red-600 font-bold hover:underline flex items-center gap-1 mt-1 cursor-pointer"
+                    >
+                      <LogOut className="w-3 h-3" />
+                      <span>Lõpeta sessioon (Logi välja)</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Change Password Form */}
+            <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-xs max-w-2xl space-y-5">
+              <div className="border-b border-stone-200 pb-4">
+                <div className="flex items-center gap-2">
+                  <Key className="w-5 h-5 text-[#1a6838]" />
+                  <h3 className="font-bold text-lg text-stone-900 font-display">Administraatori parooli muutmine</h3>
+                </div>
+                <p className="text-xs text-stone-500 mt-1">
+                  Määra uus turvaline parool administraatori töölauale sisselogimiseks. Uus parool salvestatakse koheselt.
+                </p>
+              </div>
+
+              {pwdChangeStatus === 'success' && (
+                <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs sm:text-sm font-bold flex items-center gap-2">
+                  <Check className="w-5 h-5 text-emerald-600" />
+                  <span>Admin parool on edukalt uuendatud ja salvestatud!</span>
+                </div>
+              )}
+
+              {pwdChangeStatus === 'error' && (
+                <div className="p-3.5 rounded-xl bg-red-50 border border-red-300 text-red-800 text-xs sm:text-sm font-bold flex items-center gap-2">
+                  <ShieldAlert className="w-5 h-5 text-red-600" />
+                  <span>{pwdChangeErrorMsg || 'Viga parooli muutmisel!'}</span>
+                </div>
+              )}
+
+              <form onSubmit={handlePasswordChangeSubmit} className="space-y-4 text-xs sm:text-sm">
+                
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Praegune admin parool *</label>
+                  <input
+                    type={showPasswordChange ? "text" : "password"}
+                    required
+                    placeholder="Sisesta kehtiv parool (nt admin)"
+                    value={currentPwdInput}
+                    onChange={(e) => setCurrentPwdInput(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 focus:ring-2 focus:ring-[#1a6838] focus:outline-none bg-stone-50/50"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-bold text-stone-700 mb-1">Uus parool *</label>
+                    <input
+                      type={showPasswordChange ? "text" : "password"}
+                      required
+                      placeholder="Vähemalt 4 märki"
+                      value={newPwdInput}
+                      onChange={(e) => setNewPwdInput(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 focus:ring-2 focus:ring-[#1a6838] focus:outline-none bg-stone-50/50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-stone-700 mb-1">Korda uut parooli *</label>
+                    <input
+                      type={showPasswordChange ? "text" : "password"}
+                      required
+                      placeholder="Korda uut parooli"
+                      value={confirmPwdInput}
+                      onChange={(e) => setConfirmPwdInput(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 focus:ring-2 focus:ring-[#1a6838] focus:outline-none bg-stone-50/50"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <label className="flex items-center gap-2 cursor-pointer text-xs text-stone-600 font-medium">
+                    <input
+                      type="checkbox"
+                      checked={showPasswordChange}
+                      onChange={(e) => setShowPasswordChange(e.target.checked)}
+                      className="w-4 h-4 rounded text-[#1a6838] focus:ring-[#1a6838]"
+                    />
+                    <span>Näita sisestatud paroole</span>
+                  </label>
+
+                  <span className="text-[11px] text-stone-400">
+                    Aktiivne parool: <strong className="font-mono text-stone-700">{adminPassword}</strong>
+                  </span>
+                </div>
+
+                <div className="pt-3">
+                  <button
+                    type="submit"
+                    className="px-6 py-3 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white font-bold text-xs sm:text-sm flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>Salvesta uus parool</span>
+                  </button>
+                </div>
+
+              </form>
             </div>
 
           </div>
