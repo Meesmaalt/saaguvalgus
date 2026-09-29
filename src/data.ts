@@ -281,7 +281,8 @@ Te ei või juua Issanda karikast ja kurjade vaimude karikast, te ei või osa saa
         'Millisena lapsed oma Loojat näevad ja mida Ta on nende elus teinud',
         'Kuidas Jumal on laste palvetele vastanud ja milliseid imesid teinud'
       ],
-      isFeatured: true
+      isFeatured: true,
+      isPreOrder: false
     },
     {
       id: 'ma-olin-saatana-vang',
@@ -294,7 +295,24 @@ Te ei või juua Issanda karikast ja kurjade vaimude karikast, te ei või osa saa
         'Jeesuse Kristuse risti ja nime ülim meelevald kurjuse üle',
         'Teejuht täieliku vabanemise, andestuse ja uue alguseni'
       ],
-      isFeatured: true
+      isFeatured: true,
+      isPreOrder: false
+    },
+    {
+      id: 'saagu-valgus-raamat',
+      title: 'Saagu Valgus: Tõde ja vabanemine',
+      author: 'Kirjastus Saagu Valgus',
+      category: 'Uus trükis / Vaimulik teejuht',
+      description: 'Kirjastuse Saagu Valgus uus põhjalik trükis ja käsiraamat, mis käsitleb süvitsi vaimseid küsimusi, vabastust kurjuse sidumistest ja elu Jumala armu valguses.',
+      highlights: [
+        'Süvendatud vastused 3 põhiküsimusele ja esoteerika ohtudele',
+        'Kodu ja vaimse territooriumi puhastamise täielik juhend',
+        'Ehedad tervenemis- ja vabanemistunnistused Eestist'
+      ],
+      isFeatured: true,
+      isPreOrder: true,
+      preOrderNote: 'Uus trükk ilmumas! Ettetellijatele broneeritud esitrükk ja kingituseks evangeelne järjehoidja.',
+      releaseDate: 'Ilmumas peagi'
     }
   ],
 

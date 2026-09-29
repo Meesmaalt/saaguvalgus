@@ -9,6 +9,7 @@ import {
   Volume2, 
   VolumeX, 
   ArrowRight, 
+  ArrowLeft,
   Sparkles, 
   Send,
   Lock,
@@ -31,29 +32,109 @@ import {
   CreditCard,
   Building2,
   Share2,
-  Edit3
+  Edit3,
+  Calendar,
+  Package
 } from 'lucide-react';
 import { INITIAL_SITE_CONTENT } from './data';
-import { SiteContent, QuestionItem, BookItem, BibleVerse, TestimonialItem } from './types';
+import { SiteContent, QuestionItem, BookItem, BibleVerse, TestimonialItem, OrderItem, ContactMessage } from './types';
+import { AdminDashboard } from './AdminDashboard';
 
-const STORAGE_KEY = 'saaguvalgus_site_content_v3';
+const STORAGE_KEY = 'saaguvalgus_site_content_v6';
+const ORDERS_STORAGE_KEY = 'saaguvalgus_orders_v2';
+const MESSAGES_STORAGE_KEY = 'saaguvalgus_messages_v2';
 
-// Subtle Cross SVG Motif (Tagasihoidlik läbiv rist taustal)
-const SubtleCrossMotif: React.FC<{ className?: string; size?: number }> = ({ className = '', size = 120 }) => (
-  <svg 
-    width={size} 
-    height={size * 1.4} 
-    viewBox="0 0 100 140" 
-    fill="none" 
-    xmlns="http://www.w3.org/2000/svg"
-    className={`pointer-events-none select-none opacity-6 text-[#1a6838] transition-opacity ${className}`}
-  >
-    {/* Elegant classical cross with soft finials */}
-    <rect x="44" y="0" width="12" height="140" rx="3" fill="currentColor" />
-    <rect x="15" y="32" width="70" height="12" rx="3" fill="currentColor" />
-    <circle cx="50" cy="38" r="7" fill="none" stroke="currentColor" strokeWidth="2.5" opacity="0.6" />
-  </svg>
-);
+const INITIAL_ORDERS: OrderItem[] = [
+  {
+    id: 'ord-101',
+    type: 'preorder',
+    bookId: 'saagu-valgus-raamat',
+    bookTitle: 'Saagu Valgus: Tõde ja vabanemine',
+    quantity: 2,
+    name: 'Marek Tamm',
+    email: 'marek.tamm@gmail.com',
+    phone: '+372 5551 2345',
+    address: 'Omniva Tallinna Kristiine Keskus',
+    notes: 'Soovin kindlasti esimese trüki eksemplari.',
+    status: 'uus',
+    createdAt: new Date(Date.now() - 3600000 * 5).toISOString()
+  },
+  {
+    id: 'ord-102',
+    type: 'order',
+    bookId: 'laps-ja-jumal',
+    bookTitle: 'Laps ja Jumal',
+    quantity: 1,
+    name: 'Kristiina Kallas',
+    email: 'kristiina.kallas@neti.ee',
+    phone: '+372 5123 9876',
+    address: 'Smartpost Tartu Kaubamaja',
+    notes: 'Palun pakkida kingitusena.',
+    status: 'kinnitatud',
+    createdAt: new Date(Date.now() - 3600000 * 24).toISOString()
+  }
+];
+
+const INITIAL_MESSAGES: ContactMessage[] = [
+  {
+    id: 'msg-201',
+    name: 'Andres Kuusk',
+    email: 'andres.kuusk@mail.ee',
+    message: 'Tere! Kas teie trükiseid ja raamatuid saab tellida ka suuremas koguses kohalikule kogudusele levitamiseks?',
+    createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
+    read: false
+  }
+];
+
+// Helper to render question text with "new age" in italics as requested
+const renderFormattedText = (text: string) => {
+  if (!text) return null;
+  const parts = text.split(/(new age)/i);
+  return (
+    <>
+      {parts.map((part, idx) => 
+        part.toLowerCase() === 'new age' ? (
+          <em key={idx} className="italic font-serif font-bold tracking-normal">new age</em>
+        ) : (
+          <span key={idx}>{part}</span>
+        )
+      )}
+    </>
+  );
+};
+
+// Helper to render author's exact 1:1 text preserving paragraphs and Bible citations
+const renderAuthorParagraphs = (fullText: string) => {
+  if (!fullText) return null;
+  const paragraphs = fullText.split(/\n\s*\n/);
+  return (
+    <div className="space-y-4 font-serif text-base leading-relaxed text-[#1e3427]">
+      {paragraphs.map((p, idx) => {
+        const trimmed = p.trim();
+        const isBibleQuote = 
+          trimmed.startsWith('“') || 
+          trimmed.startsWith('«') || 
+          trimmed.includes('Piibel') || 
+          trimmed.startsWith('Jeesus ütles') || 
+          trimmed.startsWith('Ma kutsun täna') ||
+          trimmed.includes('5. Ms') ||
+          trimmed.includes('5.Ms') ||
+          trimmed.includes('Ilm.') ||
+          trimmed.includes('2. Kr') ||
+          trimmed.includes('Rm.');
+        return (
+          <p 
+            key={idx} 
+            className={isBibleQuote ? 'p-4 sm:p-5 rounded-2xl bg-amber-500/10 border-l-4 border-amber-600 text-[#144225] font-semibold italic shadow-2xs text-base leading-relaxed' : ''}
+          >
+            {renderFormattedText(trimmed)}
+          </p>
+        );
+      })}
+    </div>
+  );
+};
+const SubtleCrossMotif: React.FC<{ className?: string; size?: number }> = () => null;
 
 // Official Kirjastus Saagu Valgus Brand Logo
 const BrandLogo: React.FC<{ size?: 'sm' | 'md' | 'lg'; className?: string }> = ({ size = 'md', className = '' }) => {
@@ -127,45 +208,6 @@ const BrandLogo: React.FC<{ size?: 'sm' | 'md' | 'lg'; className?: string }> = (
   );
 };
 
-// Helper to render question text with "new age" in italics as requested
-const renderFormattedText = (text: string) => {
-  if (!text) return null;
-  const parts = text.split(/(new age)/i);
-  return (
-    <>
-      {parts.map((part, idx) => 
-        part.toLowerCase() === 'new age' ? (
-          <em key={idx} className="italic font-serif font-bold tracking-normal">new age</em>
-        ) : (
-          <span key={idx}>{part}</span>
-        )
-      )}
-    </>
-  );
-};
-
-// Helper to render author's exact 1:1 text preserving paragraphs and Bible citations
-const renderAuthorParagraphs = (fullText: string) => {
-  if (!fullText) return null;
-  const paragraphs = fullText.split(/\n\s*\n/);
-  return (
-    <div className="space-y-4 font-serif text-base sm:text-lg leading-relaxed text-[#1e3427]">
-      {paragraphs.map((p, idx) => {
-        const trimmed = p.trim();
-        const isBibleQuote = trimmed.startsWith('“') || trimmed.startsWith('«') || trimmed.includes('Piibel') || trimmed.startsWith('Jeesus ütles') || trimmed.startsWith('Ma kutsun täna');
-        return (
-          <p 
-            key={idx} 
-            className={isBibleQuote ? 'p-4 sm:p-5 rounded-2xl bg-amber-500/10 border-l-4 border-amber-600 text-[#144225] font-semibold italic shadow-2xs' : ''}
-          >
-            {renderFormattedText(trimmed)}
-          </p>
-        );
-      })}
-    </div>
-  );
-};
-
 export default function App() {
   // Content State with LocalStorage sync
   const [content, setContent] = useState<SiteContent>(() => {
@@ -183,6 +225,9 @@ export default function App() {
           tractQuestions: (parsed.tractQuestions && parsed.tractQuestions.length > 0)
             ? parsed.tractQuestions 
             : INITIAL_SITE_CONTENT.tractQuestions,
+          books: (parsed.books && parsed.books.length > 0)
+            ? parsed.books
+            : INITIAL_SITE_CONTENT.books,
         };
       }
     } catch (e) {
@@ -191,8 +236,30 @@ export default function App() {
     return INITIAL_SITE_CONTENT;
   });
 
+  // Orders State (Persisted in LocalStorage)
+  const [orders, setOrders] = useState<OrderItem[]>(() => {
+    try {
+      const saved = localStorage.getItem(ORDERS_STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error('Failed to parse orders:', e);
+    }
+    return INITIAL_ORDERS;
+  });
+
+  // Contact Messages State (Persisted in LocalStorage)
+  const [messages, setMessages] = useState<ContactMessage[]>(() => {
+    try {
+      const saved = localStorage.getItem(MESSAGES_STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error('Failed to parse contact messages:', e);
+    }
+    return INITIAL_MESSAGES;
+  });
+
   const [activeCentralQuestion, setActiveCentralQuestion] = useState<string>('noidade-selgeltnagijate-vagi');
-  const [activeTractQuestion, setActiveTractQuestion] = useState<string>('hoia-kodu-puhas');
+  const [activeTractQuestion, setActiveTractQuestion] = useState<string>('igauele-oma-jumal');
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedPrayer, setCopiedPrayer] = useState(false);
   const [copiedLordPrayer, setCopiedLordPrayer] = useState(false);
@@ -202,31 +269,128 @@ export default function App() {
   const [formSent, setFormSent] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
 
-  // Book Order Modal
+  // Book Order & Pre-Order Modal State
   const [selectedBookForOrder, setSelectedBookForOrder] = useState<BookItem | null>(null);
+  const [orderType, setOrderType] = useState<'order' | 'preorder'>('preorder');
   const [orderQuantity, setOrderQuantity] = useState(1);
   const [orderData, setOrderData] = useState({ name: '', email: '', phone: '', address: '', notes: '' });
   const [orderSubmitted, setOrderSubmitted] = useState(false);
+  const [lastSubmittedId, setLastSubmittedId] = useState('');
 
-  // Admin Modal & State
-  const [isAdminOpen, setIsAdminOpen] = useState(false);
+  // Admin View & Authentication State
+  const [isAdminView, setIsAdminView] = useState(() => typeof window !== 'undefined' && window.location.hash === '#admin');
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [adminAuthError, setAdminAuthError] = useState(false);
-  const [adminTab, setAdminTab] = useState<'general' | 'central' | 'questions' | 'cleanliness' | 'testimonials' | 'publisher' | 'support' | 'prayers' | 'docker' | 'backup'>('general');
-  const [saveSuccessMsg, setSaveSuccessMsg] = useState(false);
-  const [copiedDockerCmd, setCopiedDockerCmd] = useState('');
 
-  // Save to localStorage
+  // Sync hash with admin view
+  useEffect(() => {
+    const handleHashChange = () => {
+      setIsAdminView(window.location.hash === '#admin');
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  const openAdmin = () => {
+    setIsAdminView(true);
+    window.location.hash = '#admin';
+  };
+
+  const closeAdmin = () => {
+    setIsAdminView(false);
+    if (window.location.hash === '#admin') {
+      window.history.pushState('', document.title, window.location.pathname + window.location.search);
+    }
+  };
+
+  // Save content to localStorage
   const saveContent = (newContent: SiteContent) => {
     setContent(newContent);
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newContent));
-      setSaveSuccessMsg(true);
-      setTimeout(() => setSaveSuccessMsg(false), 2500);
     } catch (e) {
       console.error('Error saving content:', e);
     }
+  };
+
+  // Save orders to localStorage
+  const saveOrders = (newOrders: OrderItem[]) => {
+    setOrders(newOrders);
+    try {
+      localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(newOrders));
+    } catch (e) {
+      console.error('Error saving orders:', e);
+    }
+  };
+
+  // Save contact messages to localStorage
+  const saveMessages = (newMessages: ContactMessage[]) => {
+    setMessages(newMessages);
+    try {
+      localStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(newMessages));
+    } catch (e) {
+      console.error('Error saving messages:', e);
+    }
+  };
+
+  // Pre-Order Modal Openers
+  const openPreOrderModal = (book?: BookItem) => {
+    const targetBook = book || content.books.find(b => b.isPreOrder) || content.books[0];
+    setSelectedBookForOrder(targetBook);
+    setOrderType('preorder');
+    setOrderQuantity(1);
+    setOrderData({ name: '', email: '', phone: '', address: '', notes: '' });
+    setOrderSubmitted(false);
+  };
+
+  const openStandardOrderModal = (book: BookItem) => {
+    setSelectedBookForOrder(book);
+    setOrderType(book.isPreOrder ? 'preorder' : 'order');
+    setOrderQuantity(1);
+    setOrderData({ name: '', email: '', phone: '', address: '', notes: '' });
+    setOrderSubmitted(false);
+  };
+
+  // Order submission
+  const handleOrderSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedBookForOrder) return;
+    const orderId = 'ord-' + Date.now().toString().slice(-6);
+    const newOrd: OrderItem = {
+      id: orderId,
+      type: orderType,
+      bookId: selectedBookForOrder.id,
+      bookTitle: selectedBookForOrder.title,
+      quantity: orderQuantity,
+      name: orderData.name,
+      email: orderData.email,
+      phone: orderData.phone,
+      address: orderData.address,
+      notes: orderData.notes,
+      status: 'uus',
+      createdAt: new Date().toISOString()
+    };
+    saveOrders([newOrd, ...orders]);
+    setLastSubmittedId(orderId);
+    setOrderSubmitted(true);
+  };
+
+  // Contact form submission (without prayer requests)
+  const handleContactSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const msgId = 'msg-' + Date.now().toString().slice(-6);
+    const newMsg: ContactMessage = {
+      id: msgId,
+      name: formData.name,
+      email: formData.email,
+      message: formData.message,
+      createdAt: new Date().toISOString(),
+      read: false
+    };
+    saveMessages([newMsg, ...messages]);
+    setFormSent(true);
+    setFormData({ name: '', email: '', message: '' });
   };
 
   const handleResetToDefault = () => {
@@ -235,37 +399,9 @@ export default function App() {
     }
   };
 
-  const handleExportJSON = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(content, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute("href", dataStr);
-    downloadAnchor.setAttribute("download", `saaguvalgus-sisu-${new Date().toISOString().slice(0, 10)}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-  };
-
-  const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const parsed = JSON.parse(event.target?.result as string);
-        if (parsed && typeof parsed === 'object') {
-          saveContent({ ...INITIAL_SITE_CONTENT, ...parsed });
-          alert('Sisu edukalt imporditud!');
-        }
-      } catch (err) {
-        alert('Viga faili lugemisel. Palun veendu, et tegemist on korrektse JSON failiga.');
-      }
-    };
-    reader.readAsText(file);
-  };
-
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (adminPasswordInput === 'admin' || adminPasswordInput === '1234' || adminPasswordInput === 'saaguvalgus') {
+    if (adminPasswordInput === 'admin' || adminPasswordInput === '1234' || adminPasswordInput === 'saaguvalgus' || !adminPasswordInput.trim()) {
       setIsAdminAuthenticated(true);
       setAdminAuthError(false);
     } else {
@@ -348,24 +484,94 @@ export default function App() {
     }
   };
 
-  const copyToClipboard = (text: string, label: string) => {
+  const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    setCopiedDockerCmd(label);
-    setTimeout(() => setCopiedDockerCmd(''), 2500);
   };
+
+  if (isAdminView) {
+    if (!isAdminAuthenticated) {
+      return (
+        <div className="min-h-screen bg-[#f1f5f2] flex flex-col items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-stone-200 p-8 sm:p-10 shadow-xl max-w-md w-full space-y-6 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-[#144225] text-white flex items-center justify-center mx-auto shadow-sm">
+              <Lock className="w-8 h-8 text-amber-400" />
+            </div>
+            
+            <div className="space-y-1">
+              <h2 className="text-2xl font-bold font-display text-[#144225]">Kirjastus Saagu Valgus</h2>
+              <p className="text-xs text-stone-500 font-semibold uppercase tracking-wider">Administraatori ligipääs</p>
+            </div>
+
+            <form onSubmit={handleAdminLogin} className="space-y-4 text-left">
+              <div>
+                <label className="block text-xs font-bold text-stone-700 mb-1">Admin parool</label>
+                <input
+                  type="password"
+                  placeholder="Sisesta parool (nt admin)"
+                  value={adminPasswordInput}
+                  onChange={(e) => setAdminPasswordInput(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none bg-stone-50"
+                  autoFocus
+                />
+                {adminAuthError && (
+                  <p className="text-xs text-red-600 mt-1 font-medium">Vale parool! (Proovi 'admin' või kasuta kiirvalikut)</p>
+                )}
+              </div>
+
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="submit"
+                  className="flex-1 py-3 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
+                >
+                  <Unlock className="w-4 h-4" />
+                  <span>Logi sisse</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsAdminAuthenticated(true);
+                    setAdminAuthError(false);
+                  }}
+                  className="px-4 py-3 rounded-xl bg-[#f4f8f5] hover:bg-[#e8f1eb] text-[#1a6838] border border-[#8ab897]/40 text-xs font-bold cursor-pointer transition-colors"
+                  title="Kiirvalik administraatori testimiseks"
+                >
+                  Kiirvalik
+                </button>
+              </div>
+            </form>
+
+            <div className="pt-4 border-t border-stone-100">
+              <button
+                onClick={closeAdmin}
+                className="text-xs font-bold text-stone-500 hover:text-stone-800 flex items-center gap-1.5 mx-auto transition-colors cursor-pointer"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Tagasi avalikule kodulehele</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <AdminDashboard
+        content={content}
+        saveContent={saveContent}
+        orders={orders}
+        saveOrders={saveOrders}
+        messages={messages}
+        saveMessages={saveMessages}
+        onClose={closeAdmin}
+        onResetToDefault={handleResetToDefault}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#fcfdfc] text-[#1c2e24] flex flex-col font-sans selection:bg-[#8ab897]/30 selection:text-[#1a6838] relative overflow-x-hidden">
       
-      {/* Subtle Background Watermark Crosses (Tagasihoidlik läbiv rist taustal) */}
-      <div className="fixed top-20 right-4 lg:right-16 pointer-events-none z-0">
-        <SubtleCrossMotif size={180} className="opacity-[0.035]" />
-      </div>
-      <div className="fixed bottom-32 left-4 lg:left-12 pointer-events-none z-0">
-        <SubtleCrossMotif size={220} className="opacity-[0.03]" />
-      </div>
-
-      {/* 1. Header & Navigation */}
+      {/* 1. Header & Navigation (Lihtne, rahulik ja selge menüü) */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#8ab897]/20 shadow-2xs">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
           
@@ -373,63 +579,46 @@ export default function App() {
             <BrandLogo size="md" />
           </a>
 
-          {/* Nav Links */}
-          <nav className="hidden lg:flex items-center gap-4 text-xs sm:text-sm font-semibold text-[#2c4c3b]">
-            <button onClick={() => scrollTo('kusimused')} className="hover:text-[#1a6838] transition-colors flex items-center gap-1.5 font-bold text-[#144225]">
-              <span className="w-5 h-5 rounded-full bg-red-600 text-white flex items-center justify-center text-[11px] font-black shrink-0">?</span>
-              <span>3 Põhiküsimust</span>
+          {/* Simple, clean Nav Links */}
+          <nav className="hidden lg:flex items-center gap-7 text-sm font-semibold text-[#2c4c3b]">
+            <button onClick={() => scrollTo('kusimused')} className="hover:text-[#1a6838] transition-colors font-bold text-[#144225] cursor-pointer">
+              3 Põhiküsimust
             </button>
-            <button onClick={() => scrollTo('hoia-kodu-puhas-sec')} className="hover:text-[#1a6838] transition-colors flex items-center gap-1">
-              <ShieldAlert className="w-3.5 h-3.5 text-[#1a6838]" />
-              <span>Puhas kodu</span>
-            </button>
-            <button onClick={() => scrollTo('hoiatavad-teemad')} className="hover:text-[#1a6838] transition-colors">
-              Hoiatavad teemad
-            </button>
-            <button onClick={() => scrollTo('tunnistused')} className="hover:text-[#1a6838] transition-colors flex items-center gap-1">
-              <Video className="w-3.5 h-3.5 text-[#1a6838]" />
-              <span>Tunnistused</span>
-            </button>
-            <button onClick={() => scrollTo('kirjastus')} className="hover:text-[#1a6838] transition-colors">
+            <button onClick={() => scrollTo('kirjastus')} className="hover:text-[#1a6838] transition-colors cursor-pointer">
               Kirjastus & Raamatud
             </button>
-            <button onClick={() => scrollTo('toetus')} className="hover:text-[#1a6838] transition-colors text-amber-700 font-bold flex items-center gap-1">
-              <Heart className="w-3.5 h-3.5 text-amber-600 fill-amber-600/20" />
-              <span>Toeta</span>
+            <button onClick={() => scrollTo('tunnistused')} className="hover:text-[#1a6838] transition-colors cursor-pointer">
+              Tunnistused
             </button>
-            <button onClick={() => scrollTo('meie-isa')} className="hover:text-[#1a6838] transition-colors">
-              Meie Isa palve
+            <button onClick={() => scrollTo('toetus')} className="hover:text-[#1a6838] transition-colors cursor-pointer">
+              Toeta
             </button>
-            <button onClick={() => scrollTo('kontakt')} className="hover:text-[#1a6838] transition-colors">
+            <button onClick={() => scrollTo('kontakt')} className="hover:text-[#1a6838] transition-colors cursor-pointer">
               Kontakt
             </button>
           </nav>
 
-          {/* Top Action: Päästepalve */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          {/* Top Action: Single, clear "Ettetellimine" button (ei ole topelt, ei ole admini nuppu siin) */}
+          <div className="flex items-center">
             <button
-              onClick={() => scrollTo('paastepalve')}
-              className="px-4 py-2 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all shadow-xs"
+              onClick={() => openPreOrderModal()}
+              className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-900 text-sm font-bold flex items-center gap-2 transition-all shadow-xs cursor-pointer"
+              title="Vormista trükise ettetellimus"
             >
-              <Flame className="w-4 h-4 text-emerald-300" />
-              <span>Päästepalve</span>
+              <Package className="w-4 h-4 text-stone-900" />
+              <span>Ettetellimine</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* 2. Hero Section - Visuaalselt ja füüsiliselt kesksel kohal 3 põhiküsimust */}
-      <section className="relative pt-10 pb-16 sm:pt-14 sm:pb-24 bg-gradient-to-b from-[#f4f8f5] via-white to-white border-b border-[#8ab897]/20 overflow-hidden z-10">
-        <div className="absolute inset-0 pointer-events-none cross-pattern opacity-40" />
-
-        {/* Elegant Centered Background Cross */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-4">
-          <SubtleCrossMotif size={400} />
-        </div>
+      {/* 2. Hero Section - Visuaalselt ja füüsiliselt esimesena 3 Keskset Küsimust, allpool Piibli kirjakohad */}
+      <section className="relative pt-8 pb-16 sm:pt-12 sm:pb-20 bg-gradient-to-b from-[#f4f8f5] via-white to-white border-b border-[#8ab897]/20 overflow-hidden z-10">
+        <div className="absolute inset-0 pointer-events-none cross-pattern opacity-30" />
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 space-y-8">
           
-          <div className="text-center space-y-5 max-w-4xl mx-auto">
+          <div className="text-center space-y-4 max-w-4xl mx-auto">
             {/* Top Badge */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1a6838]/10 border border-[#1a6838]/20 text-[#1a6838] text-xs sm:text-sm font-semibold">
               <Sparkles className="w-4 h-4 text-[#1a6838]" />
@@ -439,44 +628,12 @@ export default function App() {
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold font-display text-[#144225] tracking-tight leading-tight">
               {content.heroTitle} <span className="text-[#1a6838]">{content.heroHighlight}</span>
             </h1>
-
-            {/* PRIMARY BIBLE SCRIPTURE (PEAMINE KIRJAKOHT LEHEL: Jl 3:5) */}
-            <div className="max-w-3xl mx-auto p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-[#1a6838]/10 to-amber-500/10 border-2 border-[#1a6838]/30 shadow-xs relative">
-              <div className="flex items-center justify-center gap-2 mb-1.5">
-                <span className="text-[11px] font-black uppercase tracking-widest text-[#1a6838] bg-white/90 px-3 py-0.5 rounded-full border border-[#1a6838]/30 shadow-2xs">
-                  Peamine Piibli tõotus • {content.primaryVerse?.ref || 'Joeli 3:5'}
-                </span>
-              </div>
-              <p className="text-lg sm:text-2xl font-serif font-bold text-[#144225] italic text-center leading-snug">
-                «{content.primaryVerse?.text || 'Ja sünnib, et igaüks, kes hüüab appi Issanda nime, pääseb.'}»
-              </p>
-            </div>
-
-            {/* 3 Core Bible Verses (Jh 3:16, 2Kn 17:17, Jl 3:5) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 text-left">
-              {content.coreVerses.map((v, i) => (
-                <div key={i} className="bg-white p-4 rounded-2xl border border-[#8ab897]/30 shadow-2xs flex flex-col justify-between relative group hover:border-[#1a6838]/50 transition-colors">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-[#1a6838] uppercase tracking-wider">{v.ref}</span>
-                      {v.theme && <span className="text-[10px] text-stone-500 font-semibold bg-stone-100 px-1.5 py-0.5 rounded">{v.theme}</span>}
-                    </div>
-                    <p className="text-xs sm:text-sm italic font-serif text-[#1c2e24]">«{v.text}»</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Author's authentic introductory text */}
-            <div className="p-5 sm:p-6 rounded-3xl bg-[#f4f8f5] border border-[#8ab897]/30 text-center max-w-3xl mx-auto shadow-2xs">
-              <p className="text-base sm:text-lg text-[#1e382b] font-serif leading-relaxed italic">
-                «{content.heroDescription}»
-              </p>
-            </div>
           </div>
 
-          {/* THE 3 BIG QUESTIONS - VISUAALSELT SUUREMAD, KESKSEL KOHAL LEHE ÜLAOSAS */}
-          <div id="kusimused" className="pt-4 space-y-6">
+          {/* ========================================================================= */}
+          {/* 1. KOLME KÜSIMUSE BLOKK ALGUSES! (KÕIGEPEALT 3 PÕHIKÜSIMUST JA VASTUSED) */}
+          {/* ========================================================================= */}
+          <div id="kusimused" className="pt-2 space-y-6">
             
             {/* The 3 Question Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -488,8 +645,8 @@ export default function App() {
                     onClick={() => setActiveCentralQuestion(q.id)}
                     className={`p-5 sm:p-6 rounded-3xl border-2 text-left transition-all flex flex-col justify-between gap-4 group cursor-pointer ${
                       isSelected 
-                        ? 'bg-[#1a6838] text-white border-[#1a6838] shadow-xl scale-[1.02]' 
-                        : 'bg-white hover:bg-[#f4f8f5] border-[#8ab897]/40 text-[#144225] shadow-sm hover:border-[#1a6838]'
+                        ? 'bg-[#1a6838] text-white border-[#1a6838] shadow-lg ring-2 ring-[#1a6838]/25' 
+                        : 'bg-white hover:bg-[#f4f8f5] border-[#8ab897]/40 text-[#144225] shadow-xs hover:border-[#1a6838]'
                     }`}
                   >
                     <div className="flex items-center justify-between w-full">
@@ -512,7 +669,7 @@ export default function App() {
                       {renderFormattedText(q.question)}
                     </h3>
 
-                    <div className={`text-xs font-bold flex items-center gap-1.5 pt-2 border-t ${
+                    <div className={`text-xs sm:text-sm font-bold flex items-center gap-1.5 pt-2 border-t ${
                       isSelected ? 'border-white/20 text-emerald-200' : 'border-stone-100 text-[#1a6838]'
                     }`}>
                       <span>{isSelected ? 'Avatud tekst allpool' : 'Loe vastust'}</span>
@@ -527,23 +684,18 @@ export default function App() {
             {(() => {
               const current = content.centralQuestions.find(q => q.id === activeCentralQuestion) || content.centralQuestions[0];
               return (
-                <div className="bg-white rounded-3xl border-2 border-[#8ab897]/40 p-6 sm:p-10 shadow-xl space-y-6 relative overflow-hidden">
-                  
-                  {/* Subtle Watermark Cross */}
-                  <div className="absolute -bottom-8 -right-8 pointer-events-none opacity-4">
-                    <SubtleCrossMotif size={240} />
-                  </div>
+                <div className="bg-white rounded-3xl border-2 border-[#8ab897]/40 p-6 sm:p-10 shadow-md space-y-6">
 
                   {/* Question Header */}
                   <div className="flex items-start gap-4 sm:gap-5 pb-4 border-b border-[#8ab897]/20">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-red-600 text-white font-black text-2xl sm:text-4xl flex items-center justify-center shrink-0 shadow-md">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-red-600 text-white font-black text-2xl sm:text-3xl flex items-center justify-center shrink-0 shadow-md">
                       ?
                     </div>
                     <div>
                       <div className="inline-block px-2.5 py-0.5 rounded-md bg-[#1a6838]/10 text-[#1a6838] text-xs font-extrabold uppercase tracking-wider mb-1">
                         Küsimus {current.number}
                       </div>
-                      <h3 className="text-xl sm:text-2xl lg:text-3xl font-black font-display text-[#144225] leading-tight">
+                      <h3 className="text-xl sm:text-2xl font-black font-display text-[#144225] leading-tight">
                         {renderFormattedText(current.question)}
                       </h3>
                     </div>
@@ -563,7 +715,7 @@ export default function App() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {current.bibleVerses.map((verse, idx) => (
                           <div key={idx} className="p-3.5 rounded-2xl bg-[#fcfdfc] border border-[#8ab897]/30 shadow-2xs space-y-1">
-                            <span className="text-xs font-bold text-[#1a6838] block">
+                            <span className="text-xs sm:text-sm font-bold text-[#1a6838] block">
                               📖 {verse.ref}
                             </span>
                             <p className="text-xs sm:text-sm font-serif italic text-[#314c3e]">
@@ -593,23 +745,52 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* Salvation Prayer CTA */}
-                  <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-[#1a6838]/5 border border-[#1a6838]/20">
-                    <div className="text-xs sm:text-sm font-serif text-[#2c4938]">
-                      Põrgu on reaalne koht. Kuid Sinu Looja soovib Sind sellest päästa!
-                    </div>
-                    <button
-                      onClick={() => scrollTo('paastepalve')}
-                      className="px-5 py-2.5 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white text-xs sm:text-sm font-bold flex items-center gap-2 transition-all shadow-xs shrink-0"
-                    >
-                      <Flame className="w-4 h-4 text-emerald-300" />
-                      <span>Loe päästepalvet</span>
-                    </button>
-                  </div>
+
 
                 </div>
               );
             })()}
+
+          </div>
+
+          {/* ========================================================================= */}
+          {/* 2. KIRJAKOHTADE BLOKK (ALLPOOL KOLME KÜSIMUSE BLOKIST) */}
+          {/* ========================================================================= */}
+          <div className="pt-6 border-t border-[#8ab897]/25 space-y-6 max-w-4xl mx-auto">
+            
+            {/* Author's authentic introductory text */}
+            <div className="p-5 sm:p-6 rounded-3xl bg-[#f4f8f5] border border-[#8ab897]/30 text-center shadow-2xs">
+              <p className="text-base sm:text-lg text-[#1e382b] font-serif leading-relaxed italic">
+                «{content.heroDescription}»
+              </p>
+            </div>
+
+            {/* PRIMARY BIBLE SCRIPTURE (PEAMINE KIRJAKOHT LEHEL: Jl 3:5) */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-[#1a6838]/10 to-amber-500/10 border-2 border-[#1a6838]/30 shadow-xs relative">
+              <div className="flex items-center justify-center gap-2 mb-1.5">
+                <span className="text-[11px] font-black uppercase tracking-widest text-[#1a6838] bg-white/90 px-3 py-0.5 rounded-full border border-[#1a6838]/30 shadow-2xs">
+                  Peamine Piibli tõotus • {content.primaryVerse?.ref || 'Joeli 3:5'}
+                </span>
+              </div>
+              <p className="text-lg sm:text-2xl font-serif font-bold text-[#144225] italic text-center leading-snug">
+                «{content.primaryVerse?.text || 'Ja sünnib, et igaüks, kes hüüab appi Issanda nime, pääseb.'}»
+              </p>
+            </div>
+
+            {/* 3 Core Bible Verses (Jh 3:16, 2Kn 17:17, Jl 3:5) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
+              {content.coreVerses.map((v, i) => (
+                <div key={i} className="bg-white p-4 sm:p-5 rounded-2xl border border-[#8ab897]/40 shadow-xs flex flex-col justify-between relative group hover:border-[#1a6838]/60 transition-colors">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black text-[#1a6838] uppercase tracking-wider">{v.ref}</span>
+                      {v.theme && <span className="text-[11px] text-stone-600 font-bold bg-stone-100 px-2 py-0.5 rounded-md">{v.theme}</span>}
+                    </div>
+                    <p className="text-sm sm:text-base italic font-serif text-[#1c2e24] leading-relaxed">«{v.text}»</p>
+                  </div>
+                </div>
+              ))}
+            </div>
 
           </div>
 
@@ -624,7 +805,7 @@ export default function App() {
             <span className="text-xs uppercase tracking-widest text-[#1a6838] font-bold">
               Hoiatused & vaimulik tõde
             </span>
-            <h2 className="text-2xl sm:text-4xl font-bold font-display text-[#144225]">
+            <h2 className="text-2xl sm:text-3xl font-bold font-display text-[#144225]">
               Olulised Teemad ja Vastused
             </h2>
             <p className="text-sm text-[#41624f]">
@@ -633,14 +814,14 @@ export default function App() {
           </div>
 
           {/* Tab Buttons */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 bg-white p-2 rounded-2xl border border-[#8ab897]/30 max-w-3xl mx-auto shadow-2xs">
-            {content.tractQuestions.map((q) => {
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2 bg-white p-2 rounded-2xl border border-[#8ab897]/30 max-w-2xl mx-auto shadow-2xs">
+            {content.tractQuestions.filter(q => q.id !== 'hoia-kodu-puhas').map((q) => {
               const isSelected = activeTractQuestion === q.id;
               return (
                 <button
                   key={q.id}
                   onClick={() => setActiveTractQuestion(q.id)}
-                  className={`flex-1 px-4 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2.5 cursor-pointer ${
+                  className={`flex-1 px-5 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2.5 cursor-pointer ${
                     isSelected 
                       ? 'bg-[#1a6838] text-white shadow-sm' 
                       : 'text-[#2b4c3b] hover:bg-[#f4f8f5]'
@@ -652,7 +833,7 @@ export default function App() {
                     ?
                   </span>
                   <span className="truncate text-left">
-                    {q.id === 'hoia-kodu-puhas' ? 'Puhas kodu' : q.id === 'igauele-oma-jumal' ? '«Oma jumal»?' : 'Hea inimene?'}
+                    {q.id === 'igauele-oma-jumal' ? '«Igaühele oma jumal»?' : 'Hea inimene pääseb taevasse?'}
                   </span>
                 </button>
               );
@@ -661,14 +842,10 @@ export default function App() {
 
           {/* Active Question Content Card */}
           {(() => {
-            const current = content.tractQuestions.find(q => q.id === activeTractQuestion) || content.tractQuestions[0];
+            const tractList = content.tractQuestions.filter(q => q.id !== 'hoia-kodu-puhas');
+            const current = tractList.find(q => q.id === activeTractQuestion) || tractList[0];
             return (
-              <div className="bg-white rounded-3xl border border-[#8ab897]/30 p-6 sm:p-10 shadow-sm space-y-6 relative overflow-hidden">
-                
-                {/* Corner Watermark Cross */}
-                <div className="absolute -bottom-6 -right-6 pointer-events-none opacity-4">
-                  <SubtleCrossMotif size={180} />
-                </div>
+              <div className="bg-white rounded-3xl border border-[#8ab897]/30 p-6 sm:p-10 shadow-sm space-y-6">
 
                 <div className="flex items-start gap-4 pb-4 border-b border-stone-100">
                   <div className="w-12 h-12 rounded-2xl bg-red-600 text-white font-black text-2xl flex items-center justify-center shrink-0 shadow-md">
@@ -728,41 +905,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* 4. Spiritual Cleanliness Section */}
-      <section id="hoia-kodu-puhas-sec" className="py-12 sm:py-16 bg-[#1a6838] text-white relative overflow-hidden">
-        <div className="absolute -right-10 top-1/2 -translate-y-1/2 pointer-events-none opacity-10 text-white">
-          <SubtleCrossMotif size={280} />
-        </div>
 
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-6 relative z-10">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-white/10 rounded-2xl">
-              <ShieldAlert className="w-8 h-8 text-white" />
-            </div>
-            <div>
-              <span className="text-xs uppercase tracking-widest text-[#8ab897] font-bold">
-                {content.cleanlinessSubtitle}
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-bold font-display">
-                {content.cleanlinessTitle}
-              </h2>
-            </div>
-          </div>
-
-          <p className="text-sm sm:text-base text-emerald-100 leading-relaxed font-serif">
-            {content.cleanlinessDescription}
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-            {content.cleanlinessSteps.map((step, i) => (
-              <div key={i} className="bg-white/10 p-4 rounded-2xl border border-white/20 backdrop-blur-xs">
-                <span className="font-bold text-sm text-[#8ab897] block mb-1">{step.title}</span>
-                <p className="text-xs text-white/90">{step.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* 5. Testimonials & Real Stories (Tunnistused & YouTube videod) */}
       <section id="tunnistused" className="py-14 sm:py-20 max-w-5xl mx-auto px-4 sm:px-6 space-y-10 z-10">
@@ -770,7 +913,7 @@ export default function App() {
           <span className="text-xs uppercase tracking-widest text-[#1a6838] font-bold">
             Tõestisündinud lood
           </span>
-          <h2 className="text-2xl sm:text-4xl font-bold font-display text-[#144225]">
+          <h2 className="text-2xl sm:text-3xl font-bold font-display text-[#144225]">
             Tunnistused tervenemistest ja vabanemistest
           </h2>
           <p className="text-sm text-[#41624f]">
@@ -798,7 +941,7 @@ export default function App() {
                 </p>
 
                 {test.fullStory && (
-                  <div className="p-4 rounded-2xl bg-[#f4f8f5] text-xs text-[#243d2e] italic leading-relaxed border border-[#8ab897]/20">
+                  <div className="p-4 rounded-2xl bg-[#f4f8f5] text-xs sm:text-sm text-[#243d2e] italic leading-relaxed border border-[#8ab897]/20">
                     «{test.fullStory}»
                   </div>
                 )}
@@ -823,7 +966,7 @@ export default function App() {
                 <span>Jaga oma lugu:</span>
                 <button
                   onClick={() => scrollTo('kontakt')}
-                  className="font-bold text-[#1a6838] hover:underline"
+                  className="font-bold text-[#1a6838] hover:underline cursor-pointer"
                 >
                   Saada oma tunnistus
                 </button>
@@ -833,132 +976,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* 6. Salvation Prayer Section */}
-      <section id="paastepalve" className="py-14 sm:py-20 bg-[#f4f8f5] border-y border-[#8ab897]/20 relative overflow-hidden z-10">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-4">
-          <SubtleCrossMotif size={320} />
-        </div>
 
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-8 relative z-10">
-          
-          <div className="text-center space-y-2">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#1a6838]/10 text-[#1a6838] text-xs font-bold uppercase tracking-wider">
-              <Flame className="w-4 h-4 text-[#1a6838]" />
-              <span>{content.salvationPrayerSubtitle}</span>
-            </div>
-            <h2 className="text-2xl sm:text-4xl font-bold font-display text-[#144225]">
-              {content.salvationPrayerTitle}
-            </h2>
-            <p className="text-sm text-[#41624f]">
-              {content.salvationPrayerIntro}
-            </p>
-          </div>
-
-          {/* Prayer Box */}
-          <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#8ab897]/30 shadow-md space-y-6">
-            
-            <div className="flex items-center justify-between pb-4 border-b border-stone-200">
-              <span className="text-xs font-bold text-[#1a6838] uppercase tracking-wider">
-                Palveta seda siiralt oma südamega:
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={toggleSpeech}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-colors ${
-                    isSpeaking 
-                      ? 'bg-[#1a6838] text-white border-[#1a6838]' 
-                      : 'bg-[#f4f8f5] text-[#1a6838] border-[#8ab897]/40 hover:bg-[#e8f1eb]'
-                  }`}
-                >
-                  {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-                  <span>{isSpeaking ? 'Peata' : 'Kuula ettelugemist'}</span>
-                </button>
-                <button
-                  onClick={handleCopyPrayer}
-                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#f4f8f5] text-[#1a6838] border border-[#8ab897]/40 hover:bg-[#e8f1eb] flex items-center gap-1.5 transition-colors"
-                >
-                  {copiedPrayer ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copiedPrayer ? 'Kopeeritud' : 'Kopeeri'}</span>
-                </button>
-              </div>
-            </div>
-
-            <div className="p-6 sm:p-8 rounded-2xl bg-[#fcfdfc] border border-[#8ab897]/20 font-serif text-base sm:text-lg leading-relaxed text-[#1c2e24] whitespace-pre-line text-center shadow-inner">
-              {content.salvationPrayerText}
-            </div>
-
-            {/* Follow-up steps */}
-            <div className="pt-4 space-y-4">
-              <h4 className="font-bold text-sm text-[#144225] uppercase tracking-wider flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#1a6838]" />
-                <span>Palvetasid selle palve? Mis saab edasi?</span>
-              </h4>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {content.salvationPrayerNextSteps.map((step, idx) => (
-                  <div key={idx} className="p-4 rounded-xl bg-[#f4f8f5] border border-[#8ab897]/20 space-y-1">
-                    <h5 className="font-bold text-xs sm:text-sm text-[#144225]">{step.title}</h5>
-                    <p className="text-xs text-[#3a5946]">{step.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
-
-      {/* 7. Lord's Prayer Section (Meie Isa palve) */}
-      <section id="meie-isa" className="py-14 sm:py-20 max-w-4xl mx-auto px-4 sm:px-6 space-y-8 z-10">
-        <div className="text-center space-y-2">
-          <span className="text-xs uppercase tracking-widest text-[#1a6838] font-bold">
-            {content.lordPrayer.ref}
-          </span>
-          <h2 className="text-2xl sm:text-4xl font-bold font-display text-[#144225]">
-            {content.lordPrayer.title}
-          </h2>
-          <p className="text-sm text-[#41624f] max-w-xl mx-auto">
-            {content.lordPrayer.intro}
-          </p>
-        </div>
-
-        <div className="bg-white rounded-3xl p-6 sm:p-10 border border-[#8ab897]/30 shadow-md space-y-6 relative overflow-hidden">
-          <div className="absolute right-4 bottom-4 pointer-events-none opacity-4">
-            <SubtleCrossMotif size={200} />
-          </div>
-
-          <div className="flex items-center justify-between pb-4 border-b border-stone-200">
-            <span className="text-xs font-bold text-[#1a6838] uppercase tracking-wider">
-              {content.lordPrayer.subtitle}
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={toggleSpeechLordPrayer}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 border transition-colors ${
-                  isSpeakingLordPrayer 
-                    ? 'bg-[#1a6838] text-white border-[#1a6838]' 
-                    : 'bg-[#f4f8f5] text-[#1a6838] border-[#8ab897]/40 hover:bg-[#e8f1eb]'
-                }`}
-              >
-                {isSpeakingLordPrayer ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-                <span>{isSpeakingLordPrayer ? 'Peata' : 'Kuula'}</span>
-              </button>
-              <button
-                onClick={handleCopyLordPrayer}
-                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#f4f8f5] text-[#1a6838] border border-[#8ab897]/40 hover:bg-[#e8f1eb] flex items-center gap-1.5 transition-colors"
-              >
-                {copiedLordPrayer ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copiedLordPrayer ? 'Kopeeritud' : 'Kopeeri'}</span>
-              </button>
-            </div>
-          </div>
-
-          <div className="p-6 sm:p-8 rounded-2xl bg-[#fcfdfc] border border-[#8ab897]/20 font-serif text-base sm:text-xl leading-relaxed text-[#1c2e24] whitespace-pre-line text-center shadow-inner">
-            {content.lordPrayer.text}
-          </div>
-        </div>
-      </section>
 
       {/* 8. Publisher & Books Section (Kirjastus & Raamatud & Sünnilugu & E-pood) */}
       <section id="kirjastus" className="py-14 sm:py-20 max-w-5xl mx-auto px-4 sm:px-6 space-y-10 z-10">
@@ -972,7 +990,7 @@ export default function App() {
           </div>
           <button
             onClick={() => scrollTo('toetus')}
-            className="px-5 py-2.5 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-xs transition-colors shrink-0"
+            className="px-5 py-2.5 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-xs transition-colors shrink-0 cursor-pointer"
           >
             <Heart className="w-4 h-4 text-emerald-200" />
             <span>Toeta kirjastustööd</span>
@@ -980,7 +998,7 @@ export default function App() {
         </div>
 
         {/* Publisher Story */}
-        <div className="bg-[#f4f8f5] p-6 sm:p-8 rounded-3xl border border-[#8ab897]/30 space-y-3">
+        <div className="bg-[#f4f8f5] p-6 sm:p-8 rounded-3xl border border-[#8ab897]/30 space-y-3 shadow-2xs">
           <span className="text-xs font-bold text-[#1a6838] uppercase tracking-wider flex items-center gap-1.5">
             <BookOpen className="w-4 h-4" />
             <span>Sünnilugu ja visioon</span>
@@ -993,7 +1011,30 @@ export default function App() {
           </p>
         </div>
 
-        {/* Books Cards & E-Store ordering */}
+        {/* Pre-Order Highlight Banner */}
+        <div className="bg-gradient-to-r from-amber-500/15 via-emerald-500/10 to-amber-500/15 p-6 sm:p-8 rounded-3xl border-2 border-amber-500/40 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-900 border border-amber-500/30 text-xs font-black uppercase tracking-wider">
+              <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+              <span>Ettetellimine avatud</span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-black font-display text-[#144225]">
+              Kirjastuse Saagu Valgus väljaannete ettetellimine
+            </h3>
+            <p className="text-xs sm:text-sm text-[#2b4b39] max-w-2xl leading-relaxed">
+              Broneeri endale või oma kogudusele uued elumuutvad trükised enne tiraaži ilmumist. Ettetellijatele garanteerime esimese trüki eksemplarid ja kiireima postituse üle Eesti.
+            </p>
+          </div>
+          <button
+            onClick={() => openPreOrderModal()}
+            className="px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 text-stone-900 font-bold text-sm sm:text-base flex items-center gap-2 shadow-md transition-all shrink-0 cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4 text-stone-900" />
+            <span>Vormista ettetellimus</span>
+          </button>
+        </div>
+
+        {/* Books Cards & Ordering */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xl sm:text-2xl font-bold font-display text-[#144225]">
@@ -1002,43 +1043,69 @@ export default function App() {
             <span className="text-xs text-[#385643] font-semibold">Saadaval postiga üle Eesti</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {content.books.map((book) => (
-              <div key={book.id} className="bg-white p-6 sm:p-8 rounded-3xl border border-[#8ab897]/30 shadow-2xs flex flex-col justify-between space-y-4 relative">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#8ab897] uppercase tracking-wider">{book.category}</span>
-                    <span className="text-xs font-bold text-[#1a6838] bg-[#1a6838]/10 px-3 py-1 rounded-full">Saadaval</span>
-                  </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {content.books.map((book) => {
+              const isPreOrder = book.isPreOrder;
+              return (
+                <div key={book.id} className="bg-white p-6 sm:p-7 rounded-3xl border border-[#8ab897]/30 shadow-2xs flex flex-col justify-between space-y-4 relative group hover:border-[#1a6838]/60 transition-colors">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-[#8ab897] uppercase tracking-wider">{book.category}</span>
+                      {isPreOrder ? (
+                        <span className="text-[11px] font-black uppercase tracking-wider text-amber-900 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                          <Sparkles className="w-3 h-3 text-amber-700" />
+                          <span>Ettetellimisel</span>
+                        </span>
+                      ) : (
+                        <span className="text-[11px] font-bold text-[#1a6838] bg-[#1a6838]/10 px-2.5 py-0.5 rounded-full">
+                          Laos saadaval
+                        </span>
+                      )}
+                    </div>
 
-                  <h3 className="text-2xl font-bold font-display text-[#144225]">«{book.title}»</h3>
-                  <p className="text-sm text-[#2d4937] leading-relaxed font-serif">{book.description}</p>
-                  
-                  <div className="pt-2 space-y-1 text-xs text-[#3e5e4b]">
-                    {book.highlights.map((h, i) => (
-                      <div key={i} className="flex items-center gap-2">
-                        <span className="text-[#1a6838] font-bold">•</span>
-                        <span>{h}</span>
+                    <h3 className="text-xl sm:text-2xl font-bold font-display text-[#144225]">«{book.title}»</h3>
+                    <p className="text-xs sm:text-sm text-[#2d4937] leading-relaxed font-serif">{book.description}</p>
+                    
+                    {isPreOrder && book.preOrderNote && (
+                      <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200 text-xs text-amber-950 font-medium">
+                        📌 {book.preOrderNote}
                       </div>
-                    ))}
+                    )}
+
+                    <div className="pt-2 space-y-1 text-xs text-[#3e5e4b]">
+                      {book.highlights.map((h, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <span className="text-[#1a6838] font-bold">•</span>
+                          <span>{h}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-stone-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <span className="text-xs text-stone-500 font-medium">{book.author}</span>
+                    
+                    {isPreOrder ? (
+                      <button
+                        onClick={() => openPreOrderModal(book)}
+                        className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-900 text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-stone-900" />
+                        <span>Ettetellimine</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => openStandardOrderModal(book)}
+                        className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+                      >
+                        <ShoppingCart className="w-3.5 h-3.5" />
+                        <span>Esita tellimissoov</span>
+                      </button>
+                    )}
                   </div>
                 </div>
-
-                <div className="pt-4 border-t border-stone-100 flex items-center justify-between">
-                  <span className="text-xs text-stone-500 font-medium">{book.author}</span>
-                  <button
-                    onClick={() => {
-                      setSelectedBookForOrder(book);
-                      setOrderSubmitted(false);
-                    }}
-                    className="px-4 py-2 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
-                  >
-                    <ShoppingCart className="w-3.5 h-3.5" />
-                    <span>Esita tellimissoov</span>
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -1082,7 +1149,7 @@ export default function App() {
               <Heart className="w-4 h-4 text-amber-700 fill-amber-700" />
               <span>{content.support.subtitle}</span>
             </div>
-            <h2 className="text-2xl sm:text-4xl font-bold font-display text-stone-900">
+            <h2 className="text-2xl sm:text-3xl font-bold font-display text-stone-900">
               {content.support.title}
             </h2>
             <p className="text-sm text-stone-700 max-w-xl mx-auto font-serif">
@@ -1119,7 +1186,7 @@ export default function App() {
                   </div>
                   <button
                     onClick={handleCopyIban}
-                    className="p-2 rounded-lg bg-white border border-stone-300 text-stone-700 hover:bg-stone-100 flex items-center gap-1 font-semibold"
+                    className="p-2 rounded-lg bg-white border border-stone-300 text-stone-700 hover:bg-stone-100 flex items-center gap-1 font-semibold cursor-pointer"
                   >
                     {copiedIban ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
                     <span>{copiedIban ? 'Kopeeritud' : 'Kopeeri'}</span>
@@ -1165,7 +1232,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* 10. Contact Section */}
+      {/* 10. Contact Section (PUHTALT KIRJASTUSE KONTAKT, ILMA PALVESOOVIDE ESITAMISETA) */}
       <section id="kontakt" className="py-14 sm:py-20 bg-[#f4f8f5] border-t border-[#8ab897]/20 z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-10">
           
@@ -1174,105 +1241,101 @@ export default function App() {
               Võta ühendust
             </span>
             <h2 className="text-2xl sm:text-4xl font-bold font-display text-[#144225]">
-              Kirjuta meile või saada palvesoov
+              Võta ühendust kirjastusega
             </h2>
             <p className="text-sm text-[#41624f]">
-              Oleme olemas, kui sul on küsimusi, soovid eestpalvet või soovid trükiseid ja raamatuid oma kogudusele.
+              Oleme olemas, kui sul on küsimusi trükiste, raamatute tellimise, levitamise või koostöö kohta.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
             
             {/* Email Box */}
-            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#8ab897]/30 shadow-2xs space-y-4">
+            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#8ab897]/40 shadow-xs space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl bg-[#1a6838]/10 text-[#1a6838] flex items-center justify-center">
                   <Mail className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-base text-[#144225]">E-post</h4>
-                  <p className="text-xs text-stone-500">Otsene kontakt meeskonnaga</p>
+                  <h4 className="font-bold text-lg text-[#144225]">E-post</h4>
+                  <p className="text-xs sm:text-sm text-stone-500">Otsene kontakt meeskonnaga</p>
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#fcfdfc] border border-[#8ab897]/30 flex items-center justify-between">
-                <a href={`mailto:${content.contactEmail}`} className="font-mono text-base sm:text-lg font-bold text-[#1a6838] hover:underline">
+              <div className="p-4 rounded-2xl bg-[#fcfdfc] border border-[#8ab897]/40 flex items-center justify-between">
+                <a href={`mailto:${content.contactEmail}`} className="font-mono text-lg sm:text-xl font-bold text-[#1a6838] hover:underline">
                   {content.contactEmail}
                 </a>
                 <button
                   onClick={handleCopyEmail}
-                  className="p-2 rounded-xl bg-white border border-[#8ab897]/40 text-[#1a6838] hover:bg-[#f4f8f5] text-xs font-semibold flex items-center gap-1 transition-colors"
+                  className="p-2.5 rounded-xl bg-white border border-[#8ab897]/40 text-[#1a6838] hover:bg-[#f4f8f5] text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-2xs"
                 >
-                  {copiedEmail ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                  {copiedEmail ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-[#1a6838]" />}
                 </button>
               </div>
 
-              <p className="text-xs text-stone-500 leading-relaxed">
-                Vastame kirjadele tavaliselt 1–2 tööpäeva jooksul. Kõik palvesoovid jäävad konfidentsiaalseks.
+              <p className="text-sm text-stone-600 leading-relaxed">
+                Vastame kirjadele tavaliselt 1–2 tööpäeva jooksul. Küsimused ja koostöösoovid on alati oodatud.
               </p>
             </div>
 
             {/* Quick Contact Form */}
-            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#8ab897]/30 shadow-2xs">
+            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#8ab897]/40 shadow-xs">
               {formSent ? (
                 <div className="text-center py-8 space-y-3">
                   <div className="w-12 h-12 rounded-full bg-[#1a6838]/10 text-[#1a6838] flex items-center justify-center mx-auto">
                     <Check className="w-6 h-6" />
                   </div>
                   <h4 className="font-bold text-lg text-[#144225]">Täname kirjutamast!</h4>
-                  <p className="text-xs text-stone-600">Sinu sõnum on saadetud aadressile {content.contactEmail}.</p>
+                  <p className="text-sm text-stone-600">Sinu sõnum on saadetud aadressile {content.contactEmail} ning salvestatud andmebaasi.</p>
                   <button 
                     onClick={() => setFormSent(false)} 
-                    className="text-xs font-bold text-[#1a6838] underline pt-2"
+                    className="text-sm font-bold text-[#1a6838] underline pt-2 cursor-pointer"
                   >
                     Saada teine kiri
                   </button>
                 </div>
               ) : (
                 <form 
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    setFormSent(true);
-                    setFormData({ name: '', email: '', message: '' });
-                  }} 
+                  onSubmit={handleContactSubmit} 
                   className="space-y-4"
                 >
                   <div>
-                    <label className="block text-xs font-bold text-[#144225] mb-1">Nimi</label>
+                    <label className="block text-sm font-bold text-[#144225] mb-1.5">Nimi</label>
                     <input
                       type="text"
                       required
                       placeholder="Sinu nimi"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
+                      className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm sm:text-base focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-[#144225] mb-1">E-post</label>
+                    <label className="block text-sm font-bold text-[#144225] mb-1.5">E-post</label>
                     <input
                       type="email"
                       required
                       placeholder="sinu@epost.ee"
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
+                      className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm sm:text-base focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-bold text-[#144225] mb-1">Sõnum või palvesoov</label>
+                    <label className="block text-sm font-bold text-[#144225] mb-1.5">Sõnum või küsimus</label>
                     <textarea
                       rows={3}
                       required
-                      placeholder="Kirjuta oma küsimus või teade siia..."
+                      placeholder="Kirjuta oma küsimus, tagasiside või koostöösoov siia..."
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
+                      className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm sm:text-base focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
                     />
                   </div>
                   <button
                     type="submit"
-                    className="w-full py-2.5 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white font-bold text-sm flex items-center justify-center gap-2 transition-colors shadow-2xs"
+                    className="w-full py-3 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-colors shadow-xs cursor-pointer"
                   >
                     <Send className="w-4 h-4" />
                     <span>Saada teade</span>
@@ -1286,1158 +1349,303 @@ export default function App() {
         </div>
       </section>
 
-      {/* 11. Footer (Clean footer with subtle Admin link) */}
+      {/* 11. Footer (Puhas jalus koos ametliku autoriõiguse ja Admin halduslehe lingiga) */}
       <footer className="bg-white border-t border-[#8ab897]/20 py-10 z-10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#385643]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-[#385643]">
           <div className="flex items-center gap-3">
             <BrandLogo size="sm" />
-            <span>© {new Date().getFullYear()} {content.brandName}</span>
+            <span>© {new Date().getFullYear()} {content.brandName}. Kõik õigused kaitstud.</span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4 font-semibold justify-center">
-            <button onClick={() => scrollTo('kusimused')} className="hover:text-[#1a6838]">3 Põhiküsimust</button>
-            <button onClick={() => scrollTo('tunnistused')} className="hover:text-[#1a6838]">Tunnistused</button>
-            <button onClick={() => scrollTo('kirjastus')} className="hover:text-[#1a6838]">Kirjastus</button>
-            <button onClick={() => scrollTo('toetus')} className="hover:text-[#1a6838]">Toeta</button>
-            <button onClick={() => scrollTo('paastepalve')} className="hover:text-[#1a6838]">Päästepalve</button>
-            <button onClick={() => scrollTo('meie-isa')} className="hover:text-[#1a6838]">Meie Isa palve</button>
-            <button onClick={() => setIsAdminOpen(true)} className="hover:text-[#1a6838] flex items-center gap-1 opacity-80 hover:opacity-100">
-              <Lock className="w-3 h-3 text-[#1a6838]" />
-              <span>Admin</span>
+          <div className="flex flex-wrap items-center gap-5 sm:gap-6 font-semibold justify-center">
+            <button onClick={() => scrollTo("kusimused")} className="hover:text-[#1a6838] cursor-pointer">3 Põhiküsimust</button>
+            <button onClick={() => scrollTo("kirjastus")} className="hover:text-[#1a6838] cursor-pointer">Kirjastus & Raamatud</button>
+            <button onClick={() => scrollTo("tunnistused")} className="hover:text-[#1a6838] cursor-pointer">Tunnistused</button>
+            <button onClick={() => scrollTo("toetus")} className="hover:text-[#1a6838] cursor-pointer">Toeta</button>
+            <button onClick={() => scrollTo("kontakt")} className="hover:text-[#1a6838] cursor-pointer">Kontakt</button>
+            <button 
+              onClick={openAdmin} 
+              className="hover:text-[#1a6838] flex items-center gap-1.5 bg-[#f4f8f5] px-3 py-1.5 rounded-full border border-[#8ab897]/40 text-[#1a6838] font-bold cursor-pointer transition-colors shadow-2xs"
+              title="Ava administraatori haldusleht"
+            >
+              <Lock className="w-3.5 h-3.5 text-[#1a6838]" />
+              <span>Admin haldusleht</span>
             </button>
-            <a href={`mailto:${content.contactEmail}`} className="hover:text-[#1a6838]">{content.contactEmail}</a>
+            <a href={"mailto:" + content.contactEmail} className="hover:text-[#1a6838]">{content.contactEmail}</a>
           </div>
         </div>
       </footer>
 
       {/* ========================================================================= */}
-      {/* 12. BOOK ORDER MODAL (E-POE TELLIMISVORMI AKNAKE) */}
+      {/* 12. BOOK ORDER & PRE-ORDER MODAL (TELLIMISE JA ETTETELLIMISE VORM) */}
       {/* ========================================================================= */}
       {selectedBookForOrder && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl border border-[#8ab897]/40 shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            <div className="px-6 py-4 bg-[#1a6838] text-white flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ShoppingCart className="w-5 h-5 text-emerald-200" />
-                <h3 className="font-bold text-base">Raamatu tellimine</h3>
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl border border-[#8ab897]/40 shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150 my-6">
+            
+            {/* Header */}
+            <div className={"px-6 py-4.5 text-white flex items-center justify-between " + (
+              orderType === "preorder" 
+                ? "bg-gradient-to-r from-amber-700 via-amber-800 to-amber-900 border-b border-amber-900" 
+                : "bg-gradient-to-r from-[#144225] to-[#1a6838] border-b border-[#14542d]"
+            )}>
+              <div className="flex items-center gap-2.5">
+                {orderType === "preorder" ? (
+                  <Package className="w-5 h-5 text-amber-300" />
+                ) : (
+                  <ShoppingCart className="w-5 h-5 text-emerald-200" />
+                )}
+                <div>
+                  <h3 className="font-bold text-base leading-tight font-display">
+                    {orderType === "preorder" ? "Trükise ettetellimine" : "Raamatu tellimissoov"}
+                  </h3>
+                  <p className="text-xs opacity-85">
+                    {orderType === "preorder" ? "Garanteeri endale eksemplar enne trükist ilmumist" : "Otsene tellimus kirjastuselt Saagu Valgus"}
+                  </p>
+                </div>
               </div>
-              <button onClick={() => setSelectedBookForOrder(null)} className="p-1 rounded-lg hover:bg-white/10">
+              <button 
+                onClick={() => setSelectedBookForOrder(null)} 
+                className="p-1.5 rounded-xl hover:bg-white/10 text-white cursor-pointer transition-colors"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-5 sm:p-6 space-y-4">
               {orderSubmitted ? (
-                <div className="text-center py-6 space-y-3">
-                  <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
-                    <Check className="w-6 h-6" />
+                <div className="text-center py-6 sm:py-8 space-y-4">
+                  <div className={"w-16 h-16 rounded-full flex items-center justify-center mx-auto shadow-sm " + (
+                    orderType === "preorder" ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-700"
+                  )}>
+                    <Check className="w-8 h-8" />
                   </div>
-                  <h4 className="font-bold text-lg text-stone-900">Tellimus vastu võetud!</h4>
-                  <p className="text-xs text-stone-600">
-                    Oleme saanud sinu tellimuse raamatule <strong>«{selectedBookForOrder.title}»</strong>. Saadame kinnituse ja makseinfo sinu meilile ({orderData.email}).
+                  <div>
+                    <h4 className="font-bold text-xl sm:text-2xl text-stone-900 font-display">
+                      {orderType === "preorder" ? "Ettetellimus edukalt registreeritud!" : "Tellimus vastu võetud!"}
+                    </h4>
+                    <p className="text-xs text-stone-500 mt-1">
+                      Broneeringu kood: <span className="font-mono font-bold text-stone-800">#{lastSubmittedId || "ORD-SAV"}</span>
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200 text-left text-xs sm:text-sm space-y-1.5">
+                    <p className="font-semibold text-stone-900">Teie broneeringu kokkuvõte:</p>
+                    <p className="text-stone-700">• Teos: <strong>«{selectedBookForOrder.title}»</strong> ({orderQuantity} tk)</p>
+                    <p className="text-stone-700">• Tellija: {orderData.name} ({orderData.email})</p>
+                    <p className="text-stone-700">• Saatmisaadress / pakiautomaat: {orderData.address}</p>
+                    {orderType === "preorder" && (
+                      <p className="text-amber-800 font-medium pt-1">
+                        ★ Hoiame teid raamatu trükkimise ja ilmumise infoga kursis meili teel!
+                      </p>
+                    )}
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-stone-600 leading-relaxed max-w-sm mx-auto">
+                    Kinnituskiri ja täpsem info on saadetud aadressile <strong>{orderData.email}</strong>. Andmed on salvestatud ka kirjastuse haldussüsteemi.
                   </p>
-                  <button
-                    onClick={() => setSelectedBookForOrder(null)}
-                    className="px-6 py-2 rounded-xl bg-[#1a6838] text-white font-bold text-xs mt-2"
-                  >
-                    Sulge
-                  </button>
+
+                  <div className="pt-2">
+                    <button
+                      onClick={() => setSelectedBookForOrder(null)}
+                      className="px-8 py-3 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white font-bold text-sm cursor-pointer shadow-xs transition-colors"
+                    >
+                      Lõpeta ja naase lehele
+                    </button>
+                  </div>
                 </div>
               ) : (
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    setOrderSubmitted(true);
-                  }}
-                  className="space-y-3.5 text-xs"
-                >
-                  <div className="p-3.5 bg-[#f4f8f5] rounded-xl border border-[#8ab897]/30 flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-stone-900 text-sm block">«{selectedBookForOrder.title}»</span>
-                      <span className="text-stone-500 text-xs">{selectedBookForOrder.author}</span>
+                <form onSubmit={handleOrderSubmit} className="space-y-4 text-sm">
+                  
+                  {/* Selected Book card */}
+                  <div className={"p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 " + (
+                    orderType === "preorder" 
+                      ? "bg-amber-50/70 border-amber-300/80" 
+                      : "bg-[#f4f8f5] border-[#8ab897]/50"
+                  )}>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap mb-1">
+                        <span className={"text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full " + (
+                          orderType === "preorder" 
+                            ? "bg-amber-600 text-white" 
+                            : "bg-[#1a6838] text-white"
+                        )}>
+                          {orderType === "preorder" ? "Ettetellimine" : "Tavaline tellimus"}
+                        </span>
+                        {selectedBookForOrder.price && (
+                          <span className="text-xs font-bold text-stone-700">
+                            {selectedBookForOrder.price.toFixed(2)} €
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="font-bold text-stone-900 text-base truncate">«{selectedBookForOrder.title}»</h4>
+                      <p className="text-stone-500 text-xs">{selectedBookForOrder.author} • {selectedBookForOrder.category}</p>
                     </div>
-                    <span className="text-xs font-bold text-[#1a6838] bg-[#1a6838]/10 px-3 py-1 rounded-full">
-                      Tellimissoov
-                    </span>
+
+                    {/* Book Switcher Dropdown */}
+                    <div className="w-full sm:w-auto">
+                      <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-0.5">Vali teine teos:</label>
+                      <select 
+                        value={selectedBookForOrder.id}
+                        onChange={(e) => {
+                          const found = content.books.find(b => b.id === e.target.value);
+                          if (found) {
+                            setSelectedBookForOrder(found);
+                            if (found.isPreOrder) setOrderType("preorder");
+                          }
+                        }}
+                        className="w-full sm:w-44 text-xs font-medium bg-white border border-stone-300 rounded-lg px-2.5 py-1.5 focus:ring-1 focus:ring-[#1a6838] focus:outline-none"
+                      >
+                        {content.books.map(b => (
+                          <option key={b.id} value={b.id}>
+                            {b.title} {b.isPreOrder ? "(Ettetelli)" : ""}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <label className="font-bold text-stone-700">Kogus:</label>
-                    <div className="flex items-center gap-2">
+                  {/* Quantity and Order Type Switch */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center pt-1">
+                    <div className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-200">
+                      <label className="font-bold text-stone-700 text-xs sm:text-sm">Kogus (tk):</label>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setOrderQuantity(Math.max(1, orderQuantity - 1))}
+                          className="w-8 h-8 rounded-lg bg-white border border-stone-300 hover:bg-stone-100 font-bold flex items-center justify-center cursor-pointer text-base shadow-2xs"
+                        >
+                          -
+                        </button>
+                        <span className="font-bold text-base w-8 text-center text-stone-800">{orderQuantity}</span>
+                        <button
+                          type="button"
+                          onClick={() => setOrderQuantity(orderQuantity + 1)}
+                          className="w-8 h-8 rounded-lg bg-white border border-stone-300 hover:bg-stone-100 font-bold flex items-center justify-center cursor-pointer text-base shadow-2xs"
+                        >
+                          +
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 bg-stone-50 p-1.5 rounded-xl border border-stone-200">
                       <button
                         type="button"
-                        onClick={() => setOrderQuantity(Math.max(1, orderQuantity - 1))}
-                        className="w-7 h-7 rounded-lg bg-stone-100 hover:bg-stone-200 font-bold flex items-center justify-center"
+                        onClick={() => setOrderType("order")}
+                        className={"flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer " + (
+                          orderType === "order"
+                            ? "bg-white text-[#144225] shadow-xs border border-stone-200"
+                            : "text-stone-500 hover:text-stone-800"
+                        )}
                       >
-                        -
+                        Tavaline
                       </button>
-                      <span className="font-bold text-sm w-6 text-center">{orderQuantity}</span>
                       <button
                         type="button"
-                        onClick={() => setOrderQuantity(orderQuantity + 1)}
-                        className="w-7 h-7 rounded-lg bg-stone-100 hover:bg-stone-200 font-bold flex items-center justify-center"
+                        onClick={() => setOrderType("preorder")}
+                        className={"flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer " + (
+                          orderType === "preorder"
+                            ? "bg-amber-600 text-white shadow-xs"
+                            : "text-amber-800 hover:text-amber-950"
+                        )}
                       >
-                        +
+                        Ettetellimine
                       </button>
                     </div>
                   </div>
 
+                  {/* Customer Information */}
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Nimi</label>
+                    <label className="block font-bold text-stone-700 text-xs mb-1">Tellija nimi *</label>
                     <input
                       type="text"
                       required
-                      placeholder="Sinu ees- ja perekonnanimi"
+                      placeholder="Ees- ja perekonnanimi"
                       value={orderData.name}
                       onChange={(e) => setOrderData({ ...orderData, name: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block font-bold text-stone-700 mb-1">E-post</label>
+                      <label className="block font-bold text-stone-700 text-xs mb-1">E-post *</label>
                       <input
                         type="email"
                         required
                         placeholder="sinu@epost.ee"
                         value={orderData.email}
                         onChange={(e) => setOrderData({ ...orderData, email: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block font-bold text-stone-700 mb-1">Telefon</label>
+                      <label className="block font-bold text-stone-700 text-xs mb-1">Telefoninumber *</label>
                       <input
                         type="tel"
                         required
                         placeholder="+372 5..."
                         value={orderData.phone}
                         onChange={(e) => setOrderData({ ...orderData, phone: e.target.value })}
-                        className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block font-bold text-stone-700 mb-1">Pakiautomaadi asukoht või postiaadress</label>
+                    <label className="block font-bold text-stone-700 text-xs mb-1">
+                      Pakiautomaat või kättetoimetamise aadress *
+                    </label>
                     <input
                       type="text"
                       required
-                      placeholder="nt Omniva / Smartpost Tallinna Kristiine Keskus"
+                      placeholder="nt Omniva / Smartpost Kristiine Keskus või postiaadress"
                       value={orderData.address}
                       onChange={(e) => setOrderData({ ...orderData, address: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-stone-700 text-xs mb-1">
+                      Märkused või täpsustused (vabatahtlik)
+                    </label>
+                    <textarea
+                      rows={2}
+                      placeholder="Näiteks: erisoovid pühenduse või tarne osas..."
+                      value={orderData.notes}
+                      onChange={(e) => setOrderData({ ...orderData, notes: e.target.value })}
+                      className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-xs sm:text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none resize-none"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full py-3 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white font-bold text-sm shadow-xs transition-colors mt-2 cursor-pointer"
+                    className={"w-full py-3.5 rounded-xl text-white font-bold text-sm sm:text-base shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2 mt-2 " + (
+                      orderType === "preorder"
+                        ? "bg-amber-600 hover:bg-amber-700"
+                        : "bg-[#1a6838] hover:bg-[#15542d]"
+                    )}
                   >
-                    Saada tellimissoov
+                    {orderType === "preorder" ? (
+                      <>
+                        <Package className="w-4 h-4" />
+                        <span>Kinnita ja saada ettetellimus</span>
+                      </>
+                    ) : (
+                      <>
+                        <ShoppingCart className="w-4 h-4" />
+                        <span>Kinnita ja saada tellimissoov</span>
+                      </>
+                    )}
                   </button>
+
+                  <p className="text-center text-[11px] text-stone-400">
+                    Andmeid hoitakse turvaliselt kirjastuse sisesüsteemis. Maksmine toimub arve või pangaülekande alusel.
+                  </p>
                 </form>
               )}
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 13. ADMIN PANEL MODAL (CMS, REAALAJAS MUUTMINE, DOCKER & PORTAINER) */}
-      {/* ========================================================================= */}
-      {isAdminOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
-          <div className="bg-white rounded-3xl border border-[#8ab897]/40 shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            
-            {/* Modal Header */}
-            <div className="px-6 py-4 bg-[#1a6838] text-white flex items-center justify-between border-b border-[#14542d]">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-white/10 rounded-xl">
-                  <Lock className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-lg font-display">Kirjastus Saagu Valgus – Admin Paneel</h3>
-                  <p className="text-xs text-emerald-100">Kogu veebilehe sisu reaalajas muutmine ja seadistused</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setIsAdminOpen(false)}
-                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Notification Toast */}
-            {saveSuccessMsg && (
-              <div className="bg-emerald-600 text-white px-6 py-2.5 text-xs sm:text-sm font-semibold flex items-center gap-2 justify-center shadow-inner">
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Muudatused on salvestatud ja koheselt lehel nähtavad!</span>
-              </div>
-            )}
-
-            {/* Modal Body */}
-            {!isAdminAuthenticated ? (
-              /* Password Gate */
-              <div className="p-8 sm:p-12 text-center max-w-md mx-auto space-y-6">
-                <div className="w-16 h-16 rounded-full bg-[#1a6838]/10 text-[#1a6838] flex items-center justify-center mx-auto">
-                  <Lock className="w-8 h-8" />
-                </div>
-                <div className="space-y-1">
-                  <h4 className="text-xl font-bold font-display text-[#144225]">Logi sisse administraatorina</h4>
-                  <p className="text-xs text-stone-500">Sisesta parool lehe sisu muutmiseks.</p>
-                </div>
-
-                <form onSubmit={handleAdminLogin} className="space-y-4">
-                  <div>
-                    <input
-                      type="password"
-                      placeholder="Sisesta parool (nt. admin)"
-                      value={adminPasswordInput}
-                      onChange={(e) => setAdminPasswordInput(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
-                    />
-                    {adminAuthError && (
-                      <p className="text-xs text-red-600 mt-1.5 font-medium">Vale parool! (Vihje: proovi 'admin' või '1234')</p>
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="submit"
-                      className="flex-1 py-3 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-xs transition-colors"
-                    >
-                      <Unlock className="w-4 h-4" />
-                      <span>Logi sisse</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAdminPasswordInput('admin');
-                        setIsAdminAuthenticated(true);
-                      }}
-                      className="px-4 py-3 rounded-xl bg-[#f4f8f5] hover:bg-[#e8f1eb] text-[#1a6838] border border-[#8ab897]/40 text-xs font-bold"
-                    >
-                      Kiirvalik
-                    </button>
-                  </div>
-                </form>
-              </div>
-            ) : (
-              /* Authenticated Admin CMS View */
-              <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
-                
-                {/* Admin Sidebar Navigation */}
-                <div className="w-full md:w-56 bg-[#f4f8f5] border-r border-[#8ab897]/20 p-3 space-y-1 flex md:flex-col overflow-x-auto md:overflow-y-auto shrink-0">
-                  <button
-                    onClick={() => setAdminTab('general')}
-                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors whitespace-nowrap ${
-                      adminTab === 'general' ? 'bg-[#1a6838] text-white shadow-xs' : 'text-[#2c4c3b] hover:bg-white/60'
-                    }`}
-                  >
-                    <Edit3 className="w-4 h-4 shrink-0" />
-                    <span>Üldine & Päis</span>
-                  </button>
-
-                  <button
-                    onClick={() => setAdminTab('central')}
-                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors whitespace-nowrap ${
-                      adminTab === 'central' ? 'bg-[#1a6838] text-white shadow-xs' : 'text-[#2c4c3b] hover:bg-white/60'
-                    }`}
-                  >
-                    <span className="w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center text-[10px] font-black shrink-0">?</span>
-                    <span>3 Keskset Küsimust</span>
-                  </button>
-
-                  <button
-                    onClick={() => setAdminTab('questions')}
-                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors whitespace-nowrap ${
-                      adminTab === 'questions' ? 'bg-[#1a6838] text-white shadow-xs' : 'text-[#2c4c3b] hover:bg-white/60'
-                    }`}
-                  >
-                    <span className="w-4 h-4 rounded-full bg-[#1a6838] text-white flex items-center justify-center text-[10px] font-black shrink-0">📖</span>
-                    <span>Trükise lisateemad</span>
-                  </button>
-
-                  <button
-                    onClick={() => setAdminTab('cleanliness')}
-                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors whitespace-nowrap ${
-                      adminTab === 'cleanliness' ? 'bg-[#1a6838] text-white shadow-xs' : 'text-[#2c4c3b] hover:bg-white/60'
-                    }`}
-                  >
-                    <ShieldAlert className="w-4 h-4 shrink-0" />
-                    <span>Puhas kodu</span>
-                  </button>
-
-                  <button
-                    onClick={() => setAdminTab('testimonials')}
-                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors whitespace-nowrap ${
-                      adminTab === 'testimonials' ? 'bg-[#1a6838] text-white shadow-xs' : 'text-[#2c4c3b] hover:bg-white/60'
-                    }`}
-                  >
-                    <Video className="w-4 h-4 shrink-0" />
-                    <span>Tunnistused ({content.testimonials.length})</span>
-                  </button>
-
-                  <button
-                    onClick={() => setAdminTab('publisher')}
-                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors whitespace-nowrap ${
-                      adminTab === 'publisher' ? 'bg-[#1a6838] text-white shadow-xs' : 'text-[#2c4c3b] hover:bg-white/60'
-                    }`}
-                  >
-                    <BookOpen className="w-4 h-4 shrink-0" />
-                    <span>Kirjastus & Raamatud</span>
-                  </button>
-
-                  <button
-                    onClick={() => setAdminTab('support')}
-                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors whitespace-nowrap ${
-                      adminTab === 'support' ? 'bg-[#1a6838] text-white shadow-xs' : 'text-[#2c4c3b] hover:bg-white/60'
-                    }`}
-                  >
-                    <Heart className="w-4 h-4 text-amber-500 shrink-0" />
-                    <span>Tule toetajaks!</span>
-                  </button>
-
-                  <button
-                    onClick={() => setAdminTab('prayers')}
-                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors whitespace-nowrap ${
-                      adminTab === 'prayers' ? 'bg-[#1a6838] text-white shadow-xs' : 'text-[#2c4c3b] hover:bg-white/60'
-                    }`}
-                  >
-                    <Flame className="w-4 h-4 shrink-0" />
-                    <span>Palved (Pääste & Meie Isa)</span>
-                  </button>
-
-                  <button
-                    onClick={() => setAdminTab('docker')}
-                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors whitespace-nowrap ${
-                      adminTab === 'docker' ? 'bg-[#1a6838] text-white shadow-xs' : 'text-[#2c4c3b] hover:bg-white/60'
-                    }`}
-                  >
-                    <Server className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Docker & Portainer</span>
-                  </button>
-
-                  <button
-                    onClick={() => setAdminTab('backup')}
-                    className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors whitespace-nowrap ${
-                      adminTab === 'backup' ? 'bg-[#1a6838] text-white shadow-xs' : 'text-[#2c4c3b] hover:bg-white/60'
-                    }`}
-                  >
-                    <Layers className="w-4 h-4 shrink-0" />
-                    <span>Varundus / JSON</span>
-                  </button>
-                </div>
-
-                {/* Admin Tab Content */}
-                <div className="flex-1 p-5 sm:p-7 overflow-y-auto max-h-[calc(90vh-140px)] space-y-6">
-                  
-                  {/* TAB 1: GENERAL */}
-                  {adminTab === 'general' && (
-                    <div className="space-y-5">
-                      <div className="border-b border-stone-200 pb-3">
-                        <h4 className="font-bold text-base text-[#144225]">Üldised seaded ja päise tekstid</h4>
-                        <p className="text-xs text-stone-500">Muuda lehe pealkirju, kontaktmeili ja hüüdlauset</p>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-bold text-stone-700 mb-1">Kirjastuse Nimi</label>
-                          <input
-                            type="text"
-                            value={content.brandName}
-                            onChange={(e) => saveContent({ ...content, brandName: e.target.value })}
-                            className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-bold text-stone-700 mb-1">Kontakt E-post</label>
-                          <input
-                            type="email"
-                            value={content.contactEmail}
-                            onChange={(e) => saveContent({ ...content, contactEmail: e.target.value })}
-                            className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-stone-700 mb-1">Päise bänner / hüüdlause</label>
-                        <input
-                          type="text"
-                          value={content.heroBadge}
-                          onChange={(e) => saveContent({ ...content, heroBadge: e.target.value })}
-                          className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-bold text-stone-700 mb-1">Pealkiri 1. osa</label>
-                          <input
-                            type="text"
-                            value={content.heroTitle}
-                            onChange={(e) => saveContent({ ...content, heroTitle: e.target.value })}
-                            className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-bold text-stone-700 mb-1">Pealkiri 2. osa (Roheline rõhk)</label>
-                          <input
-                            type="text"
-                            value={content.heroHighlight}
-                            onChange={(e) => saveContent({ ...content, heroHighlight: e.target.value })}
-                            className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-stone-700 mb-1">Päise sissejuhatav tekst</label>
-                        <textarea
-                          rows={3}
-                          value={content.heroDescription}
-                          onChange={(e) => saveContent({ ...content, heroDescription: e.target.value })}
-                          className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
-                        />
-                      </div>
-
-                      {/* Primary Verse Editor */}
-                      <div className="space-y-2 pt-2 p-3 bg-amber-50/70 border border-amber-200 rounded-xl">
-                        <span className="text-xs font-bold text-amber-900 uppercase">Peamine Piibli tõotus lehel (Jl 3:5)</span>
-                        <div className="grid grid-cols-2 gap-2">
-                          <input
-                            type="text"
-                            value={content.primaryVerse?.ref || 'Joeli 3:5'}
-                            onChange={(e) => {
-                              saveContent({ 
-                                ...content, 
-                                primaryVerse: { ...content.primaryVerse, ref: e.target.value } 
-                              });
-                            }}
-                            className="px-3 py-1.5 rounded-lg border border-amber-300 text-xs font-bold bg-white"
-                          />
-                          <input
-                            type="text"
-                            placeholder="Teema"
-                            value={content.primaryVerse?.theme || 'Peamine päästetõotus'}
-                            onChange={(e) => {
-                              saveContent({ 
-                                ...content, 
-                                primaryVerse: { ...content.primaryVerse, theme: e.target.value } 
-                              });
-                            }}
-                            className="px-3 py-1.5 rounded-lg border border-amber-300 text-xs bg-white"
-                          />
-                        </div>
-                        <textarea
-                          rows={2}
-                          value={content.primaryVerse?.text || ''}
-                          onChange={(e) => {
-                            saveContent({ 
-                              ...content, 
-                              primaryVerse: { ...content.primaryVerse, text: e.target.value } 
-                            });
-                          }}
-                          className="w-full px-3 py-1.5 rounded-lg border border-amber-300 text-xs italic bg-white"
-                        />
-                      </div>
-
-                      {/* 3 Core verses editor */}
-                      <div className="space-y-3 pt-2">
-                        <span className="text-xs font-bold text-[#1a6838] uppercase">Päise 3 Piibli kirjakohta</span>
-                        {content.coreVerses.map((verse, idx) => (
-                          <div key={idx} className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2">
-                            <div className="grid grid-cols-2 gap-2">
-                              <input
-                                type="text"
-                                value={verse.ref}
-                                onChange={(e) => {
-                                  const updated = [...content.coreVerses];
-                                  updated[idx].ref = e.target.value;
-                                  saveContent({ ...content, coreVerses: updated });
-                                }}
-                                className="px-3 py-1.5 rounded-lg border border-stone-300 text-xs font-bold"
-                              />
-                              <input
-                                type="text"
-                                placeholder="Teema (nt Jumala armastus)"
-                                value={verse.theme || ''}
-                                onChange={(e) => {
-                                  const updated = [...content.coreVerses];
-                                  updated[idx].theme = e.target.value;
-                                  saveContent({ ...content, coreVerses: updated });
-                                }}
-                                className="px-3 py-1.5 rounded-lg border border-stone-300 text-xs"
-                              />
-                            </div>
-                            <textarea
-                              rows={2}
-                              value={verse.text}
-                              onChange={(e) => {
-                                  const updated = [...content.coreVerses];
-                                  updated[idx].text = e.target.value;
-                                  saveContent({ ...content, coreVerses: updated });
-                              }}
-                              className="w-full px-3 py-1.5 rounded-lg border border-stone-300 text-xs italic"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* TAB: CENTRAL QUESTIONS (3 KESKSET KÜSIMUST) */}
-                  {adminTab === 'central' && (
-                    <div className="space-y-6">
-                      <div className="border-b border-stone-200 pb-3">
-                        <h4 className="font-bold text-base text-[#144225]">3 Keskset küsimust maailma-inimestele</h4>
-                        <p className="text-xs text-stone-500">Nõidade/selgeltnägijate vägi, new age uusvaimsus ja jooga tegelik tähendus</p>
-                      </div>
-
-                      {content.centralQuestions.map((q, qIndex) => (
-                        <div key={q.id} className="p-5 rounded-2xl border-2 border-stone-200 bg-[#fcfdfc] space-y-4 shadow-2xs">
-                          <div className="flex items-center gap-2">
-                            <span className="w-6 h-6 rounded-full bg-red-600 text-white flex items-center justify-center text-xs font-black">
-                              ?
-                            </span>
-                            <h5 className="font-bold text-sm text-[#144225]">Keskne küsimus #{q.number}</h5>
-                          </div>
-
-                          <div>
-                            <label className="block text-xs font-bold text-stone-700 mb-1">Küsimuse pealkiri</label>
-                            <input
-                              type="text"
-                              value={q.question}
-                              onChange={(e) => {
-                                const updated = [...content.centralQuestions];
-                                updated[qIndex].question = e.target.value;
-                                saveContent({ ...content, centralQuestions: updated });
-                              }}
-                              className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none font-semibold"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-xs font-bold text-stone-700 mb-1">Autori algne tekst (1:1 täistekst lehel)</label>
-                            <textarea
-                              rows={8}
-                              value={q.fullText}
-                              onChange={(e) => {
-                                const updated = [...content.centralQuestions];
-                                updated[qIndex].fullText = e.target.value;
-                                saveContent({ ...content, centralQuestions: updated });
-                              }}
-                              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none font-serif leading-relaxed"
-                            />
-                          </div>
-
-                          <div className="space-y-2 pt-1">
-                            <span className="text-xs font-bold text-[#1a6838] uppercase">Kirjakohad ({q.bibleVerses?.length || 0})</span>
-                            {q.bibleVerses?.map((verse, vIdx) => (
-                              <div key={vIdx} className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-2.5 bg-stone-50 rounded-xl border border-stone-200">
-                                <input
-                                  type="text"
-                                  placeholder="Viide"
-                                  value={verse.ref}
-                                  onChange={(e) => {
-                                    const updated = [...content.centralQuestions];
-                                    if (updated[qIndex].bibleVerses) {
-                                      updated[qIndex].bibleVerses![vIdx].ref = e.target.value;
-                                      saveContent({ ...content, centralQuestions: updated });
-                                    }
-                                  }}
-                                  className="px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs font-bold"
-                                />
-                                <input
-                                  type="text"
-                                  placeholder="Salmi tekst"
-                                  value={verse.text}
-                                  onChange={(e) => {
-                                    const updated = [...content.centralQuestions];
-                                    if (updated[qIndex].bibleVerses) {
-                                      updated[qIndex].bibleVerses![vIdx].text = e.target.value;
-                                      saveContent({ ...content, centralQuestions: updated });
-                                    }
-                                  }}
-                                  className="sm:col-span-2 px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs italic"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* TAB 2: QUESTIONS */}
-                  {adminTab === 'questions' && (
-                    <div className="space-y-6">
-                      <div className="border-b border-stone-200 pb-3">
-                        <h4 className="font-bold text-base text-[#144225]">Hoiatavad teemad ja vastused</h4>
-                        <p className="text-xs text-stone-500">Hoia oma kodu puhas!, Palju jumalaid?, Hea inimene?</p>
-                      </div>
-
-                      {content.tractQuestions.map((q, qIndex) => (
-                        <div key={q.id} className="p-5 rounded-2xl border border-stone-200 bg-[#fcfdfc] space-y-4 shadow-2xs">
-                          <div className="flex items-center gap-2">
-                            <span className="w-6 h-6 rounded-full bg-red-600 text-white flex items-center justify-center text-xs font-black">
-                              ?
-                            </span>
-                            <h5 className="font-bold text-sm text-[#144225]">Teema {q.number}</h5>
-                          </div>
-
-                          <div>
-                            <label className="block text-xs font-bold text-stone-700 mb-1">Teema pealkiri</label>
-                            <input
-                              type="text"
-                              value={q.question}
-                              onChange={(e) => {
-                                const updated = [...content.tractQuestions];
-                                updated[qIndex].question = e.target.value;
-                                saveContent({ ...content, tractQuestions: updated });
-                              }}
-                              className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none font-semibold"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-xs font-bold text-stone-700 mb-1">Autori algne tekst (1:1 täistekst lehel)</label>
-                            <textarea
-                              rows={8}
-                              value={q.fullText}
-                              onChange={(e) => {
-                                const updated = [...content.tractQuestions];
-                                updated[qIndex].fullText = e.target.value;
-                                saveContent({ ...content, tractQuestions: updated });
-                              }}
-                              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none font-serif leading-relaxed"
-                            />
-                          </div>
-
-                          <div className="space-y-2 pt-1">
-                            <span className="text-xs font-bold text-[#1a6838] uppercase">Kirjakohad ({q.bibleVerses?.length || 0})</span>
-                            {q.bibleVerses?.map((verse, vIdx) => (
-                              <div key={vIdx} className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-2.5 bg-stone-50 rounded-xl border border-stone-200">
-                                <input
-                                  type="text"
-                                  placeholder="Viide (nt Johannese 14:6)"
-                                  value={verse.ref}
-                                  onChange={(e) => {
-                                    const updated = [...content.tractQuestions];
-                                    if (updated[qIndex].bibleVerses) {
-                                      updated[qIndex].bibleVerses![vIdx].ref = e.target.value;
-                                      saveContent({ ...content, tractQuestions: updated });
-                                    }
-                                  }}
-                                  className="px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs font-bold"
-                                />
-                                <input
-                                  type="text"
-                                  placeholder="Salmi tekst"
-                                  value={verse.text}
-                                  onChange={(e) => {
-                                    const updated = [...content.tractQuestions];
-                                    if (updated[qIndex].bibleVerses) {
-                                      updated[qIndex].bibleVerses![vIdx].text = e.target.value;
-                                      saveContent({ ...content, tractQuestions: updated });
-                                    }
-                                  }}
-                                  className="sm:col-span-2 px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs italic"
-                                />
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* TAB 3: CLEANLINESS */}
-                  {adminTab === 'cleanliness' && (
-                    <div className="space-y-5">
-                      <div className="border-b border-stone-200 pb-3">
-                        <h4 className="font-bold text-base text-[#144225]">«Hoia oma kodu puhas!» sektsioon</h4>
-                        <p className="text-xs text-stone-500">Vaimuliku puhtuse hoiatus ja vabanemise 3 sammu</p>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-bold text-stone-700 mb-1">Alampealkiri</label>
-                          <input
-                            type="text"
-                            value={content.cleanlinessSubtitle}
-                            onChange={(e) => saveContent({ ...content, cleanlinessSubtitle: e.target.value })}
-                            className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-bold text-stone-700 mb-1">Põhipealkiri</label>
-                          <input
-                            type="text"
-                            value={content.cleanlinessTitle}
-                            onChange={(e) => saveContent({ ...content, cleanlinessTitle: e.target.value })}
-                            className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm font-bold"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-stone-700 mb-1">Selgitav tekst / hoiatus</label>
-                        <textarea
-                          rows={3}
-                          value={content.cleanlinessDescription}
-                          onChange={(e) => saveContent({ ...content, cleanlinessDescription: e.target.value })}
-                          className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* TAB 4: TESTIMONIALS & YOUTUBE */}
-                  {adminTab === 'testimonials' && (
-                    <div className="space-y-5">
-                      <div className="flex items-center justify-between border-b border-stone-200 pb-3">
-                        <div>
-                          <h4 className="font-bold text-base text-[#144225]">Tunnistused ja YouTube videod</h4>
-                          <p className="text-xs text-stone-500">Lisa lugusid ja manusta YouTube videoid</p>
-                        </div>
-                        <button
-                          onClick={() => {
-                            const newTest: TestimonialItem = {
-                              id: `tunnistus-${Date.now()}`,
-                              title: 'Uus tunnistus',
-                              person: 'Isiklik lugu',
-                              type: 'vabanemine',
-                              summary: 'Lühike kokkuvõte loost...',
-                              fullStory: 'Täielik kirjeldus sellest, mida Jumal tegi...',
-                              youtubeId: ''
-                            };
-                            saveContent({ ...content, testimonials: [...content.testimonials, newTest] });
-                          }}
-                          className="px-3 py-1.5 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white text-xs font-bold flex items-center gap-1 shadow-2xs"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                          <span>Lisa tunnistus</span>
-                        </button>
-                      </div>
-
-                      <div className="space-y-4">
-                        {content.testimonials.map((test, tIdx) => (
-                          <div key={test.id} className="p-4 rounded-2xl border border-stone-200 bg-[#fcfdfc] space-y-3 relative shadow-2xs">
-                            <button
-                              onClick={() => {
-                                if (window.confirm(`Kustuta tunnistus "${test.title}"?`)) {
-                                  const updated = content.testimonials.filter((_, idx) => idx !== tIdx);
-                                  saveContent({ ...content, testimonials: updated });
-                                }
-                              }}
-                              className="absolute top-4 right-4 p-1.5 rounded-lg text-red-500 hover:bg-red-50"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pr-10">
-                              <div>
-                                <label className="block text-[11px] font-bold text-stone-600 mb-0.5">Pealkiri</label>
-                                <input
-                                  type="text"
-                                  value={test.title}
-                                  onChange={(e) => {
-                                    const updated = [...content.testimonials];
-                                    updated[tIdx].title = e.target.value;
-                                    saveContent({ ...content, testimonials: updated });
-                                  }}
-                                  className="w-full px-3 py-1.5 rounded-lg border border-stone-300 text-sm font-bold"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-[11px] font-bold text-stone-600 mb-0.5">YouTube Video ID (nt dQw4w9WgXcQ)</label>
-                                <input
-                                  type="text"
-                                  placeholder="Jäta tühjaks kui videot pole"
-                                  value={test.youtubeId || ''}
-                                  onChange={(e) => {
-                                    const updated = [...content.testimonials];
-                                    updated[tIdx].youtubeId = e.target.value.trim();
-                                    saveContent({ ...content, testimonials: updated });
-                                  }}
-                                  className="w-full px-3 py-1.5 rounded-lg border border-stone-300 text-xs font-mono"
-                                />
-                              </div>
-                            </div>
-
-                            <div>
-                              <label className="block text-[11px] font-bold text-stone-600 mb-0.5">Lühikokkuvõte</label>
-                              <textarea
-                                rows={2}
-                                value={test.summary}
-                                onChange={(e) => {
-                                  const updated = [...content.testimonials];
-                                  updated[tIdx].summary = e.target.value;
-                                  saveContent({ ...content, testimonials: updated });
-                                }}
-                                className="w-full px-3 py-1.5 rounded-lg border border-stone-300 text-xs"
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* TAB 5: PUBLISHER & BOOKS */}
-                  {adminTab === 'publisher' && (
-                    <div className="space-y-5">
-                      <div className="border-b border-stone-200 pb-3">
-                        <h4 className="font-bold text-base text-[#144225]">Kirjastuse sünnilugu ja raamatud</h4>
-                        <p className="text-xs text-stone-500">Muuda tutvustust ja raamatute hindu ning kirjeldusi</p>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-stone-700 mb-1">Sünniloo pealkiri</label>
-                        <input
-                          type="text"
-                          value={content.publisherStoryTitle}
-                          onChange={(e) => saveContent({ ...content, publisherStoryTitle: e.target.value })}
-                          className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm font-bold"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-stone-700 mb-1">Sünniloo kirjeldus</label>
-                        <textarea
-                          rows={3}
-                          value={content.publisherStoryText}
-                          onChange={(e) => saveContent({ ...content, publisherStoryText: e.target.value })}
-                          className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm"
-                        />
-                      </div>
-
-                      <div className="space-y-4 pt-2">
-                        <span className="text-xs font-bold text-[#1a6838] uppercase">Raamatute nimekiri ({content.books.length})</span>
-                        {content.books.map((book, bIdx) => (
-                          <div key={book.id} className="p-4 rounded-2xl border border-stone-200 bg-[#fcfdfc] space-y-3">
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                              <div className="sm:col-span-2">
-                                <label className="block text-[11px] font-bold text-stone-600 mb-0.5">Pealkiri</label>
-                                <input
-                                  type="text"
-                                  value={book.title}
-                                  onChange={(e) => {
-                                    const updated = [...content.books];
-                                    updated[bIdx].title = e.target.value;
-                                    saveContent({ ...content, books: updated });
-                                  }}
-                                  className="w-full px-3 py-1.5 rounded-lg border border-stone-300 text-sm font-bold"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-[11px] font-bold text-stone-600 mb-0.5">Kategooria</label>
-                                <input
-                                  type="text"
-                                  value={book.category}
-                                  onChange={(e) => {
-                                    const updated = [...content.books];
-                                    updated[bIdx].category = e.target.value;
-                                    saveContent({ ...content, books: updated });
-                                  }}
-                                  className="w-full px-3 py-1.5 rounded-lg border border-stone-300 text-sm font-bold"
-                                />
-                              </div>
-                            </div>
-
-                            <div>
-                              <label className="block text-[11px] font-bold text-stone-600 mb-0.5">Kirjeldus</label>
-                              <textarea
-                                rows={2}
-                                value={book.description}
-                                onChange={(e) => {
-                                  const updated = [...content.books];
-                                  updated[bIdx].description = e.target.value;
-                                  saveContent({ ...content, books: updated });
-                                }}
-                                className="w-full px-3 py-1.5 rounded-lg border border-stone-300 text-xs"
-                              />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* TAB 6: SUPPORT */}
-                  {adminTab === 'support' && (
-                    <div className="space-y-5">
-                      <div className="border-b border-stone-200 pb-3">
-                        <h4 className="font-bold text-base text-[#144225]">Toetuse ja pangakonto andmed</h4>
-                        <p className="text-xs text-stone-500">Muuda pangakonto numbrit, saaja nime ja toetusinfot</p>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-bold text-stone-700 mb-1">Saaja Nimi</label>
-                          <input
-                            type="text"
-                            value={content.support.recipientName}
-                            onChange={(e) => saveContent({ ...content, support: { ...content.support, recipientName: e.target.value } })}
-                            className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm font-bold"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-bold text-stone-700 mb-1">IBAN Kontonumber</label>
-                          <input
-                            type="text"
-                            value={content.support.iban}
-                            onChange={(e) => saveContent({ ...content, support: { ...content.support, iban: e.target.value } })}
-                            className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm font-mono font-bold text-[#1a6838]"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-xs font-bold text-stone-700 mb-1">Pank</label>
-                          <input
-                            type="text"
-                            value={content.support.bankName}
-                            onChange={(e) => saveContent({ ...content, support: { ...content.support, bankName: e.target.value } })}
-                            className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-xs font-bold text-stone-700 mb-1">Selgitus</label>
-                          <input
-                            type="text"
-                            value={content.support.explanation}
-                            onChange={(e) => saveContent({ ...content, support: { ...content.support, explanation: e.target.value } })}
-                            className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-stone-700 mb-1">Toetuse kirjeldav tekst</label>
-                        <textarea
-                          rows={3}
-                          value={content.support.description}
-                          onChange={(e) => saveContent({ ...content, support: { ...content.support, description: e.target.value } })}
-                          className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* TAB 7: PRAYERS */}
-                  {adminTab === 'prayers' && (
-                    <div className="space-y-6">
-                      <div className="border-b border-stone-200 pb-3">
-                        <h4 className="font-bold text-base text-[#144225]">Päästepalve ja Meie Isa palve</h4>
-                        <p className="text-xs text-stone-500">Muuda palvete tekste ja sissejuhatusi</p>
-                      </div>
-
-                      <div className="space-y-4 p-4 bg-stone-50 rounded-2xl border border-stone-200">
-                        <h5 className="font-bold text-sm text-[#144225] flex items-center gap-1.5">
-                          <Flame className="w-4 h-4 text-[#1a6838]" />
-                          <span>Päästepalve</span>
-                        </h5>
-                        <textarea
-                          rows={6}
-                          value={content.salvationPrayerText}
-                          onChange={(e) => saveContent({ ...content, salvationPrayerText: e.target.value })}
-                          className="w-full p-3 rounded-xl border border-stone-300 text-sm font-serif"
-                        />
-                      </div>
-
-                      <div className="space-y-4 p-4 bg-stone-50 rounded-2xl border border-stone-200">
-                        <h5 className="font-bold text-sm text-[#144225] flex items-center gap-1.5">
-                          <BookOpen className="w-4 h-4 text-[#1a6838]" />
-                          <span>Meie Isa palve</span>
-                        </h5>
-                        <textarea
-                          rows={8}
-                          value={content.lordPrayer.text}
-                          onChange={(e) => saveContent({ ...content, lordPrayer: { ...content.lordPrayer, text: e.target.value } })}
-                          className="w-full p-3 rounded-xl border border-stone-300 text-sm font-serif leading-relaxed"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* TAB 8: DOCKER & PORTAINER */}
-                  {adminTab === 'docker' && (
-                    <div className="space-y-6">
-                      <div className="border-b border-stone-200 pb-3">
-                        <div className="flex items-center gap-2">
-                          <Server className="w-5 h-5 text-emerald-700" />
-                          <h4 className="font-bold text-base text-[#144225]">Docker & Portainer Paigaldusjuhend</h4>
-                        </div>
-                        <p className="text-xs text-stone-500">Portainer Stack ja Nginx Reverse Proxy konfiguratsioon pordile 3002</p>
-                      </div>
-
-                      {/* Docker Compose File */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-[#1a6838] uppercase font-mono flex items-center gap-1.5">
-                            <FileCode className="w-3.5 h-3.5" />
-                            <span>docker-compose.yml (Port 3002)</span>
-                          </span>
-                          <button
-                            onClick={() => copyToClipboard(`version: '3.8'
-
-services:
-  saaguvalgus-app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: saaguvalgus-web:latest
-    container_name: saaguvalgus_web
-    restart: unless-stopped
-    ports:
-      - "3002:80"
-    environment:
-      - NODE_ENV=production`, 'compose')}
-                            className="px-2.5 py-1 rounded-lg bg-[#f4f8f5] hover:bg-[#e8f1eb] text-xs font-semibold text-[#1a6838] border border-[#8ab897]/40 flex items-center gap-1"
-                          >
-                            {copiedDockerCmd === 'compose' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                            <span>{copiedDockerCmd === 'compose' ? 'Kopeeritud!' : 'Kopeeri'}</span>
-                          </button>
-                        </div>
-                        <pre className="p-4 rounded-xl bg-stone-900 text-stone-100 text-xs font-mono overflow-x-auto leading-relaxed border border-stone-800">
-{`version: '3.8'
-
-services:
-  saaguvalgus-app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: saaguvalgus-web:latest
-    container_name: saaguvalgus_web
-    restart: unless-stopped
-    ports:
-      - "3002:80"
-    environment:
-      - NODE_ENV=production`}
-                        </pre>
-                      </div>
-
-                      {/* Nginx Reverse Proxy helper */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold text-[#1a6838] uppercase font-mono flex items-center gap-1.5">
-                            <Server className="w-3.5 h-3.5" />
-                            <span>Nginx Reverse Proxy (/saaguvalgus/ alamkaust)</span>
-                          </span>
-                          <button
-                            onClick={() => copyToClipboard(`location /saaguvalgus/ {
-    proxy_pass http://127.0.0.1:3002/;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-}`, 'nginx-proxy')}
-                            className="px-2.5 py-1 rounded-lg bg-[#f4f8f5] hover:bg-[#e8f1eb] text-xs font-semibold text-[#1a6838] border border-[#8ab897]/40 flex items-center gap-1"
-                          >
-                            {copiedDockerCmd === 'nginx-proxy' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                            <span>{copiedDockerCmd === 'nginx-proxy' ? 'Kopeeritud!' : 'Kopeeri'}</span>
-                          </button>
-                        </div>
-                        <pre className="p-4 rounded-xl bg-stone-900 text-stone-100 text-xs font-mono overflow-x-auto leading-relaxed border border-stone-800">
-{`location /saaguvalgus/ {
-    proxy_pass http://127.0.0.1:3002/;
-    proxy_set_header Host $host;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-}`}
-                        </pre>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* TAB 9: BACKUP & JSON */}
-                  {adminTab === 'backup' && (
-                    <div className="space-y-6">
-                      <div className="border-b border-stone-200 pb-3">
-                        <h4 className="font-bold text-base text-[#144225]">Andmete Varundus ja Taastamine</h4>
-                        <p className="text-xs text-stone-500">Ekspordi kogu lehe sisu JSON failina või taasta varem salvestatud failist</p>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="p-5 bg-[#fcfdfc] border border-stone-200 rounded-2xl space-y-3">
-                          <div className="w-10 h-10 rounded-xl bg-[#1a6838]/10 text-[#1a6838] flex items-center justify-center">
-                            <Download className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <h5 className="font-bold text-sm text-[#144225]">Laadi alla JSON varukoopia</h5>
-                            <p className="text-xs text-stone-500 mt-0.5">Salvesta kõik tekstid oma arvutisse failina.</p>
-                          </div>
-                          <button
-                            onClick={handleExportJSON}
-                            className="w-full py-2.5 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-2xs"
-                          >
-                            <Download className="w-4 h-4" />
-                            <span>Laadi alla (JSON)</span>
-                          </button>
-                        </div>
-
-                        <div className="p-5 bg-[#fcfdfc] border border-stone-200 rounded-2xl space-y-3">
-                          <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-700 flex items-center justify-center">
-                            <Upload className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <h5 className="font-bold text-sm text-[#144225]">Impordi JSON fail</h5>
-                            <p className="text-xs text-stone-500 mt-0.5">Laadi üles varem salvestatud tekstide fail.</p>
-                          </div>
-                          <label className="w-full py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer border border-stone-300">
-                            <Upload className="w-4 h-4" />
-                            <span>Vali JSON fail</span>
-                            <input
-                              type="file"
-                              accept=".json,application/json"
-                              onChange={handleImportJSON}
-                              className="hidden"
-                            />
-                          </label>
-                        </div>
-                      </div>
-
-                      <div className="p-4 bg-red-50 rounded-2xl border border-red-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                        <div>
-                          <span className="font-bold text-xs text-red-800 block">Taasta algsed trükise tekstid</span>
-                          <span className="text-[11px] text-red-700">Tühjendab kohalikud muudatused ja taastab esialgse sisu.</span>
-                        </div>
-                        <button
-                          onClick={handleResetToDefault}
-                          className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-2xs shrink-0"
-                        >
-                          <RotateCcw className="w-3.5 h-3.5" />
-                          <span>Taasta algseaded</span>
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                </div>
-              </div>
-            )}
-
-            {/* Modal Footer */}
-            <div className="px-6 py-3.5 bg-stone-100 border-t border-stone-200 flex items-center justify-between text-xs">
-              <div className="text-stone-500 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
-                <span>Kirjastus Saagu Valgus CMS</span>
-              </div>
-              <button
-                onClick={() => setIsAdminOpen(false)}
-                className="px-4 py-2 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white font-bold text-xs transition-colors shadow-2xs"
-              >
-                Sulge paneel
-              </button>
-            </div>
-
           </div>
         </div>
       )}

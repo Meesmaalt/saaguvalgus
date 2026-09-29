@@ -27,6 +27,33 @@ export interface BookItem {
   description: string;
   highlights: string[];
   isFeatured?: boolean;
+  isPreOrder?: boolean;
+  preOrderNote?: string;
+  releaseDate?: string;
+}
+
+export interface OrderItem {
+  id: string;
+  type: 'order' | 'preorder';
+  bookId: string;
+  bookTitle: string;
+  quantity: number;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  notes?: string;
+  status: 'uus' | 'kinnitatud' | 'postitatud' | 'täidetud' | 'tühistatud';
+  createdAt: string;
+}
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  message: string;
+  createdAt: string;
+  read?: boolean;
 }
 
 export interface TestimonialItem {
