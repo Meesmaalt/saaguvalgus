@@ -1717,7 +1717,6 @@ export default function App() {
         isOpen={isPublicationsOpen}
         onClose={() => setIsPublicationsOpen(false)}
         publications={publications}
-        onUploadPublication={handleUploadPublication}
       />
 
     </div>
