@@ -36,7 +36,7 @@ import {
 import { INITIAL_SITE_CONTENT } from './data';
 import { SiteContent, QuestionItem, BookItem, BibleVerse, TestimonialItem } from './types';
 
-const STORAGE_KEY = 'saaguvalgus_site_content_v2';
+const STORAGE_KEY = 'saaguvalgus_site_content_v3';
 
 // Subtle Cross SVG Motif (Tagasihoidlik läbiv rist taustal)
 const SubtleCrossMotif: React.FC<{ className?: string; size?: number }> = ({ className = '', size = 120 }) => (
@@ -144,6 +144,28 @@ const renderFormattedText = (text: string) => {
   );
 };
 
+// Helper to render author's exact 1:1 text preserving paragraphs and Bible citations
+const renderAuthorParagraphs = (fullText: string) => {
+  if (!fullText) return null;
+  const paragraphs = fullText.split(/\n\s*\n/);
+  return (
+    <div className="space-y-4 font-serif text-base sm:text-lg leading-relaxed text-[#1e3427]">
+      {paragraphs.map((p, idx) => {
+        const trimmed = p.trim();
+        const isBibleQuote = trimmed.startsWith('“') || trimmed.startsWith('«') || trimmed.includes('Piibel') || trimmed.startsWith('Jeesus ütles') || trimmed.startsWith('Ma kutsun täna');
+        return (
+          <p 
+            key={idx} 
+            className={isBibleQuote ? 'p-4 sm:p-5 rounded-2xl bg-amber-500/10 border-l-4 border-amber-600 text-[#144225] font-semibold italic shadow-2xs' : ''}
+          >
+            {renderFormattedText(trimmed)}
+          </p>
+        );
+      })}
+    </div>
+  );
+};
+
 export default function App() {
   // Content State with LocalStorage sync
   const [content, setContent] = useState<SiteContent>(() => {
@@ -170,7 +192,7 @@ export default function App() {
   });
 
   const [activeCentralQuestion, setActiveCentralQuestion] = useState<string>('noidade-selgeltnagijate-vagi');
-  const [activeTractQuestion, setActiveTractQuestion] = useState<string>('igauele-oma-jumal');
+  const [activeTractQuestion, setActiveTractQuestion] = useState<string>('hoia-kodu-puhas');
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedPrayer, setCopiedPrayer] = useState(false);
   const [copiedLordPrayer, setCopiedLordPrayer] = useState(false);
@@ -353,16 +375,16 @@ export default function App() {
 
           {/* Nav Links */}
           <nav className="hidden lg:flex items-center gap-4 text-xs sm:text-sm font-semibold text-[#2c4c3b]">
-            <button onClick={() => scrollTo('kesksed-kusimused')} className="hover:text-[#1a6838] transition-colors flex items-center gap-1.5 font-bold text-[#144225]">
+            <button onClick={() => scrollTo('kusimused')} className="hover:text-[#1a6838] transition-colors flex items-center gap-1.5 font-bold text-[#144225]">
               <span className="w-5 h-5 rounded-full bg-red-600 text-white flex items-center justify-center text-[11px] font-black shrink-0">?</span>
-              <span>3 Keskset Küsimust</span>
+              <span>3 Põhiküsimust</span>
             </button>
             <button onClick={() => scrollTo('hoia-kodu-puhas-sec')} className="hover:text-[#1a6838] transition-colors flex items-center gap-1">
               <ShieldAlert className="w-3.5 h-3.5 text-[#1a6838]" />
               <span>Puhas kodu</span>
             </button>
-            <button onClick={() => scrollTo('trukise-teemad')} className="hover:text-[#1a6838] transition-colors">
-              Trükise teemad
+            <button onClick={() => scrollTo('hoiatavad-teemad')} className="hover:text-[#1a6838] transition-colors">
+              Hoiatavad teemad
             </button>
             <button onClick={() => scrollTo('tunnistused')} className="hover:text-[#1a6838] transition-colors flex items-center gap-1">
               <Video className="w-3.5 h-3.5 text-[#1a6838]" />
@@ -396,259 +418,217 @@ export default function App() {
         </div>
       </header>
 
-      {/* 2. Hero Section */}
-      <section className="relative pt-10 pb-14 sm:pt-14 sm:pb-20 bg-gradient-to-b from-[#f4f8f5] via-white to-white border-b border-[#8ab897]/20 overflow-hidden z-10">
+      {/* 2. Hero Section - Visuaalselt ja füüsiliselt kesksel kohal 3 põhiküsimust */}
+      <section className="relative pt-10 pb-16 sm:pt-14 sm:pb-24 bg-gradient-to-b from-[#f4f8f5] via-white to-white border-b border-[#8ab897]/20 overflow-hidden z-10">
         <div className="absolute inset-0 pointer-events-none cross-pattern opacity-40" />
 
         {/* Elegant Centered Background Cross */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-4">
-          <SubtleCrossMotif size={360} />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-4">
+          <SubtleCrossMotif size={400} />
         </div>
 
-        <div className="relative max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-6">
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 space-y-8">
           
-          {/* Top Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1a6838]/10 border border-[#1a6838]/20 text-[#1a6838] text-xs sm:text-sm font-semibold">
-            <Sparkles className="w-4 h-4 text-[#1a6838]" />
-            <span>{content.heroBadge}</span>
-          </div>
-
-          <h1 className="text-3xl sm:text-5xl font-extrabold font-display text-[#144225] tracking-tight leading-tight">
-            {content.heroTitle} <span className="text-[#1a6838]">{content.heroHighlight}</span>
-          </h1>
-
-          {/* PRIMARY BIBLE SCRIPTURE (PEAMINE KIRJAKOHT LEHEL: Jl 3:5) */}
-          <div className="max-w-3xl mx-auto p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-[#1a6838]/10 to-amber-500/10 border-2 border-[#1a6838]/30 shadow-xs relative">
-            <div className="flex items-center justify-center gap-2 mb-1.5">
-              <span className="text-[11px] font-black uppercase tracking-widest text-[#1a6838] bg-white/90 px-3 py-0.5 rounded-full border border-[#1a6838]/30 shadow-2xs">
-                Peamine Piibli tõotus • {content.primaryVerse?.ref || 'Joeli 3:5'}
-              </span>
+          <div className="text-center space-y-5 max-w-4xl mx-auto">
+            {/* Top Badge */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1a6838]/10 border border-[#1a6838]/20 text-[#1a6838] text-xs sm:text-sm font-semibold">
+              <Sparkles className="w-4 h-4 text-[#1a6838]" />
+              <span>{content.heroBadge}</span>
             </div>
-            <p className="text-lg sm:text-2xl font-serif font-bold text-[#144225] italic text-center leading-snug">
-              «{content.primaryVerse?.text || 'Ja sünnib, et igaüks, kes hüüab appi Issanda nime, pääseb.'}»
-            </p>
-          </div>
 
-          <p className="text-base sm:text-lg text-[#324f3e] font-serif leading-relaxed max-w-2xl mx-auto">
-            {content.heroDescription}
-          </p>
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold font-display text-[#144225] tracking-tight leading-tight">
+              {content.heroTitle} <span className="text-[#1a6838]">{content.heroHighlight}</span>
+            </h1>
 
-          {/* 3 Core Bible Verses Requested by User (Jh 3:16, 2Kn 17:17, Jl 3:5) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 pt-2 text-left">
-            {content.coreVerses.map((v, i) => (
-              <div key={i} className="bg-white p-4 rounded-2xl border border-[#8ab897]/30 shadow-2xs flex flex-col justify-between relative group hover:border-[#1a6838]/50 transition-colors">
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-[#1a6838] uppercase tracking-wider">{v.ref}</span>
-                    {v.theme && <span className="text-[10px] text-stone-500 font-semibold bg-stone-100 px-1.5 py-0.5 rounded">{v.theme}</span>}
-                  </div>
-                  <p className="text-xs sm:text-sm italic font-serif text-[#1c2e24]">«{v.text}»</p>
-                </div>
+            {/* PRIMARY BIBLE SCRIPTURE (PEAMINE KIRJAKOHT LEHEL: Jl 3:5) */}
+            <div className="max-w-3xl mx-auto p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-[#1a6838]/10 to-amber-500/10 border-2 border-[#1a6838]/30 shadow-xs relative">
+              <div className="flex items-center justify-center gap-2 mb-1.5">
+                <span className="text-[11px] font-black uppercase tracking-widest text-[#1a6838] bg-white/90 px-3 py-0.5 rounded-full border border-[#1a6838]/30 shadow-2xs">
+                  Peamine Piibli tõotus • {content.primaryVerse?.ref || 'Joeli 3:5'}
+                </span>
               </div>
-            ))}
-          </div>
-
-          {/* Jump to 3 Big Central Questions */}
-          <div className="pt-2">
-            <div className="text-xs font-bold uppercase tracking-wider text-[#1a6838] mb-3">
-              Kesksele kohale seatud 3 põhiküsimust:
+              <p className="text-lg sm:text-2xl font-serif font-bold text-[#144225] italic text-center leading-snug">
+                «{content.primaryVerse?.text || 'Ja sünnib, et igaüks, kes hüüab appi Issanda nime, pääseb.'}»
+              </p>
             </div>
-            <div className="flex flex-wrap items-center justify-center gap-3">
-              {content.centralQuestions.map((q) => (
-                <button
-                  key={q.id}
-                  onClick={() => {
-                    setActiveCentralQuestion(q.id);
-                    scrollTo('kesksed-kusimused');
-                  }}
-                  className="px-4 py-3 rounded-2xl bg-white hover:bg-[#f4f8f5] border-2 border-[#8ab897]/50 hover:border-[#1a6838] text-[#144225] shadow-2xs text-xs sm:text-sm font-bold flex items-center gap-2.5 transition-all group"
-                >
-                  <span className="w-6 h-6 rounded-full bg-red-600 group-hover:scale-105 text-white flex items-center justify-center text-xs font-black shrink-0 shadow-xs">
-                    ?
-                  </span>
-                  <span className="truncate max-w-[260px] sm:max-w-none text-left">
-                    {renderFormattedText(q.question)}
-                  </span>
-                </button>
+
+            {/* 3 Core Bible Verses (Jh 3:16, 2Kn 17:17, Jl 3:5) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 text-left">
+              {content.coreVerses.map((v, i) => (
+                <div key={i} className="bg-white p-4 rounded-2xl border border-[#8ab897]/30 shadow-2xs flex flex-col justify-between relative group hover:border-[#1a6838]/50 transition-colors">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold text-[#1a6838] uppercase tracking-wider">{v.ref}</span>
+                      {v.theme && <span className="text-[10px] text-stone-500 font-semibold bg-stone-100 px-1.5 py-0.5 rounded">{v.theme}</span>}
+                    </div>
+                    <p className="text-xs sm:text-sm italic font-serif text-[#1c2e24]">«{v.text}»</p>
+                  </div>
+                </div>
               ))}
             </div>
-          </div>
 
-        </div>
-      </section>
-
-      {/* 3. THE 3 BIG CENTRAL HOOK QUESTIONS (KESKSEL KOHAL, SUUREMALT) */}
-      <section id="kesksed-kusimused" className="py-14 sm:py-24 max-w-5xl mx-auto px-4 sm:px-6 space-y-10 z-10">
-        <div className="text-center space-y-3 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-600/10 border border-red-600/20 text-red-700 text-xs font-bold uppercase tracking-wider">
-            <span className="w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center text-[10px] font-black">?</span>
-            <span>Kesksele kohale seatud põhiküsimused</span>
-          </div>
-          <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold font-display text-[#144225] leading-tight">
-            3 Küsimust, Mis Avavad Silmad
-          </h2>
-          <p className="text-base sm:text-lg text-[#314c3e] font-serif leading-relaxed">
-            Kas oled peatunud ja mõelnud, mis on nende vaimsete teede ja praktikate tegelik olemus ning mida ütleb Jumala Sõna?
-          </p>
-        </div>
-
-        {/* Large Tab Selectors with High Contrast Question Mark */}
-        <div className="flex flex-col md:flex-row items-stretch gap-3 max-w-4xl mx-auto">
-          {content.centralQuestions.map((q) => {
-            const isSelected = activeCentralQuestion === q.id;
-            return (
-              <button
-                key={q.id}
-                onClick={() => setActiveCentralQuestion(q.id)}
-                className={`flex-1 p-4 rounded-2xl border-2 text-left transition-all flex items-start gap-3.5 ${
-                  isSelected 
-                    ? 'bg-[#1a6838] text-white border-[#1a6838] shadow-md scale-[1.02]' 
-                    : 'bg-white hover:bg-[#f4f8f5] border-[#8ab897]/30 text-[#144225] shadow-2xs'
-                }`}
-              >
-                {/* High Contrast Red Question Mark */}
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-base font-black shrink-0 shadow-sm ${
-                  isSelected ? 'bg-amber-400 text-stone-900' : 'bg-red-600 text-white'
-                }`}>
-                  ?
-                </div>
-                <div className="space-y-0.5">
-                  <span className={`text-[10px] uppercase font-bold tracking-wider block ${
-                    isSelected ? 'text-emerald-200' : 'text-[#1a6838]'
-                  }`}>
-                    Küsimus {q.number}
-                  </span>
-                  <div className={`text-xs sm:text-sm font-bold leading-snug ${
-                    isSelected ? 'text-white' : 'text-[#144225]'
-                  }`}>
-                    {renderFormattedText(q.question)}
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Active Central Question Content Card (SUURELT JA DETAILSELT) */}
-        {(() => {
-          const current = content.centralQuestions.find(q => q.id === activeCentralQuestion) || content.centralQuestions[0];
-          return (
-            <div className="bg-white rounded-3xl border-2 border-[#8ab897]/40 p-6 sm:p-10 shadow-lg space-y-8 relative overflow-hidden">
-              
-              {/* Subtle Watermark Cross */}
-              <div className="absolute -bottom-8 -right-8 pointer-events-none opacity-4">
-                <SubtleCrossMotif size={240} />
-              </div>
-
-              {/* Large Header */}
-              <div className="flex items-start gap-5">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-red-600 text-white font-black text-3xl sm:text-4xl flex items-center justify-center shrink-0 shadow-md">
-                  ?
-                </div>
-                <div className="space-y-1.5">
-                  <div className="inline-block px-2.5 py-0.5 rounded-md bg-[#1a6838]/10 text-[#1a6838] text-xs font-extrabold uppercase tracking-wider">
-                    Keskne Küsimus #{current.number}
-                  </div>
-                  <h3 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold font-display text-[#144225] leading-tight">
-                    {renderFormattedText(current.question)}
-                  </h3>
-                  <p className="text-sm sm:text-base text-[#385643] font-serif">
-                    {current.summary}
-                  </p>
-                </div>
-              </div>
-
-              {/* Flyer Quote Callout */}
-              <div className="bg-[#f4f8f5] border-l-4 border-red-600 p-5 rounded-r-2xl space-y-1 shadow-2xs">
-                <span className="text-[11px] font-extrabold uppercase tracking-wider text-red-700">
-                  Trükise tsitaat & retooriline küsimus:
-                </span>
-                <p className="font-serif italic text-sm sm:text-base text-[#1c2e24] leading-relaxed">
-                  {current.tractQuote}
-                </p>
-              </div>
-
-              {/* Biblical Answer */}
-              <div className="space-y-3">
-                <h4 className="font-bold text-sm sm:text-base uppercase tracking-wider text-[#1a6838] flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-[#1a6838]" />
-                  <span>Mida ütleb Piibel ja miks see on eluliselt tähtis?</span>
-                </h4>
-                <p className="text-sm sm:text-base text-[#243d2e] leading-relaxed font-serif bg-stone-50/60 p-5 rounded-2xl border border-stone-200">
-                  {current.biblicalAnswer}
-                </p>
-              </div>
-
-              {/* Bible Verses */}
-              <div className="space-y-2">
-                <h5 className="font-bold text-xs uppercase tracking-wider text-stone-600">
-                  Aluseks olevad Piibli kirjakohad:
-                </h5>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                  {current.bibleVerses.map((verse, idx) => (
-                    <div key={idx} className="p-4 rounded-2xl bg-[#fcfdfc] border border-[#8ab897]/30 shadow-2xs space-y-1">
-                      <span className="text-xs font-bold text-[#1a6838] block">
-                        📖 {verse.ref}
-                      </span>
-                      <p className="text-xs sm:text-sm font-serif italic text-[#314c3e]">
-                        «{verse.text}»
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Practical Steps for Freedom */}
-              {current.practicalSteps && (
-                <div className="p-5 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-3">
-                  <h5 className="font-bold text-[#1a6838] text-sm sm:text-base flex items-center gap-2">
-                    <ShieldAlert className="w-5 h-5 text-[#1a6838]" />
-                    <span>Praktilised sammud vaimuliku vabaduse ja rahu poole:</span>
-                  </h5>
-                  <ul className="space-y-2 text-xs sm:text-sm text-[#243d2e]">
-                    {current.practicalSteps.map((step, i) => (
-                      <li key={i} className="flex items-start gap-2.5">
-                        <span className="w-5 h-5 rounded-full bg-[#1a6838] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">✓</span>
-                        <span className="font-medium">{step}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Salvation Prayer CTA */}
-              <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-[#1a6838]/5 border border-[#1a6838]/20">
-                <div className="text-xs text-[#2c4938]">
-                  Soovid kogeda tõelist rahu ja vabaneda pimedusest?
-                </div>
-                <button
-                  onClick={() => scrollTo('paastepalve')}
-                  className="px-4 py-2.5 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white text-xs sm:text-sm font-bold flex items-center gap-2 transition-all shadow-xs shrink-0"
-                >
-                  <Flame className="w-4 h-4 text-emerald-300" />
-                  <span>Vaata päästepalvet</span>
-                </button>
-              </div>
-
+            {/* Author's authentic introductory text */}
+            <div className="p-5 sm:p-6 rounded-3xl bg-[#f4f8f5] border border-[#8ab897]/30 text-center max-w-3xl mx-auto shadow-2xs">
+              <p className="text-base sm:text-lg text-[#1e382b] font-serif leading-relaxed italic">
+                «{content.heroDescription}»
+              </p>
             </div>
-          );
-        })()}
+          </div>
 
+          {/* THE 3 BIG QUESTIONS - VISUAALSELT SUUREMAD, KESKSEL KOHAL LEHE ÜLAOSAS */}
+          <div id="kusimused" className="pt-4 space-y-6">
+            
+            {/* The 3 Question Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {content.centralQuestions.map((q) => {
+                const isSelected = activeCentralQuestion === q.id;
+                return (
+                  <button
+                    key={q.id}
+                    onClick={() => setActiveCentralQuestion(q.id)}
+                    className={`p-5 sm:p-6 rounded-3xl border-2 text-left transition-all flex flex-col justify-between gap-4 group cursor-pointer ${
+                      isSelected 
+                        ? 'bg-[#1a6838] text-white border-[#1a6838] shadow-xl scale-[1.02]' 
+                        : 'bg-white hover:bg-[#f4f8f5] border-[#8ab897]/40 text-[#144225] shadow-sm hover:border-[#1a6838]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      {/* High Contrast Red/Gold Question Mark */}
+                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl font-black shrink-0 shadow-md ${
+                        isSelected ? 'bg-amber-400 text-stone-900' : 'bg-red-600 text-white group-hover:scale-105 transition-transform'
+                      }`}>
+                        ?
+                      </div>
+                      <span className={`text-[11px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${
+                        isSelected ? 'bg-white/20 text-white' : 'bg-stone-100 text-[#1a6838]'
+                      }`}>
+                        Teema {q.number}
+                      </span>
+                    </div>
+
+                    <h3 className={`text-base sm:text-lg font-black leading-snug tracking-tight font-display ${
+                      isSelected ? 'text-white' : 'text-[#144225]'
+                    }`}>
+                      {renderFormattedText(q.question)}
+                    </h3>
+
+                    <div className={`text-xs font-bold flex items-center gap-1.5 pt-2 border-t ${
+                      isSelected ? 'border-white/20 text-emerald-200' : 'border-stone-100 text-[#1a6838]'
+                    }`}>
+                      <span>{isSelected ? 'Avatud tekst allpool' : 'Loe vastust'}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Active Question Content Display (1:1 Autori algne tekst) */}
+            {(() => {
+              const current = content.centralQuestions.find(q => q.id === activeCentralQuestion) || content.centralQuestions[0];
+              return (
+                <div className="bg-white rounded-3xl border-2 border-[#8ab897]/40 p-6 sm:p-10 shadow-xl space-y-6 relative overflow-hidden">
+                  
+                  {/* Subtle Watermark Cross */}
+                  <div className="absolute -bottom-8 -right-8 pointer-events-none opacity-4">
+                    <SubtleCrossMotif size={240} />
+                  </div>
+
+                  {/* Question Header */}
+                  <div className="flex items-start gap-4 sm:gap-5 pb-4 border-b border-[#8ab897]/20">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-red-600 text-white font-black text-2xl sm:text-4xl flex items-center justify-center shrink-0 shadow-md">
+                      ?
+                    </div>
+                    <div>
+                      <div className="inline-block px-2.5 py-0.5 rounded-md bg-[#1a6838]/10 text-[#1a6838] text-xs font-extrabold uppercase tracking-wider mb-1">
+                        Küsimus {current.number}
+                      </div>
+                      <h3 className="text-xl sm:text-2xl lg:text-3xl font-black font-display text-[#144225] leading-tight">
+                        {renderFormattedText(current.question)}
+                      </h3>
+                    </div>
+                  </div>
+
+                  {/* 1:1 Author's exact text */}
+                  <div className="pt-2">
+                    {renderAuthorParagraphs(current.fullText)}
+                  </div>
+
+                  {/* Bible Verses */}
+                  {current.bibleVerses && current.bibleVerses.length > 0 && (
+                    <div className="pt-2 space-y-2">
+                      <h5 className="font-bold text-xs uppercase tracking-wider text-stone-600">
+                        Kirjakohad:
+                      </h5>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {current.bibleVerses.map((verse, idx) => (
+                          <div key={idx} className="p-3.5 rounded-2xl bg-[#fcfdfc] border border-[#8ab897]/30 shadow-2xs space-y-1">
+                            <span className="text-xs font-bold text-[#1a6838] block">
+                              📖 {verse.ref}
+                            </span>
+                            <p className="text-xs sm:text-sm font-serif italic text-[#314c3e]">
+                              «{verse.text}»
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Practical steps */}
+                  {current.practicalSteps && (
+                    <div className="p-5 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-2.5">
+                      <h5 className="font-bold text-[#1a6838] text-sm sm:text-base flex items-center gap-2">
+                        <ShieldAlert className="w-5 h-5 text-[#1a6838]" />
+                        <span>Kuidas toimida ja leida vabanemine:</span>
+                      </h5>
+                      <ul className="space-y-2 text-xs sm:text-sm text-[#243d2e]">
+                        {current.practicalSteps.map((step, i) => (
+                          <li key={i} className="flex items-start gap-2.5">
+                            <span className="w-5 h-5 rounded-full bg-[#1a6838] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">✓</span>
+                            <span className="font-medium">{step}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Salvation Prayer CTA */}
+                  <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-[#1a6838]/5 border border-[#1a6838]/20">
+                    <div className="text-xs sm:text-sm font-serif text-[#2c4938]">
+                      Põrgu on reaalne koht. Kuid Sinu Looja soovib Sind sellest päästa!
+                    </div>
+                    <button
+                      onClick={() => scrollTo('paastepalve')}
+                      className="px-5 py-2.5 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white text-xs sm:text-sm font-bold flex items-center gap-2 transition-all shadow-xs shrink-0"
+                    >
+                      <Flame className="w-4 h-4 text-emerald-300" />
+                      <span>Loe päästepalvet</span>
+                    </button>
+                  </div>
+
+                </div>
+              );
+            })()}
+
+          </div>
+
+        </div>
       </section>
 
-      {/* 4. FOUNDATIONAL TRACT TOPICS (Igaühele «oma jumal»?, Hea inimene?, Hoia oma kodu puhas!) */}
-      <section id="trukise-teemad" className="py-14 sm:py-20 bg-[#f4f8f5] border-y border-[#8ab897]/20 z-10">
+      {/* 3. HOIATAVAD TEEMAD JA TÕDE (1:1 AUTORI ALGNE TEKST) */}
+      <section id="hoiatavad-teemad" className="py-14 sm:py-20 bg-[#f4f8f5] border-y border-[#8ab897]/20 z-10">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-10">
           
           <div className="text-center space-y-2">
             <span className="text-xs uppercase tracking-widest text-[#1a6838] font-bold">
-              Trükise alajaotused & küsimused
+              Hoiatused & vaimulik tõde
             </span>
             <h2 className="text-2xl sm:text-4xl font-bold font-display text-[#144225]">
-              Täiendavad Teemad ja Vastused
+              Olulised Teemad ja Vastused
             </h2>
             <p className="text-sm text-[#41624f]">
-              Tõde, moraal ja vaimulik puhtus – mida Piibel tegelikult õpetab?
+              Mida Piibel tegelikult õpetab Jumala, patu ja vaimuliku puhtuse kohta?
             </p>
           </div>
 
@@ -660,7 +640,7 @@ export default function App() {
                 <button
                   key={q.id}
                   onClick={() => setActiveTractQuestion(q.id)}
-                  className={`flex-1 px-4 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2.5 ${
+                  className={`flex-1 px-4 py-3 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2.5 cursor-pointer ${
                     isSelected 
                       ? 'bg-[#1a6838] text-white shadow-sm' 
                       : 'text-[#2b4c3b] hover:bg-[#f4f8f5]'
@@ -671,7 +651,9 @@ export default function App() {
                   }`}>
                     ?
                   </span>
-                  <span className="truncate text-left">{q.number}. {q.id === 'igauele-oma-jumal' ? '«Oma jumal»?' : q.id === 'hea-inimene-paasemine' ? 'Hea inimene?' : 'Hoia kodu puhas'}</span>
+                  <span className="truncate text-left">
+                    {q.id === 'hoia-kodu-puhas' ? 'Puhas kodu' : q.id === 'igauele-oma-jumal' ? '«Oma jumal»?' : 'Hea inimene?'}
+                  </span>
                 </button>
               );
             })}
@@ -688,54 +670,38 @@ export default function App() {
                   <SubtleCrossMotif size={180} />
                 </div>
 
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-4 pb-4 border-b border-stone-100">
                   <div className="w-12 h-12 rounded-2xl bg-red-600 text-white font-black text-2xl flex items-center justify-center shrink-0 shadow-md">
                     ?
                   </div>
                   <div>
-                    <div className="text-xs font-bold uppercase text-[#1a6838] tracking-wider mb-0.5">Teema nr {current.number}</div>
+                    <div className="text-xs font-bold uppercase text-[#1a6838] tracking-wider mb-0.5">Teema {current.number}</div>
                     <h3 className="text-xl sm:text-2xl font-bold font-display text-[#144225]">
                       {current.question}
                     </h3>
-                    <p className="text-sm text-[#4a6b57] mt-1">
-                      {current.summary}
-                    </p>
                   </div>
                 </div>
 
-                {/* Flyer Quote Callout */}
-                <div className="bg-[#f4f8f5] border-l-4 border-[#1a6838] p-5 rounded-r-2xl space-y-1">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#1a6838]">
-                    Trükise tsitaat:
-                  </span>
-                  <p className="font-serif italic text-sm sm:text-base text-[#1c2e24]">
-                    {current.tractQuote}
-                  </p>
-                </div>
-
-                {/* Biblical Answer */}
-                <div className="space-y-3">
-                  <h4 className="font-bold text-sm uppercase tracking-wider text-[#1a6838]">
-                    Mida ütleb Piibel ja miks see on oluline?
-                  </h4>
-                  <p className="text-sm sm:text-base text-[#243d2e] leading-relaxed font-serif">
-                    {current.biblicalAnswer}
-                  </p>
+                {/* 1:1 Author's exact text */}
+                <div className="pt-2">
+                  {renderAuthorParagraphs(current.fullText)}
                 </div>
 
                 {/* Bible Verses */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                  {current.bibleVerses.map((verse, idx) => (
-                    <div key={idx} className="p-4 rounded-2xl bg-[#fcfdfc] border border-[#8ab897]/20">
-                      <span className="text-xs font-bold text-[#1a6838] block mb-1">
-                        📖 {verse.ref}
-                      </span>
-                      <p className="text-xs sm:text-sm font-serif italic text-[#314c3e]">
-                        «{verse.text}»
-                      </p>
-                    </div>
-                  ))}
-                </div>
+                {current.bibleVerses && current.bibleVerses.length > 0 && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                    {current.bibleVerses.map((verse, idx) => (
+                      <div key={idx} className="p-4 rounded-2xl bg-[#fcfdfc] border border-[#8ab897]/20">
+                        <span className="text-xs font-bold text-[#1a6838] block mb-1">
+                          📖 {verse.ref}
+                        </span>
+                        <p className="text-xs sm:text-sm font-serif italic text-[#314c3e]">
+                          «{verse.text}»
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* Practical steps if available */}
                 {current.practicalSteps && (
@@ -1042,11 +1008,11 @@ export default function App() {
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-[#8ab897] uppercase tracking-wider">{book.category}</span>
-                    <span className="text-base font-extrabold text-[#1a6838] bg-[#1a6838]/10 px-3 py-1 rounded-full">{book.price} €</span>
+                    <span className="text-xs font-bold text-[#1a6838] bg-[#1a6838]/10 px-3 py-1 rounded-full">Saadaval</span>
                   </div>
 
                   <h3 className="text-2xl font-bold font-display text-[#144225]">«{book.title}»</h3>
-                  <p className="text-sm text-[#2d4937] leading-relaxed">{book.description}</p>
+                  <p className="text-sm text-[#2d4937] leading-relaxed font-serif">{book.description}</p>
                   
                   <div className="pt-2 space-y-1 text-xs text-[#3e5e4b]">
                     {book.highlights.map((h, i) => (
@@ -1059,16 +1025,16 @@ export default function App() {
                 </div>
 
                 <div className="pt-4 border-t border-stone-100 flex items-center justify-between">
-                  <span className="text-xs text-stone-500">{book.author}</span>
+                  <span className="text-xs text-stone-500 font-medium">{book.author}</span>
                   <button
                     onClick={() => {
                       setSelectedBookForOrder(book);
                       setOrderSubmitted(false);
                     }}
-                    className="px-4 py-2 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors"
+                    className="px-4 py-2 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
                   >
                     <ShoppingCart className="w-3.5 h-3.5" />
-                    <span>Telli raamat ({book.price} €)</span>
+                    <span>Esita tellimissoov</span>
                   </button>
                 </div>
               </div>
@@ -1385,15 +1351,14 @@ export default function App() {
                   }}
                   className="space-y-3.5 text-xs"
                 >
-                  <div className="p-3 bg-[#f4f8f5] rounded-xl border border-[#8ab897]/30 flex items-center justify-between">
+                  <div className="p-3.5 bg-[#f4f8f5] rounded-xl border border-[#8ab897]/30 flex items-center justify-between">
                     <div>
                       <span className="font-bold text-stone-900 text-sm block">«{selectedBookForOrder.title}»</span>
-                      <span className="text-stone-500">{selectedBookForOrder.author}</span>
+                      <span className="text-stone-500 text-xs">{selectedBookForOrder.author}</span>
                     </div>
-                    <div className="text-right">
-                      <span className="font-extrabold text-[#1a6838] text-base">{selectedBookForOrder.price * orderQuantity} €</span>
-                      <div className="text-[10px] text-stone-500">({selectedBookForOrder.price} € / tk)</div>
-                    </div>
+                    <span className="text-xs font-bold text-[#1a6838] bg-[#1a6838]/10 px-3 py-1 rounded-full">
+                      Tellimissoov
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-3">
@@ -1468,9 +1433,9 @@ export default function App() {
 
                   <button
                     type="submit"
-                    className="w-full py-3 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white font-bold text-sm shadow-xs transition-colors mt-2"
+                    className="w-full py-3 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white font-bold text-sm shadow-xs transition-colors mt-2 cursor-pointer"
                   >
-                    Kinnita tellimus ({selectedBookForOrder.price * orderQuantity} €)
+                    Saada tellimissoov
                   </button>
                 </form>
               )}
@@ -1856,50 +1821,22 @@ export default function App() {
                           </div>
 
                           <div>
-                            <label className="block text-xs font-bold text-stone-700 mb-1">Lühikokkuvõte</label>
+                            <label className="block text-xs font-bold text-stone-700 mb-1">Autori algne tekst (1:1 täistekst lehel)</label>
                             <textarea
-                              rows={2}
-                              value={q.summary}
+                              rows={8}
+                              value={q.fullText}
                               onChange={(e) => {
                                 const updated = [...content.centralQuestions];
-                                updated[qIndex].summary = e.target.value;
+                                updated[qIndex].fullText = e.target.value;
                                 saveContent({ ...content, centralQuestions: updated });
                               }}
-                              className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-xs font-bold text-stone-700 mb-1">Trükise tsitaat</label>
-                            <textarea
-                              rows={2}
-                              value={q.tractQuote}
-                              onChange={(e) => {
-                                const updated = [...content.centralQuestions];
-                                updated[qIndex].tractQuote = e.target.value;
-                                saveContent({ ...content, centralQuestions: updated });
-                              }}
-                              className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none italic"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-xs font-bold text-stone-700 mb-1">Piibli vastus ja selgitus</label>
-                            <textarea
-                              rows={3}
-                              value={q.biblicalAnswer}
-                              onChange={(e) => {
-                                const updated = [...content.centralQuestions];
-                                updated[qIndex].biblicalAnswer = e.target.value;
-                                saveContent({ ...content, centralQuestions: updated });
-                              }}
-                              className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none font-serif leading-relaxed"
                             />
                           </div>
 
                           <div className="space-y-2 pt-1">
-                            <span className="text-xs font-bold text-[#1a6838] uppercase">Kirjakohad ({q.bibleVerses.length})</span>
-                            {q.bibleVerses.map((verse, vIdx) => (
+                            <span className="text-xs font-bold text-[#1a6838] uppercase">Kirjakohad ({q.bibleVerses?.length || 0})</span>
+                            {q.bibleVerses?.map((verse, vIdx) => (
                               <div key={vIdx} className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-2.5 bg-stone-50 rounded-xl border border-stone-200">
                                 <input
                                   type="text"
@@ -1907,8 +1844,10 @@ export default function App() {
                                   value={verse.ref}
                                   onChange={(e) => {
                                     const updated = [...content.centralQuestions];
-                                    updated[qIndex].bibleVerses[vIdx].ref = e.target.value;
-                                    saveContent({ ...content, centralQuestions: updated });
+                                    if (updated[qIndex].bibleVerses) {
+                                      updated[qIndex].bibleVerses![vIdx].ref = e.target.value;
+                                      saveContent({ ...content, centralQuestions: updated });
+                                    }
                                   }}
                                   className="px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs font-bold"
                                 />
@@ -1918,8 +1857,10 @@ export default function App() {
                                   value={verse.text}
                                   onChange={(e) => {
                                     const updated = [...content.centralQuestions];
-                                    updated[qIndex].bibleVerses[vIdx].text = e.target.value;
-                                    saveContent({ ...content, centralQuestions: updated });
+                                    if (updated[qIndex].bibleVerses) {
+                                      updated[qIndex].bibleVerses![vIdx].text = e.target.value;
+                                      saveContent({ ...content, centralQuestions: updated });
+                                    }
                                   }}
                                   className="sm:col-span-2 px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs italic"
                                 />
@@ -1935,8 +1876,8 @@ export default function App() {
                   {adminTab === 'questions' && (
                     <div className="space-y-6">
                       <div className="border-b border-stone-200 pb-3">
-                        <h4 className="font-bold text-base text-[#144225]">Trükise lisateemade sisu ja vastused</h4>
-                        <p className="text-xs text-stone-500">Igaühele «oma jumal»?, Hea inimene?, Hoia oma kodu puhas!</p>
+                        <h4 className="font-bold text-base text-[#144225]">Hoiatavad teemad ja vastused</h4>
+                        <p className="text-xs text-stone-500">Hoia oma kodu puhas!, Palju jumalaid?, Hea inimene?</p>
                       </div>
 
                       {content.tractQuestions.map((q, qIndex) => (
@@ -1945,11 +1886,11 @@ export default function App() {
                             <span className="w-6 h-6 rounded-full bg-red-600 text-white flex items-center justify-center text-xs font-black">
                               ?
                             </span>
-                            <h5 className="font-bold text-sm text-[#144225]">Küsimus {q.number}</h5>
+                            <h5 className="font-bold text-sm text-[#144225]">Teema {q.number}</h5>
                           </div>
 
                           <div>
-                            <label className="block text-xs font-bold text-stone-700 mb-1">Küsimuse pealkiri</label>
+                            <label className="block text-xs font-bold text-stone-700 mb-1">Teema pealkiri</label>
                             <input
                               type="text"
                               value={q.question}
@@ -1963,36 +1904,22 @@ export default function App() {
                           </div>
 
                           <div>
-                            <label className="block text-xs font-bold text-stone-700 mb-1">Trükise tsitaat</label>
+                            <label className="block text-xs font-bold text-stone-700 mb-1">Autori algne tekst (1:1 täistekst lehel)</label>
                             <textarea
-                              rows={2}
-                              value={q.tractQuote}
+                              rows={8}
+                              value={q.fullText}
                               onChange={(e) => {
                                 const updated = [...content.tractQuestions];
-                                updated[qIndex].tractQuote = e.target.value;
+                                updated[qIndex].fullText = e.target.value;
                                 saveContent({ ...content, tractQuestions: updated });
                               }}
-                              className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none italic"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-xs font-bold text-stone-700 mb-1">Piibli vastus ja selgitus</label>
-                            <textarea
-                              rows={3}
-                              value={q.biblicalAnswer}
-                              onChange={(e) => {
-                                const updated = [...content.tractQuestions];
-                                updated[qIndex].biblicalAnswer = e.target.value;
-                                saveContent({ ...content, tractQuestions: updated });
-                              }}
-                              className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none font-serif leading-relaxed"
                             />
                           </div>
 
                           <div className="space-y-2 pt-1">
-                            <span className="text-xs font-bold text-[#1a6838] uppercase">Kirjakohad ({q.bibleVerses.length})</span>
-                            {q.bibleVerses.map((verse, vIdx) => (
+                            <span className="text-xs font-bold text-[#1a6838] uppercase">Kirjakohad ({q.bibleVerses?.length || 0})</span>
+                            {q.bibleVerses?.map((verse, vIdx) => (
                               <div key={vIdx} className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-2.5 bg-stone-50 rounded-xl border border-stone-200">
                                 <input
                                   type="text"
@@ -2000,8 +1927,10 @@ export default function App() {
                                   value={verse.ref}
                                   onChange={(e) => {
                                     const updated = [...content.tractQuestions];
-                                    updated[qIndex].bibleVerses[vIdx].ref = e.target.value;
-                                    saveContent({ ...content, tractQuestions: updated });
+                                    if (updated[qIndex].bibleVerses) {
+                                      updated[qIndex].bibleVerses![vIdx].ref = e.target.value;
+                                      saveContent({ ...content, tractQuestions: updated });
+                                    }
                                   }}
                                   className="px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs font-bold"
                                 />
@@ -2011,8 +1940,10 @@ export default function App() {
                                   value={verse.text}
                                   onChange={(e) => {
                                     const updated = [...content.tractQuestions];
-                                    updated[qIndex].bibleVerses[vIdx].text = e.target.value;
-                                    saveContent({ ...content, tractQuestions: updated });
+                                    if (updated[qIndex].bibleVerses) {
+                                      updated[qIndex].bibleVerses![vIdx].text = e.target.value;
+                                      saveContent({ ...content, tractQuestions: updated });
+                                    }
                                   }}
                                   className="sm:col-span-2 px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs italic"
                                 />
@@ -2204,13 +2135,13 @@ export default function App() {
                                 />
                               </div>
                               <div>
-                                <label className="block text-[11px] font-bold text-stone-600 mb-0.5">Hind (€)</label>
+                                <label className="block text-[11px] font-bold text-stone-600 mb-0.5">Kategooria</label>
                                 <input
-                                  type="number"
-                                  value={book.price}
+                                  type="text"
+                                  value={book.category}
                                   onChange={(e) => {
                                     const updated = [...content.books];
-                                    updated[bIdx].price = Number(e.target.value);
+                                    updated[bIdx].category = e.target.value;
                                     saveContent({ ...content, books: updated });
                                   }}
                                   className="w-full px-3 py-1.5 rounded-lg border border-stone-300 text-sm font-bold"

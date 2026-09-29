@@ -2,14 +2,14 @@ import { SiteContent } from './types';
 
 export const INITIAL_SITE_CONTENT: SiteContent = {
   brandName: 'Kirjastus Saagu Valgus',
-  brandTagline: 'Vaimuliku kirjanduse, elumuutvate tunnistuste ja evangeelsete trükiste kirjastamine Eestis.',
+  brandTagline: 'Vaimuliku kirjanduse, elumuutvate tunnistuste ja evangeelsete materjalide kirjastamine Eestis.',
   contactEmail: 'info@saaguvalgus.eu',
-  heroBadge: 'Saagu Valgus – Tõde, mis teeb vabaks',
+  heroBadge: 'Valgus või pimedus?',
   heroTitle: 'Valgus või',
   heroHighlight: 'pimedus?',
-  heroDescription: 'Elame maailmas, kus pakutakse sadu vaimseid teid ja «isiklikke tõdesid». Mis on tegelik tõde? Kuidas leida elav rahu, vabaneda hirmudest ning saada kindlus igavesest elust?',
+  heroDescription: 'Meie väike Eestimaa on haaratud nõidusest. Pigemini minnakse oma muredega abi otsima nõia käest kui elava Jumala käest. Kõikjal on esoteerika poed, new age ehk uus vaimsus kogub üha populaarsust ja jooga on jõudnud isegi lasteaedadesse.',
   
-  // PRIMARY BIBLE SCRIPTURE REQUESTED BY USER
+  // PRIMARY BIBLE SCRIPTURE REQUESTED BY AUTHOR
   primaryVerse: {
     ref: 'Joeli 3:5',
     text: 'Ja sünnib, et igaüks, kes hüüab appi Issanda nime, pääseb.',
@@ -17,7 +17,7 @@ export const INITIAL_SITE_CONTENT: SiteContent = {
     isPrimary: true
   },
 
-  // The 3 background Bible verses requested by user
+  // The 3 background Bible verses requested by author
   coreVerses: [
     {
       ref: 'Joeli 3:5',
@@ -36,27 +36,70 @@ export const INITIAL_SITE_CONTENT: SiteContent = {
     }
   ],
 
-  // THE 3 BIG CENTRAL HOOK QUESTIONS REQUESTED BY USER (SUUREMALT JA KESKSEL KOHAL)
+  // THE 3 BIG QUESTIONS (VISUAALSELT SUUREMAD, KESKSEL KOHAL LEHE ÜLAOSAS) - 1:1 AUTORI ALGNE TEKST
   centralQuestions: [
     {
       id: 'noidade-selgeltnagijate-vagi',
       number: 1,
-      question: 'Kas oled mõelnud, kust nõidade, selgeltnägijate ja tervendajate vägi tuleb?',
-      summary: 'Tänapäeval pöörduvad paljud hädas, haiguses või tulevikuhirmus selgeltnägijate, lausujate ja tervendajate poole, lootes leida abi «valgest maagiast» või «looduslikust energiast». Mis on selle väe tegelik allikas?',
-      tractQuote: '«Kas oled mõelnud, kust nõidade, selgeltnägijate ja tervendajate vägi tuleb? Vaimumaailmas pole erapooletut ega neutraalset vaheala – vägi, mis ei tule elavalt Jumalalt, pärineb pimeduse riigist, isegi kui see on maskeeritud tervendamiseks ja valguseks.»',
-      biblicalAnswer: 'Piibel räägib kompromissitult kahest vaimsest kuningriigist: Jumala valguse riigist ja saatana pimeduse riigist. Kolmandat, «erapooletut» või «süütut» vaimset jõudu ei eksisteeri. Piibel hoiatab, et saatan suudab moondada ennast valguse ingliks (2Kr 11:14). Deemonlikud jõud võivad pakkuda ajutist petlikku sümptomite leevenemist või infot tuleviku kohta, kuid selle hind on alati inimese hinge orjastamine, seletamatud hirmuhood, depressioon, unehäired ja eraldatus Loojast. Tõeline ja puhas tervenemine ning hingerahu pärineb ainult Jeesuselt Kristuselt, kes maksis ristil meie eest.',
+      question: 'Kas oled kunagi mõelnud, KELLELE KUULUB NÕIDADE, SELGELTNÄGIJATE JA TERVENDAJATE VÄGI?',
+      fullText: `Meie raamatupoodides on aukohal raamatud nõidusest kõiksugu astroloogilised abimehed on müüduim kaup. Nõiad on teretulnud ka meie telekanalites. Kõikjal on esoteerika poed.
+
+Kuid tegemist ei ole sugugi “süütu lapsemänguga” – usaldades end nõia hoolde ulatad tegelikult sõbrakäe hingevaenlasele ehk saatanale, kes on reaalsem kui lõviosa inimkonnast eales ette kujutada suudab.
+
+On keegi, kes vihkab nõidust kogu südamest – ja see on Jumal, kes on Sinu ja minu ning meie kõigi Looja.
+
+Valides nõiad ja ennustajad, asetad end paratamatult Jumala vaenlaseks. Nendelt saadud abi on aga ajutine ning tagajärjeks on needus – haigus, surm või vaesus. Lisaks Sulle enesele, kes nõidusega tegeled, paned suurde ohtu ka oma lapsed – neilegi laieneb needus Jumala Sõna kohaselt, koguni mitmele põlvkonnale.
+
+Põrgu on reaalne koht. Kuid Sinu Looja soovib Sind sellest päästa! Pöördu abi saamiseks Jeesuse Kristuse poole! Võta ühendust mõne kogudusega ja palu, et Sinu eest palvetatakse.
+
+“Väljaspool on koerad ja nõiad ja hoorajad ja mõrtsukad ja ebajumalateenijad ning kõik, kes valet armastavad ja teevad.” Ilm. 22:15, Piibel
+
+Veel kõneleb Piibel, et meie elus on vaid kaks võimalikku valitsevat olukorda – kas õnnistus või needus.
+Nii õnnistused kui needused tulenevad Jumala enese käest ja Tema loal ja on otseselt seotud meie valikutega.
+
+Ma kutsun täna tunnistajaiks teie vastu taeva ja maa: ma olen pannud su ette elu ja surma, õnnistuse ja needuse. Vali nüüd elu, et sina ja su sugu võiksite elada. 5. Ms 30:19, Piibel`,
       bibleVerses: [
+        {
+          ref: 'Ilmutuse 22:15',
+          text: 'Väljaspool on koerad ja nõiad ja hoorajad ja mõrtsukad ja ebajumalateenijad ning kõik, kes valet armastavad ja teevad.'
+        },
+        {
+          ref: '5. Moosese 30:19',
+          text: 'Ma kutsun täna tunnistajaiks teie vastu taeva ja maa: ma olen pannud su ette elu ja surma, õnnistuse ja needuse. Vali nüüd elu, et sina ja su sugu võiksite elada.'
+        },
         {
           ref: '2. Kuningate 17:17',
           text: 'Ja nad lasksid oma poegi ja tütreid tulest läbi käia; nad küsitlesid ennustajaid ja toimetasid nõidust; nad müüsid endid kurja tegema Issanda silmis, vihastuseks temale.'
-        },
+        }
+      ],
+      practicalSteps: [
+        'Katkesta koheselt igasugune kontakt nõidade, selgeltnägijate ja tervendajatega.',
+        'Pöördu abi saamiseks elava Jumala ja Jeesuse Kristuse poole.',
+        'Võta ühendust elava kristliku kogudusega ja palu, et Sinu eest palvetatakse.'
+      ],
+      category: 'hook'
+    },
+    {
+      id: 'jooga-tegelik-olemus',
+      number: 2,
+      question: 'Kas oled kunagi mõelnud, MILLEGA TEGELEB TEGELIKULT JOOGA ?',
+      fullText: `Kõikjal maailmas, ka Eestis, on kogumas üha enam populaarsust jooga. Enamik inimesi aga ei aimagi, et tegu pole üksnes venitusharjutustega, vaid hoopis vaimse praktikaga, mille käigus avame enesele teadmata vabatahtlikult "uksed" vaimse maailma pimeduse jõududele.
+
+Ei ole olemas neutraalset joogat. Sanskriti sõna yoga tähendab ühendust või ühinemist. Jooga algne eesmärk ei olnud keha venitus ega tervisevõimlemine, vaid inimese sisemine ühinemine n-ö jumaliku tegelikkusega, mida hinduismis nimetatakse brahmaniks.
+
+Kuigi lääne inimene arvab sageli, et jooga koosneb neutraalsetest venitustest, on suurem osa joogapoose pärit mütoloogilistest ja religioossetest kujunditest. Teisisõnu – ebajumalatest. Ja ebajumalate kummardamine on taas midagi, mida Jumal, Sinu Looja, oma Sõna kohaselt vihkab.
+
+Näiteks: Padmāsana, lootoseasend, on seotud jumaliku teadvuse avamisega. Lootos on jumalanna Lakshmi ja loomisjumal Brahma sümbol. Natarājāsana, tantsija asend, kujutab Šivat kosmilise tantsijana, kes loob ja hävitab kogu universumi. Vīrabhadrāsana, sõdalaseasend, meenutab Šiva vihast sündinud sõjajumalat Vīrabhadarat.
+
+Tasub teada, et isegi kui vahetult peale joogatundi ei kogeta midagi erilist, siis see ei tähenda, et ta meid vaimselt ei mõjuta. Tihti ilmnevad siiski negatiivsed tagajärjed ehk needused, olgu siis ärevuse, mõne haiguse vmt. näol.
+
+Kui oled joogaga tegelenud või praegu tegelemas – pöördu sellest ja palu Jeesuselt andeks.
+
+Põrgu on reaalne koht. Kuid Sinu Looja soovib Sind sellest päästa! Pöördu abi saamiseks Jeesuse Kristuse poole! Võta ühendust mõne kogudusega ja palu, et Sinu eest palvetatakse.`,
+      bibleVerses: [
         {
-          ref: '5. Moosese 18:10-12',
-          text: 'Ärgu leidugu sinu keskel kedagi... kes toimetab nõidust, märkide seletamist, lausumist ega tegele vaimudega... sest igaüks, kes seda teeb, on Issandale jäle.'
-        },
-        {
-          ref: '1. Korintlastele 10:20-21',
-          text: '...see, mida ohverdatakse, ohverdatakse kurjadele vaimudele, mitte Jumalale. Ma ei taha aga, et teie saaksite osalisteks kurjade vaimudega. Te ei või juua Issanda karikat ja kurjade vaimude karikat.'
+          ref: '1. Korintlastele 10:21',
+          text: 'Te ei või juua Issanda karikast ja kurjade vaimude karikast, te ei või osa saada Issanda lauast ja kurjade vaimude lauast.'
         },
         {
           ref: 'Joeli 3:5',
@@ -64,155 +107,149 @@ export const INITIAL_SITE_CONTENT: SiteContent = {
         }
       ],
       practicalSteps: [
-        'Katkesta koheselt igasugune kontakt nõidade, selgeltnägijate, posijate ja bioenergeetikutega.',
-        'Tunnista Jumalale oma teadmatus või eksimus ning palu Jeesuse nimel patud andeks.',
-        'Palu Jeesuse vere kaitset oma ihule, mõtetele ja kodule ning hüüa appi Tema vabastavat nime.'
+        'Mõista, et jooga asanad ja filosoofia on lahutamatult seotud idamaise religiooniga.',
+        'Kui oled joogaga tegelenud või tegelemas – pöördu sellest ja palu Jeesuselt andeks.',
+        'Otsi tõelist rahu Jeesuse Kristuse juurest ja palu koguduses eestpalvet.'
       ],
       category: 'hook'
     },
     {
       id: 'new-age-uusvaimsus',
-      number: 2,
-      question: 'Millist vaimsust new age ehk uusvaimsus eneses tegelikult kannab?',
-      summary: 'Uusvaimsus meelitab positiivse energia, kõrgema sageduse, inglikaartide ja enesearengu sildi all. Kuid mis vaimne reaalsus peitub selle fassaadi taga?',
-      tractQuote: '«Millist vaimsust new age ehk uusvaimsus eneses tegelikult kannab? See on iidne maduvale: "Te saate nagu jumalad". Panteism ja enesejumaldamine röövivad inimeselt tõelise Päästja ja viivad hinge hukatusse.»',
-      biblicalAnswer: 'New age (uusvaimsus) esitleb ennast salliva, universaalse ja armastava maailmavaatena. Räägitakse «universumi energiast», «oma tõe loomisest» ja «inimese sisemisest jumalikkusest». Kuid Piibel paljastab, et see on seesama vale, mida madu rääkis Eedeni aias: «Te saate nagu jumalad» (1Ms 3:5). Kui inimene usub, et ta on ise jumal või et igaüks valib oma tõe, kaob arusaam patust ja vajadus Lunastaja järele. Ka reinkarnatsiooni ja karma õpetused on petlikud: Piibel kinnitab selgelt, et inimesele on antud üks kord elada ja surra ning pärast seda seisab ta Jumala kohtu ees (Hb 9:27). Ainult Jeesus Kristus on elav tee, tõde ja elu.',
+      number: 3,
+      question: 'Kas oled kunagi mõelnud, MILLIST VAIMSUST KANNAB ENESES TEGELIKULT NEW AGE EHK UUS VAIMSUS?',
+      fullText: `Kui märkad kas sotsiaalmeedias või mujal postitusi, milles kõneldakse pealtnäha ilusat juttu ja kus sind õpetatakse iseenda kohta ütlema, et "olen valgus", "olen armastus", "loon ise oma reaalsuse" või et "olen iseenese jumal", siis tea, et kõik see ongi new age ehk uus vaimsus.
+
+Veel on kasutusel mõisted “kanaldamine”, “meditatsioon”, “mindfullness”,  “kõrgem mina”, “külgetõmbeseadus, inglise keeles tuntud mõistena law of attraction”, “väekristallid”, “holistika”, “kohalolu”, “tantra”,  “mantra”, “mandala” jne.
+
+New age ehk uus vaimsus koondab endas väga laias spektris vaimseid praktikaid, mis paraku ei vii kedagi soovitud rahuni, vaid hoopis saatana “käevangu” ja edasi tema meelevalla alla, kust on sageli hiljem väga keeruline välja saada.
+
+Põrgu on reaalne koht. Kuid Sinu Looja soovib Sind sellest päästa! Pöördu abi saamiseks Jeesuse Kristuse poole! Võta ühendust mõne kogudusega ja palu, et Sinu eest palvetatakse.
+
+Ja see ei ole ime, sest saatan ise moondab ennast valguse ingliks. 2. Kr. 11:14 Piibel`,
       bibleVerses: [
+        {
+          ref: '2. Korintlastele 11:14',
+          text: 'Ja see ei ole ime, sest saatan ise moondab ennast valguse ingliks.'
+        },
         {
           ref: 'Johannese 14:6',
-          text: 'Jeesus ütles talle: Mina olen tee ja tõde ja elu; ükski ei saa Isa juurde muidu kui minu kaudu.'
-        },
-        {
-          ref: '1. Timoteosele 2:5',
-          text: 'Sest üks on Jumal, üks on ka vahemees Jumala ja inimeste vahel: inimene Kristus Jeesus.'
-        },
-        {
-          ref: 'Koloslastele 2:8',
-          text: 'Vaadake, et keegi teid ei riisuks filosoofia ja tühja pettuse abil, mis vastavad inimeste pärimusele, maailma algainetele, ja mitte Kristusele.'
-        },
-        {
-          ref: 'Heebrealastele 9:27',
-          text: 'Ja otsekui inimestele on seatud üks kord surra, pärast seda on aga kohus.'
+          text: 'Jeesus ütles talle: Mina olen tee ja tõde ja elu. Ükski ei saa minna Isa juurde muidu kui minu kaudu.'
         }
       ],
       practicalSteps: [
-        'Loobu enesejumaldamisest ja arusaamast, et universum või kosmiline energia asendab elavat Isikulist Loojat.',
-        'Hülga inglikaardid, pendeldamine, kristallid, horoskoobid ja reinkarnatsiooni teooriad.',
-        'Võta usus vastu Jeesus Kristus kui ainus tõeline Lunastaja ja Sinu elu Issand.'
-      ],
-      category: 'hook'
-    },
-    {
-      id: 'jooga-tegelik-tahendus',
-      number: 3,
-      question: 'Mida jooga tegelikult tähendab?',
-      summary: 'Kas jooga on pelgalt süütu võimlemine ja lihasvenitus või hoopis idamaise religiooni vaimulik praktika? Mis toimub vaimumaailmas jooga asanate ja meditatsiooni ajal?',
-      tractQuote: '«Mida jooga tegelikult tähendab? Sõna jooga tuleneb sanskriti keelest ja tähendab "ikkestamist" või "ühinemist" – ühinemist hindu ebajumalate ja vaimumaailmaga. Jooga poose ja vaimsust ei saa teineteisest lahutada.»',
-      biblicalAnswer: 'Läänemaailmas turustatakse joogat kui tervislikku võimlemist ja stressimaandajat. Kuid sanskriti tüvi «yuj» tähendab «ikkestama», «siduma» või «ühinema» – nimelt ühinema hinduistliku jumaluse või kosmilise vaimuga (Brahman). Iga traditsiooniline asana (poos) on välja töötatud kummardusena kindlale hindu ebajumalale. Kundalini energia äratamine (nn «maduenergia») ja tšakrate avamine ei ole füsioloogilised harjutused, vaid okultne uks vaimumaailma, mis toob kaasa psüühilist rahutust, hirmusid ja vaimset rõhumist. Kristlase ihu on Püha Vaimu tempel ja seda ei tohi rakendada ebajumalate kummardamisse. Füüsiliseks liikumiseks sobivad suurepäraselt neutraalsed venitused ja sport ilma idamaiste vaimsete rituaalideta.',
-      bibleVerses: [
-        {
-          ref: '1. Korintlastele 6:19-20',
-          text: 'Või kas te ei tea, et teie ihu on teis oleva Püha Vaimu tempel, kelle te olete saanud Jumalalt, ja et te ei ole iseenese päralt? Sest te olete kallilt ostetud. Austage siis Jumalat oma ihus!'
-        },
-        {
-          ref: '2. Korintlastele 6:14-16',
-          text: 'Mis on ühist õigusel ülekohutuga või mis on ühist valgusel pimedusega? Kuidas sobib Kristus Beliariga? Või kuidas sobib Jumala tempel kokku ebajumalatega?'
-        },
-        {
-          ref: 'Matteuse 11:28',
-          text: 'Tulge minu juurde kõik, kes olete vaevatud ja koormatud, ja mina annan teile hingamise!'
-        }
-      ],
-      practicalSteps: [
-        'Eralda füüsiline tervis okultsetest idamaistest praktikatest – tee neutraalseid venitusharjutusi ja sporti ilma jooga filosoofiata.',
-        'Loobu mantrate kordamisest, tšakrate avamisest ja meele tühjendamise meditatsioonist.',
-        'Täida oma meel ja süda Jumala Sõnaga ning otsi tõelist hingamist Kristuse juures.'
+        'Tunnista ära new age pettus ("loon ise reaalsuse", "olen iseenese jumal", väekristallid, kanaldamine).',
+        'Pöördu saatana meelevalla alt ainsa elava Looja poole Jeesuse Kristuse nimel.',
+        'Palu kogudusel enda eest palvetada ja leia vabanemine.'
       ],
       category: 'hook'
     }
   ],
 
-  // ADDITIONAL FOUNDATIONAL TRACT TOPICS (Igaühele oma jumal, Hea inimene, Hoia kodu puhas)
+  // ADDITIONAL FOUNDATIONAL TOPICS - 1:1 AUTORI ALGNE TEKST
   tractQuestions: [
     {
-      id: 'igauele-oma-jumal',
+      id: 'hoia-kodu-puhas',
       number: 1,
-      question: 'Igaühele «oma jumal» – tõde või vale?',
-      summary: 'Tänapäeval väidetakse sageli, et iga tee viib samale mäetipule ja igaüks võib ise oma jumala valida. Kuid kas tõde saab olla korraga vasturääkiv?',
-      tractQuote: '«Paljud usuvad, et igal inimesel on oma tõde. Kuid Jeesus ei öelnud, et Ta on üks paljudest alternatiividest. Ta ütles: Mina olen tee ja tõde ja elu; ükski ei saa Isa juurde muidu kui minu kaudu.»',
-      biblicalAnswer: 'Jumal on loonud universumi ja inimese. Tõde ei ole subjektiivne tunne ega suvaline fantaasia, vaid elav Isik – Jeesus Kristus. Kui otsime Jumalat ausa ja alandliku südamega, ilmutab Ta end meile selgelt ja vabastab pettusest.',
+      question: 'Hoia oma kodu puhas! (Neetud esemed meie kodus)',
+      fullText: `Veel on oluline teada, et meie kodu peab olema puhas esemetest, mis võivad samuti avada ukse needustele meie elus. Selleks võib olla juhuslik suveniir mõnest esoteerika poest või mistahes ese, mida on kasutanud keegi, kes on tegelenud nõidusega. See on samuti ebajumalate kummardamine.
+
+Nõidusele viitavate või muul moel vale vaimsust kandvate esemete oma kodus omamine on Jumala silmis patt - see on koostöö pimedusega, saatanaga.
+
+Kui koged seletamatut rõhumist või mingeid muid anomaaliaid, siis eksisteerib võimalus, et Sinu kodus on ebapuhtaid esemeid. Tark on puhastada oma kodune territoorium “saatanale kuuluvast kraamist”, st kõigest, mis seotud nõiduse. Ebajumalakummarduse või muul kombel neetud esemetest.
+
+Nende jumalakujud põletage tules; ära himusta hõbedat ja kulda nende pealt ja ära võta seda endale, et sind sellega ei võrgutataks, sest see on jäledus Issandale, su Jumalale! 26 Ära vii niisugust jäledust oma kotta, et sinagi ei saaks neetuks nagu see; sa pead seda ülimalt põlgama ja jälestama, sest see on neetud asi! 5.Ms. 7:25-26, Piibel`,
       bibleVerses: [
         {
-          ref: '1. Timoteosele 2:5',
-          text: 'Sest üks on Jumal, üks on ka vahemees Jumala ja inimeste vahel: inimene Kristus Jeesus.'
+          ref: '5. Moosese 7:25-26',
+          text: 'Nende jumalakujud põletage tules; ära himusta hõbedat ja kulda nende pealt ja ära võta seda endale, et sind sellega ei võrgutataks, sest see on jäledus Issandale, su Jumalale! Ära vii niisugust jäledust oma kotta, et sinagi ei saaks neetuks nagu see; sa pead seda ülimalt põlgama ja jälestama, sest see on neetud asi!'
+        }
+      ],
+      practicalSteps: [
+        'Vaata kriitiliselt üle oma kodu: esoteerikapoest ostetud suveniirid, nõidusesemed, ebajumalakujud.',
+        'Puhasta oma kodune territoorium saatanale kuuluvast kraamist ja viska need välja.',
+        'Palu, et Jumal puhastaks ja õnnistaks sinu kodu ning tooks oma rahu.'
+      ]
+    },
+    {
+      id: 'igauele-oma-jumal',
+      number: 2,
+      question: 'Palju jumalaid – kas see on tõde? (Igaühele «oma jumal»)',
+      fullText: `Meie ajastule on omane mõtteviis, et eksisteerib palju erinevaid jumalaid (budism, hinduism, islam jmt) ning kõik on justkiu lubatud. Et igaüks võib valida endale “jumala vastavalt oma maitsele” või siis üldse mitte midagi muud peale nähtava reaalsuse uskuda.
+
+Kuid see ei ole tõsi. Kõigi nende n-ö alternatiivsete, eksitavate religioonide-usundite eesmärk on vaid üks – juhtida inimene võimalikult kaugele tõelisest, elavast Jumalast. See kõik on saatana pettus, et hoida inimesi oma meelevalla all, et nad mitte mingil juhul ei pöörduks ainsa, elava Jumala juurde ega pääseks. Ja Sa juba taipad, millest.
+
+Jah, Jumala viha ilmub taevast inimeste igasuguse jumalakartmatuse ja ülekohtu vastu, nende vastu, kes tõde hoiavad ülekohtu kammitsais, Rm. 1:18, Piibel`,
+      bibleVerses: [
+        {
+          ref: 'Roomlastele 1:18',
+          text: 'Jah, Jumala viha ilmub taevast inimeste igasuguse jumalakartmatuse ja ülekohtu vastu, nende vastu, kes tõde hoiavad ülekohtu kammitsais.'
         },
         {
-          ref: 'Apostlite teod 4:12',
-          text: 'Ja ei ole päästet üheski teises, sest taeva all ei ole antud inimestele ühtegi teist nime, kelle läbi meid päästetaks.'
+          ref: 'Johannese 14:6',
+          text: 'Jeesus ütles talle: “Mina olen tee ja tõde ja elu. Ükski ei saa minna Isa juurde muidu kui minu kaudu.”'
         }
       ]
     },
     {
       id: 'hea-inimene-paasemine',
-      number: 2,
-      question: 'Aga ma olen ju hea inimene, kas siis sellest ei piisa, et pääseda (põrgust)?',
-      summary: 'Enamik inimesi püüab elada moraalselt ega soovi teistele kurja. Kuid Jumala püha standardi ees oleme me kõik eksinud ja vajame lunastust.',
-      tractQuote: '«Me võrdleme end sageli teistega ja mõtleme: ma pole kedagi tapnud, ma olen hea inimene. Kuid Jumala ees ei piisa heategudest patu katmiseks – vaja on andestust, meeleparandust ja uut sündi Kristuses.»',
-      biblicalAnswer: 'Isegi parimad inimlikud teod ei suuda kustutada meie mineviku eksimusi ega patu vaimulikku võlga. Pääste ei ole tasu ega teene, vaid tasuta armuand Jumalalt, mille võtame vastu usus Jeesusesse, kes kandis meie karistuse ristil.',
-      bibleVerses: [
-        {
-          ref: 'Roomlastele 3:23-24',
-          text: 'Sest kõik on pattu teinud ja ilma jäänud Jumala kirkusest ning mõistetakse õigeks täiesti muidu, tema armust, lunastuse läbi, mis on Kristuses Jeesuses.'
-        },
-        {
-          ref: 'Efeslastele 2:8-9',
-          text: 'Sest teie olete armust päästetud usu kaudu - ja see pole teist enestest, see on Jumala and -, mitte tegudest, et ükski ei saaks kiidelda.'
-        }
-      ]
-    },
-    {
-      id: 'hoia-kodu-puhas',
       number: 3,
-      question: 'Hoia oma kodu puhas!',
-      summary: 'Miks ei tohi kodus hoida esoteerilisi esemeid, tarokaarte, unenäopüüdjaid, talismane või ebajumalate kujukesi? Kuidas saavutada tõeline rahu oma kodus?',
-      tractQuote: '«Hoia oma kodu puhas! Viska välja kõik nõiduse, ennustamise, horoskoopide, idamaade ebajumalate ja esoteerikaga seotud asjad. Need avavad uksi vaimulikule pimedusele, hirmudele ja rahutusele.»',
-      biblicalAnswer: 'Piibel hoiatab vankumatult okultismi, kaardipanemise, vaimudega suhtlemise ja teadmameeste eest. Need ei ole süütud asjad, vaid tegelikud vaimsed sidemed pimeduse jõududega. Tõelise rahu toob Jeesuse veri, Tema kaitse ja Jumala Sõna kuulutamine oma elus.',
+      question: 'Kas ma pääsen põrgust, kui olen hea inimene?',
+      fullText: `Veel on levinud (eksi)arusaam, et kui oleme head inimesed, siis meiega on kõik hästi ja kohe kindlasti ei satu hea inimene põrgusse. Kuid tõde on, et ilma Jeesuse Kristuseta, Jumala ainusündinud Pojata pole see mitte kuidagi võimalik!
+
+Saatanal pole midagi selle vastu, et sa oled hea inimene. Teda ei häiri, et sa oled vabatahtlik toidupangas, sorteerid prügi ning käid vanaprouadele abiks. Teda ei häiri, et oled lahke, helde ja meeldid kõigile oma kogukonnas. Tema jaoks on oluline see, et sa Jeesuse ees ei kummardaks.
+
+Saatana vale, mida usuvad miljonid inimesed üle kogu maailma, on veendumus, et kõrge moraal võrdub vaimsusega. Et olla hea inimene on sama, mis olla kristlane. Et kui sa lihtsalt elad õigesti, inimeste maailma reeglitele kohaselt, kohtled inimesi hästi ja väldid suurimaid patte, oled sa Jumala ees piisavalt tubli.
+
+Ning – tasub üle vaadata, millist muusikat me kuulame, millist meelelahutust tarbime. Kas vaatate filme, mis näitavad teile abielurikkumist ja patuelu, või vargust? Või ka otsest nõidust ja satanismi, nagu on ka paljudes n-ö õudusfilmides. Meie meeled on “uks” – ka seda kaudu saame end avada pimeduse jõududele.
+
+sest kõik on pattu teinud ja ilma jäänud Jumala kirkusest. Rm. 3:23
+
+Jeesus ütles talle: “Mina olen tee ja tõde ja elu. Ükski ei saa minna Isa juurde muidu kui minu kaudu.” Joh 14:5, Piibel
+
+Hea uudis on aga see, et veel on armuaeg. Meil on veel võimalik Tema juurde naasta, võttes oma südames vastu Tema Poja Jeesuse.
+
+…ja kui siis minu rahvas, kellele on pandud minu nimi, alandab ennast ja nad palvetavad ja otsivad minu palet ning pöörduvad oma kurjadelt teedelt, siis ma kuulen taevast ja annan andeks nende patu ning säästan nende maa. 2 Aj. 7:14, Piibel
+
+Te ei või juua Issanda karikast ja kurjade vaimude karikast, te ei või osa saada Issanda lauast ja kurjade vaimude lauast. 1. Kr. 10:21, Piibel`,
       bibleVerses: [
         {
-          ref: '5. Moosese 18:10-12',
-          text: 'Ärgu leidugu sinu keskel kedagi... kes toimetab nõidust, märkide seletamist, lausumist ega tegele vaimudega... sest igaüks, kes seda teeb, on Issandale jäle.'
+          ref: 'Roomlastele 3:23',
+          text: 'sest kõik on pattu teinud ja ilma jäänud Jumala kirkusest.'
         },
         {
-          ref: 'Apostlite teod 19:19',
-          text: 'Paljud neist, kes olid tegelnud nõiakunstiga, tõid kokku oma raamatud ja põletasid need kõigi nähes ära.'
+          ref: 'Johannese 14:6',
+          text: 'Jeesus ütles talle: “Mina olen tee ja tõde ja elu. Ükski ei saa minna Isa juurde muidu kui minu kaudu.”'
+        },
+        {
+          ref: '2. Ajaraamat 7:14',
+          text: '…ja kui siis minu rahvas, kellele on pandud minu nimi, alandab ennast ja nad palvetavad ja otsivad minu palet ning pöörduvad oma kurjadelt teedelt, siis ma kuulen taevast ja annan andeks nende patu ning säästan nende maa.'
+        },
+        {
+          ref: '1. Korintlastele 10:21',
+          text: 'Te ei või juua Issanda karikast ja kurjade vaimude karikast, te ei või osa saada Issanda lauast ja kurjade vaimude lauast.'
         }
-      ],
-      practicalSteps: [
-        'Vaata kriitiliselt üle oma kodu: esoteerilised raamatud, kaardid, talismanid, kristallid, kujukesed.',
-        'Viska need asjad julgelt minema ja ütle lahti igasugusest okultistlikust praktikast.',
-        'Palu Jeesuselt andestust ja kutsu Tema Püha Vaim ning inglite kaitse oma eluasemele.'
       ]
     }
   ],
 
   cleanlinessTitle: 'Hoia oma kodu puhas!',
   cleanlinessSubtitle: 'Vaimulik kaitse & vabanemine',
-  cleanlinessDescription: 'Esoteerilised sümbolid, tarokaardid, unenäopüüdjad, horoskoopide trükised või idamaade ebajumalate kujukesed ei ole süütud sisekujunduselemendid. Need toovad kodudesse seletamatut rahutust, hirmuunenägusid ja vaimulikku rõhumist. Jeesus Kristus pakub täielikku vabadust ja kaitset kõigile, kes Tema poole pöörduvad.',
+  cleanlinessDescription: 'Veel on oluline teada, et meie kodu peab olema puhas esemetest, mis võivad samuti avada ukse needustele meie elus. Selleks võib olla juhuslik suveniir mõnest esoteerika poest või mistahes ese, mida on kasutanud keegi, kes on tegelenud nõidusega. See on samuti ebajumalate kummardamine. Nõidusele viitavate või muul moel vale vaimsust kandvate esemete oma kodus omamine on Jumala silmis patt - see on koostöö pimedusega, saatanaga.',
   cleanlinessSteps: [
-    { title: '1. Tuvasta ja viska välja', desc: 'Otsi üles kõik esoteerilised esemed, kaardid, kristallid, amuletid ja kujukesed ning viska need prügikasti.' },
-    { title: '2. Tunnista ja loobu', desc: 'Ütle kuuldavalt Jeesusele, et palud andestust okultismiga tegelemise eest ja loobud igasugusest sidemest pimedusega.' },
-    { title: '3. Õnnista oma kodu', desc: 'Palu, et Jeesuse veri puhastaks sinu elamise ja et Jumala rahu ning Püha Vaim täidaksid iga ruumi.' }
+    { title: '1. Tuvasta ja eemalda', desc: 'Puhasta oma kodune territoorium “saatanale kuuluvast kraamist” – esoteerilised suveniirid, nõidusesemed, ebajumalakujud.' },
+    { title: '2. Tunnista ja palu andestust', desc: 'Pöördu sellest patust ja palu Jeesuse Kristuse nimel andeks.' },
+    { title: '3. Palu Jumala kaitset', desc: 'Kutsu Jumala rahu ja Püha Vaim oma kotta, et sinagi ei saaks neetuks.' }
   ],
 
-  // Real life testimonials / stories with YouTube video embeds
+  // Real life testimonials
   testimonials: [
     {
       id: 'vabanemine-esoteerikast',
       title: 'Vabanemine esoteerika ja okultismi köidikutest',
       person: 'Tõestisündinud vabanemislugu',
       type: 'vabanemine',
-      summary: 'Aastaid kestnud otsingud new age\'is, joogas ja selgeltnägemises tõid lõpuks hirmu ja unetuse. Kuidas Jeesus tõi ühe palvega täieliku vabanemise ja hingerahu.',
-      fullStory: 'Olin aastaid veendunud, et kividel, kaartidel ja idamaade tehnikatel on positiivne energia. Aja jooksul asendus esialgne huvi seletamatute hirmude, öiste paanikahoogude ja vaimse väsimusega. Kui mulle ulatati Uus Testament ja soovitati paluda Jeesuse nime, tundsin esimest korda tõelist, sooja ja vabastavat rahu. Viskasin kõik esoteerilised asjad välja ja sellest päevast peale on minu kodus ja südames rahu.',
+      summary: 'Aastatepikkune ekslemine esoteerikas ja okultismis tõi lõpuks meeleheite. Kuidas Jeesuse poole hüüdmine tõi täieliku vabaduse ja hingerahu.',
+      fullStory: 'Kui mulle ulatati Uus Testament ja sain teada, et Jeesus Kristus on surnud minu pattude eest, hüüdsin Tema nime. Sellest hetkest langesid aastatepikkused hirmud ja minu südamesse tuli tõeline rahu.',
       youtubeId: '',
       youtubeUrl: ''
     },
@@ -221,29 +258,28 @@ export const INITIAL_SITE_CONTENT: SiteContent = {
       title: 'Tervenemine ja meeleheite lõpp',
       person: 'Isiklik tunnistus',
       type: 'tervenemine',
-      summary: 'Arstide lootusetu diagnoos ja sügav depressioon asendusid uue elujõuga pärast eestpalvet ja Jeesuse vastuvõtmist.',
-      fullStory: 'Kui tervis ja tulevik näisid täielikult kokku varisevat, leidsin tee kristliku kirjanduse ja palveni. Jeesus tervendas mitte ainult minu füüsilise keha, vaid taastas minu usalduse ja elumõtte.',
+      summary: 'Arstide lootusetu diagnoos asendus tervenemisega pärast eestpalvet ja elava Jumala poole pöördumist.',
+      fullStory: 'Jumal vastab palvetele ka täna. Pöördudes elava Jumala poole kogesin Tema tervendavat armastust ja täielikku muutust oma elus.',
       youtubeId: '',
       youtubeUrl: ''
     }
   ],
 
-  // Publisher story & books with purchasing & contact
+  // Publisher story & books without price tags
   publisherStoryTitle: 'Kirjastuse Saagu Valgus sünnilugu',
-  publisherStoryText: 'Kirjastus Saagu Valgus sai alguse sügavast igatsusest tuua Eesti inimesteni selget, moonutamata ja elumuutvat vaimulikku kirjandust. Meie missiooniks on kirjastada raamatuid ja tasuta evangeelseid trükiseid, mis avavad silmi, aitavad vabaneda pimeduse pettustest ning juhivad inimesi elavasse suhtesse Jeesuse Kristusega.',
+  publisherStoryText: 'Kirjastus Saagu Valgus sai alguse sügavast igatsusest tuua Eesti inimesteni selget, moonutamata ja elumuutvat vaimulikku kirjandust. Meie missiooniks on kirjastada raamatuid ja evangeelseid materjale, mis avavad silmi, aitavad vabaneda pimeduse pettustest ning juhivad inimesi elavasse suhtesse Jeesuse Kristusega.',
 
   books: [
     {
       id: 'laps-ja-jumal',
       title: 'Laps ja Jumal',
       author: 'Kirjastus Saagu Valgus',
-      category: 'Perekond ja vaimulik kasvamine',
-      price: 15,
-      description: 'Südamlik ja praktiline raamat, mis aitab mõista laste vaimulikku tundlikkust ja seda, kuidas juhatada järgmist põlvkonda armastuse ja tõe vaimus elava Jumala tundmisele.',
+      category: 'Lasteraamat',
+      description: 'Lasteraamatus "Laps ja Jumal" jagavad kristlike perede lapsed oma kogemusi Jumalaga - millisena nad oma Loojat näevad, mida Ta on nende elus teinud, kuidas nende palvetele vastanud, milliseid imesid teinud.',
       highlights: [
-        'Kuidas rääkida lastele Jumalast ja usust loomulikult ning siiralt',
-        'Praktilised näited ja tõestisündinud lood perede usuteelt',
-        'Lapse hinge ja vaimse puhtuse hoidmine tänapäeva meediamaailmas'
+        'Kristlike perede laste ehedad kogemused Jumalaga',
+        'Millisena lapsed oma Loojat näevad ja mida Ta on nende elus teinud',
+        'Kuidas Jumal on laste palvetele vastanud ja milliseid imesid teinud'
       ],
       isFeatured: true
     },
@@ -252,7 +288,6 @@ export const INITIAL_SITE_CONTENT: SiteContent = {
       title: 'Ma olin saatana vang',
       author: 'Kirjastus Saagu Valgus',
       category: 'Tõestisündinud vabanemislugu',
-      price: 16,
       description: 'Vapustav ja tõestisündinud tunnistus inimesest, kes oli sügaval okultismi, nõiduse ja pimeduse köidikutes, kuid kelle Jeesus Kristus imeliselt ja täielikult vabastas.',
       highlights: [
         'Aus pilguheit esoteerika ja okultismi tegelikule vaimsele hinnale',
@@ -267,64 +302,54 @@ export const INITIAL_SITE_CONTENT: SiteContent = {
   support: {
     title: 'Tule toetajaks!',
     subtitle: 'Aita levitada Valgust üle kogu Eestimaa',
-    description: 'Kirjastus Saagu Valgus annab välja tasuta evangeelseid trükiseid ja elumuutvaid raamatuid. Sinu toetus aitab trükkida uusi infomaterjale, postitada raamatuid ning viia tõe sõnumit nendeni, kes seda kõige enam vajavad.',
+    description: 'Kirjastus Saagu Valgus annab välja evangeelseid materjale ja elumuutvaid raamatuid. Sinu toetus aitab trükkida uusi infomaterjale, postitada raamatuid ning viia tõe sõnumit nendeni, kes seda kõige enam vajavad.',
     recipientName: 'Kirjastus Saagu Valgus',
-    iban: 'EE123456789012345678', // Editable in admin
+    iban: 'EE123456789012345678',
     bankName: 'Swedbank / LHV Pank',
     swift: 'HABALV22',
     reference: 'Annetus kirjastustööks',
-    explanation: 'Kirjastuse toetus / Trükiste väljaandmine',
+    explanation: 'Kirjastuse toetus / Kirjastustöö ja trükised',
     supportGoals: [
-      'Tasuta evangeelsete trükiste trükkimine ja postitamine üle Eesti',
-      'Uute vaimulike raamatute ja tunnistuste tõlkimine ning kirjastamine',
+      'Evangeelsete materjalide trükkimine ja levitamine üle Eesti',
+      'Uute vaimulike raamatute ja tunnistuste kirjastamine',
       'Vaimuliku toe ja infomaterjalide kättesaadavaks tegemine otsijatele'
     ]
   },
 
   salvationPrayerTitle: 'Päästepalve',
-  salvationPrayerSubtitle: 'Kuidas alustada uut elu koos Jumalaga?',
-  salvationPrayerIntro: 'Kui sa soovid saada andeks oma patud, leida sügavat rahu ja kindlust igavesest elust, võid palvetada selle lihtsa ja siira palve valjusti oma südamega:',
-  salvationPrayerText: `«Kallis Issand Jeesus!
+  salvationPrayerSubtitle: 'Päästepalve elava Jumala poole',
+  salvationPrayerIntro: 'Kui soovid pöörduda ja saada päästetud, võid palvetada selle palve siiralt oma südamega:',
+  salvationPrayerText: `Kallis Taevane Isa!
 
-Mina tulen täna Sinu juurde. Ma tunnistan, et olen patune inimene ja olen teinud oma elus vigu. Ma palun südamest andeks kõik oma patud.
+Ma tulen Su Juurde Jeesuse Kristuse nimel. Ma olen patune. Palun anna andeks mu patud. Tule mu südamesse. Juhi mind, loo mind uueks. Ma Tänan, Jeesus, Kolgata risti eest, et Sa valasid oma vere minu pattude eest, et mina võiksin patud andeks saada ja omada igavest elu.
+Palun täida mind Püha Vaimuga. Ma vōtan vastu Püha Vaimu just nüüd. Sinu Sõna ütleb: “Sõna on su lähedal, sinu suus ja su südames. See on usu sõna, mida me kuulutame. Kui sa oma suuga tunnistad, et Jeesus on Issand, ja oma südames usud, et Jumal on ta üles äratanud surnuist, siis sind päästetakse, sest südamega usutakse õiguseks, suuga aga tunnistatakse päästeks.” Rm.10:8,9 Jumala Sõna ehk Piibel.
+Nüüd ma tunnistan oma suuga, et Jeesus Kristus on Issand ja ma usun, et Jumal äratas Ta surnuist ülesse, Ta kandis mu patud ja needused ristile ja äratati surnuist, et mina vōiksin saada Jumala lapseks. Tänan, et Sinu Sõna kohaselt olen ma selle tunnistusega päästetud lootuses. Aamen.
 
-Ma usun, et Sina surid ristil minu eest ja tõusid surnuist üles. Ma võtan Sind täna vastu oma isiklikuks Päästjaks ja Issandaks.
-
-Puhasta mind, täida mind oma Püha Vaimuga ja kingi mulle igavene elu. 
-
-Aamen!»`,
+Kallis Issand Jeesus, palun anna oma Sõna kohaselt kinnituseks rahu. Nagu on kirjutatud Jh. 14:27 “Rahu ma jätan teile, oma rahu ma annan teile. Mina ei anna teile nõnda nagu maailm annab. Teie süda ärgu ehmugu ega mingu araks!”
+Tänan selle rahu eest.
+Aamen.`,
   salvationPrayerNextSteps: [
     {
-      title: '1. Loe Piiblit iga päev',
-      desc: 'Alusta näiteks Johannese evangeeliumist, et tundma õppida Jeesuse elu, õpetust ja Tema armastust.'
+      title: '1. Pöördu Jeesuse poole',
+      desc: 'Tunnista oma suuga ja usu oma südames, et Jeesus on Issand ja Jumal äratas Ta surnuist.'
     },
     {
-      title: '2. Räägi Jumalaga (palveta)',
-      desc: 'Palve on siiras vestlus oma Loojaga – usalda Talle oma mured, soovid ja tänu.'
+      title: '2. Võta ühendust kogudusega',
+      desc: 'Võta ühendust elava kristliku kogudusega ja palu, et Sinu eest palvetatakse.'
     },
     {
-      title: '3. Leia elav kogudus',
-      desc: 'Otsi kristlik kogudus, kus õpetatakse Piibli tõde ja kus saad usus kasvada koos teiste vendade-õdedega.'
+      title: '3. Hoia oma elu ja kodu puhas',
+      desc: 'Loobu igasugusest nõidusest, okultismist ja ebajumalatest ning toetu Jumala Sõnale.'
     }
   ],
 
-  // Lord's Prayer (Meie Isa palve)
+  // Lord's Prayer (Meie Isa palve) - 1:1 AUTORI SÕNASTUS
   lordPrayer: {
     title: 'Meie Isa palve',
-    subtitle: 'Palve, mida õpetas Jeesus Kristus',
-    intro: 'Meie Isa palve (Matteuse 6:9–13) on universaalne ja võimas palve, mis seab esikohale Jumala tahte ja Tema kuningriigi ning palub igapäevast leiba, andestust ja kaitset kurja eest.',
-    text: `Meie Isa, kes Sa oled taevas!
-Pühitsetud olgu Sinu nimi.
-Sinu riik tulgu,
-Sinu tahtmine sündigu
-nagu taevas, nõnda ka maa peal.
-Meie igapäevane leib anna meile tänapäev.
-Ja anna meile andeks meie võlad,
-nagu meiegi andeks anname oma võlglastele.
-Ja ära saada meid kiusatusse,
-vaid päästa meid ära kurjast.
-Sest Sinu päralt on riik ja vägi ja au igavesti.
-Aamen.`,
-    ref: 'Matteuse 6:9-13'
+    subtitle: 'Meie Isa palve',
+    intro: 'Palve, mida õpetas Jeesus Kristus:',
+    text: `Meie Isa, kes Sa oled Taevas! Pühitsetud olgu Sinu nimi, Sinu riik tulgu, Sinu tahtmine sündigu, nagu Taevas, nõnda ka maapeal.
+Meie igapäevast leiba anna meile tänapäev, ja anna meile andeks meie võlad, nagu (kui) meiegi andeks anname oma võlglastele. Ja ära saada meid kiusatusse, vaid päästa meid ära kurjast! Sest Sinu päralt on Riik ja Vägi ja Au. Igavesti. Aamen.`,
+    ref: 'Piibel'
   }
 };

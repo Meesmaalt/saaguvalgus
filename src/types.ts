@@ -9,10 +9,11 @@ export interface QuestionItem {
   id: string;
   number: number;
   question: string;
-  summary: string;
-  tractQuote: string;
-  biblicalAnswer: string;
-  bibleVerses: BibleVerse[];
+  fullText: string;
+  summary?: string;
+  tractQuote?: string;
+  biblicalAnswer?: string;
+  bibleVerses?: BibleVerse[];
   practicalSteps?: string[];
   category?: 'hook' | 'theological' | 'practical';
 }
@@ -22,7 +23,7 @@ export interface BookItem {
   title: string;
   author: string;
   category: string;
-  price: number;
+  price?: number;
   description: string;
   highlights: string[];
   isFeatured?: boolean;
