@@ -41,10 +41,29 @@ export interface OrderItem {
   name: string;
   email: string;
   phone: string;
-  address: string;
+  address?: string;
   notes?: string;
   status: 'uus' | 'kinnitatud' | 'postitatud' | 'täidetud' | 'tühistatud';
   createdAt: string;
+}
+
+export interface PublicationItem {
+  id: string;
+  title: string;
+  author?: string;
+  category: string;
+  description: string;
+  fileSize?: string;
+  pages?: number;
+  pdfUrl?: string; // Base64 data URL or external URL
+  fileName?: string;
+  uploadedAt: string;
+  downloadCount?: number;
+  contentPages?: {
+    pageNumber: number;
+    heading: string;
+    text: string;
+  }[];
 }
 
 export interface ContactMessage {

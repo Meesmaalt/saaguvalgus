@@ -34,15 +34,19 @@ import {
   Share2,
   Edit3,
   Calendar,
-  Package
+  Package,
+  FileText,
+  Printer
 } from 'lucide-react';
-import { INITIAL_SITE_CONTENT } from './data';
-import { SiteContent, QuestionItem, BookItem, BibleVerse, TestimonialItem, OrderItem, ContactMessage } from './types';
+import { INITIAL_SITE_CONTENT, INITIAL_PUBLICATIONS } from './data';
+import { SiteContent, QuestionItem, BookItem, BibleVerse, TestimonialItem, OrderItem, ContactMessage, PublicationItem } from './types';
 import { AdminDashboard } from './AdminDashboard';
+import { PublicationsModal } from './PublicationsModal';
 
 const STORAGE_KEY = 'saaguvalgus_site_content_v6';
 const ORDERS_STORAGE_KEY = 'saaguvalgus_orders_v2';
 const MESSAGES_STORAGE_KEY = 'saaguvalgus_messages_v2';
+const PUBLICATIONS_STORAGE_KEY = 'saaguvalgus_publications_v2';
 
 const INITIAL_ORDERS: OrderItem[] = [
   {
@@ -258,6 +262,18 @@ export default function App() {
     return INITIAL_MESSAGES;
   });
 
+  // Publications (Trükised / PDF) State (Persisted in LocalStorage)
+  const [publications, setPublications] = useState<PublicationItem[]>(() => {
+    try {
+      const saved = localStorage.getItem(PUBLICATIONS_STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error('Failed to parse publications:', e);
+    }
+    return INITIAL_PUBLICATIONS;
+  });
+  const [isPublicationsOpen, setIsPublicationsOpen] = useState(false);
+
   const [activeCentralQuestion, setActiveCentralQuestion] = useState<string>('noidade-selgeltnagijate-vagi');
   const [activeTractQuestion, setActiveTractQuestion] = useState<string>('igauele-oma-jumal');
   const [copiedEmail, setCopiedEmail] = useState(false);
@@ -269,11 +285,10 @@ export default function App() {
   const [formSent, setFormSent] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
 
-  // Book Order & Pre-Order Modal State
+  // Pure Pre-Order Modal State (Ettetellimine vaid, ilma pakiautomaadita)
   const [selectedBookForOrder, setSelectedBookForOrder] = useState<BookItem | null>(null);
-  const [orderType, setOrderType] = useState<'order' | 'preorder'>('preorder');
   const [orderQuantity, setOrderQuantity] = useState(1);
-  const [orderData, setOrderData] = useState({ name: '', email: '', phone: '', address: '', notes: '' });
+  const [orderData, setOrderData] = useState({ name: '', email: '', phone: '', notes: '' });
   const [orderSubmitted, setOrderSubmitted] = useState(false);
   const [lastSubmittedId, setLastSubmittedId] = useState('');
 
@@ -334,39 +349,47 @@ export default function App() {
     }
   };
 
-  // Pre-Order Modal Openers
+  // Save publications to localStorage
+  const savePublications = (newPubs: PublicationItem[]) => {
+    setPublications(newPubs);
+    try {
+      localStorage.setItem(PUBLICATIONS_STORAGE_KEY, JSON.stringify(newPubs));
+    } catch (e) {
+      console.error('Error saving publications:', e);
+    }
+  };
+
+  const handleUploadPublication = (newPub: PublicationItem) => {
+    savePublications([newPub, ...publications]);
+  };
+
+  // Pure Pre-Order Openers (ainult ettetellimine)
   const openPreOrderModal = (book?: BookItem) => {
     const targetBook = book || content.books.find(b => b.isPreOrder) || content.books[0];
     setSelectedBookForOrder(targetBook);
-    setOrderType('preorder');
     setOrderQuantity(1);
-    setOrderData({ name: '', email: '', phone: '', address: '', notes: '' });
+    setOrderData({ name: '', email: '', phone: '', notes: '' });
     setOrderSubmitted(false);
   };
 
   const openStandardOrderModal = (book: BookItem) => {
-    setSelectedBookForOrder(book);
-    setOrderType(book.isPreOrder ? 'preorder' : 'order');
-    setOrderQuantity(1);
-    setOrderData({ name: '', email: '', phone: '', address: '', notes: '' });
-    setOrderSubmitted(false);
+    openPreOrderModal(book);
   };
 
-  // Order submission
+  // Order submission (Pure preorder)
   const handleOrderSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedBookForOrder) return;
     const orderId = 'ord-' + Date.now().toString().slice(-6);
     const newOrd: OrderItem = {
       id: orderId,
-      type: orderType,
+      type: 'preorder',
       bookId: selectedBookForOrder.id,
       bookTitle: selectedBookForOrder.title,
       quantity: orderQuantity,
       name: orderData.name,
       email: orderData.email,
       phone: orderData.phone,
-      address: orderData.address,
       notes: orderData.notes,
       status: 'uus',
       createdAt: new Date().toISOString()
@@ -562,6 +585,8 @@ export default function App() {
         saveOrders={saveOrders}
         messages={messages}
         saveMessages={saveMessages}
+        publications={publications}
+        savePublications={savePublications}
         onClose={closeAdmin}
         onResetToDefault={handleResetToDefault}
       />
@@ -580,12 +605,21 @@ export default function App() {
           </a>
 
           {/* Simple, clean Nav Links */}
-          <nav className="hidden lg:flex items-center gap-7 text-sm font-semibold text-[#2c4c3b]">
+          <nav className="hidden lg:flex items-center gap-6 text-sm font-semibold text-[#2c4c3b]">
             <button onClick={() => scrollTo('kusimused')} className="hover:text-[#1a6838] transition-colors font-bold text-[#144225] cursor-pointer">
               3 Põhiküsimust
             </button>
             <button onClick={() => scrollTo('kirjastus')} className="hover:text-[#1a6838] transition-colors cursor-pointer">
               Kirjastus & Raamatud
+            </button>
+            <button 
+              onClick={() => setIsPublicationsOpen(true)} 
+              className="hover:text-[#1a6838] transition-colors cursor-pointer flex items-center gap-1.5 font-bold text-[#144225]"
+              title="Ava trükised ja PDF vaatleja"
+            >
+              <FileText className="w-4 h-4 text-emerald-700" />
+              <span>Trükised</span>
+              <span className="text-[10px] bg-emerald-100 text-[#1a6838] font-bold px-1.5 py-0.5 rounded-md uppercase">PDF</span>
             </button>
             <button onClick={() => scrollTo('tunnistused')} className="hover:text-[#1a6838] transition-colors cursor-pointer">
               Tunnistused
@@ -1034,39 +1068,32 @@ export default function App() {
           </button>
         </div>
 
-        {/* Books Cards & Ordering */}
+        {/* Books Cards & Ordering (Kõik ainult ettetellimine) */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-xl sm:text-2xl font-bold font-display text-[#144225]">
-              Kirjastuse raamatud ja tellimine
+              Kirjastuse raamatud ja ettetellimine
             </h3>
-            <span className="text-xs text-[#385643] font-semibold">Saadaval postiga üle Eesti</span>
+            <span className="text-xs text-[#385643] font-semibold">Broneeri esimese trüki eksemplar</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {content.books.map((book) => {
-              const isPreOrder = book.isPreOrder;
               return (
                 <div key={book.id} className="bg-white p-6 sm:p-7 rounded-3xl border border-[#8ab897]/30 shadow-2xs flex flex-col justify-between space-y-4 relative group hover:border-[#1a6838]/60 transition-colors">
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-[#8ab897] uppercase tracking-wider">{book.category}</span>
-                      {isPreOrder ? (
-                        <span className="text-[11px] font-black uppercase tracking-wider text-amber-900 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                          <Sparkles className="w-3 h-3 text-amber-700" />
-                          <span>Ettetellimisel</span>
-                        </span>
-                      ) : (
-                        <span className="text-[11px] font-bold text-[#1a6838] bg-[#1a6838]/10 px-2.5 py-0.5 rounded-full">
-                          Laos saadaval
-                        </span>
-                      )}
+                      <span className="text-[11px] font-black uppercase tracking-wider text-amber-900 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                        <Sparkles className="w-3 h-3 text-amber-700" />
+                        <span>Ettetellimisel</span>
+                      </span>
                     </div>
 
                     <h3 className="text-xl sm:text-2xl font-bold font-display text-[#144225]">«{book.title}»</h3>
                     <p className="text-xs sm:text-sm text-[#2d4937] leading-relaxed font-serif">{book.description}</p>
                     
-                    {isPreOrder && book.preOrderNote && (
+                    {book.preOrderNote && (
                       <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200 text-xs text-amber-950 font-medium">
                         📌 {book.preOrderNote}
                       </div>
@@ -1085,27 +1112,58 @@ export default function App() {
                   <div className="pt-4 border-t border-stone-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <span className="text-xs text-stone-500 font-medium">{book.author}</span>
                     
-                    {isPreOrder ? (
-                      <button
-                        onClick={() => openPreOrderModal(book)}
-                        className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-900 text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
-                      >
-                        <Sparkles className="w-3.5 h-3.5 text-stone-900" />
-                        <span>Ettetellimine</span>
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => openStandardOrderModal(book)}
-                        className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
-                      >
-                        <ShoppingCart className="w-3.5 h-3.5" />
-                        <span>Esita tellimissoov</span>
-                      </button>
-                    )}
+                    <button
+                      onClick={() => openPreOrderModal(book)}
+                      className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-900 text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+                    >
+                      <Package className="w-3.5 h-3.5 text-stone-900" />
+                      <span>Ettetellimine</span>
+                    </button>
                   </div>
                 </div>
               );
             })}
+          </div>
+        </div>
+
+        {/* Selge suunamine Trükistele (PDF vaatleja) - ei koorma esilehte, vaid avab täisfunktsionaalse vaatleja */}
+        <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-[#eef6f1] via-white to-[#f4f8f5] border-2 border-[#1a6838]/25 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+          <div className="flex items-start gap-4">
+            <div className="w-13 h-13 rounded-2xl bg-[#144225] text-amber-300 flex items-center justify-center shrink-0 shadow-sm">
+              <FileText className="w-6 h-6" />
+            </div>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#1a6838] bg-emerald-100 px-2.5 py-0.5 rounded-full">
+                  PDF & A4 Voldikud
+                </span>
+                <span className="text-xs text-stone-500 font-medium">Lugemiseks ja printimiseks</span>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-bold font-display text-[#144225]">
+                Trükised & digitaalne PDF vaatleja
+              </h3>
+              <p className="text-xs sm:text-sm text-[#2d4937] leading-relaxed max-w-xl">
+                Tutvu kirjastuse ametlike trükistega, laadi üles omi faile, loe mugavalt ekraanilt ja prindi tasuta välja kvaliteetsed materjalid. Kõik failid on hallatavad ja allalaaditavad ka administraatori paneelis.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto">
+            <button
+              onClick={() => setIsPublicationsOpen(true)}
+              className="flex-1 sm:flex-none px-5 py-3 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
+            >
+              <FileText className="w-4 h-4 text-emerald-300" />
+              <span>Ava Trükised</span>
+            </button>
+            <button
+              onClick={() => setIsPublicationsOpen(true)}
+              className="px-4 py-3 rounded-xl bg-white hover:bg-stone-50 text-stone-700 border border-stone-200 text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+              title="Prindi trükised välja"
+            >
+              <Printer className="w-4 h-4 text-stone-600" />
+              <span>Prindi</span>
+            </button>
           </div>
         </div>
 
@@ -1360,6 +1418,13 @@ export default function App() {
           <div className="flex flex-wrap items-center gap-5 sm:gap-6 font-semibold justify-center">
             <button onClick={() => scrollTo("kusimused")} className="hover:text-[#1a6838] cursor-pointer">3 Põhiküsimust</button>
             <button onClick={() => scrollTo("kirjastus")} className="hover:text-[#1a6838] cursor-pointer">Kirjastus & Raamatud</button>
+            <button 
+              onClick={() => setIsPublicationsOpen(true)} 
+              className="hover:text-[#1a6838] font-bold text-[#144225] cursor-pointer flex items-center gap-1"
+            >
+              <FileText className="w-3.5 h-3.5 text-emerald-700" />
+              <span>Trükised (PDF)</span>
+            </button>
             <button onClick={() => scrollTo("tunnistused")} className="hover:text-[#1a6838] cursor-pointer">Tunnistused</button>
             <button onClick={() => scrollTo("toetus")} className="hover:text-[#1a6838] cursor-pointer">Toeta</button>
             <button onClick={() => scrollTo("kontakt")} className="hover:text-[#1a6838] cursor-pointer">Kontakt</button>
@@ -1377,30 +1442,22 @@ export default function App() {
       </footer>
 
       {/* ========================================================================= */}
-      {/* 12. BOOK ORDER & PRE-ORDER MODAL (TELLIMISE JA ETTETELLIMISE VORM) */}
+      {/* 12. PURE PRE-ORDER MODAL (AINULT ETTETELLIMINE, ILMA PAKIAUTOMAADITA) */}
       {/* ========================================================================= */}
       {selectedBookForOrder && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl border border-[#8ab897]/40 shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150 my-6">
+          <div className="bg-white rounded-3xl border border-amber-300 shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150 my-6">
             
             {/* Header */}
-            <div className={"px-6 py-4.5 text-white flex items-center justify-between " + (
-              orderType === "preorder" 
-                ? "bg-gradient-to-r from-amber-700 via-amber-800 to-amber-900 border-b border-amber-900" 
-                : "bg-gradient-to-r from-[#144225] to-[#1a6838] border-b border-[#14542d]"
-            )}>
+            <div className="px-6 py-4.5 text-white flex items-center justify-between bg-gradient-to-r from-amber-700 via-amber-800 to-amber-900 border-b border-amber-900">
               <div className="flex items-center gap-2.5">
-                {orderType === "preorder" ? (
-                  <Package className="w-5 h-5 text-amber-300" />
-                ) : (
-                  <ShoppingCart className="w-5 h-5 text-emerald-200" />
-                )}
+                <Package className="w-5 h-5 text-amber-300" />
                 <div>
                   <h3 className="font-bold text-base leading-tight font-display">
-                    {orderType === "preorder" ? "Trükise ettetellimine" : "Raamatu tellimissoov"}
+                    Trükise ettetellimine
                   </h3>
                   <p className="text-xs opacity-85">
-                    {orderType === "preorder" ? "Garanteeri endale eksemplar enne trükist ilmumist" : "Otsene tellimus kirjastuselt Saagu Valgus"}
+                    Garanteeri endale eksemplar enne trükist ilmumist
                   </p>
                 </div>
               </div>
@@ -1415,34 +1472,33 @@ export default function App() {
             <div className="p-5 sm:p-6 space-y-4">
               {orderSubmitted ? (
                 <div className="text-center py-6 sm:py-8 space-y-4">
-                  <div className={"w-16 h-16 rounded-full flex items-center justify-center mx-auto shadow-sm " + (
-                    orderType === "preorder" ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-700"
-                  )}>
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto shadow-sm bg-amber-100 text-amber-800">
                     <Check className="w-8 h-8" />
                   </div>
                   <div>
                     <h4 className="font-bold text-xl sm:text-2xl text-stone-900 font-display">
-                      {orderType === "preorder" ? "Ettetellimus edukalt registreeritud!" : "Tellimus vastu võetud!"}
+                      Ettetellimus edukalt registreeritud!
                     </h4>
                     <p className="text-xs text-stone-500 mt-1">
                       Broneeringu kood: <span className="font-mono font-bold text-stone-800">#{lastSubmittedId || "ORD-SAV"}</span>
                     </p>
                   </div>
 
-                  <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200 text-left text-xs sm:text-sm space-y-1.5">
+                  <div className="p-4 bg-amber-50/70 rounded-2xl border border-amber-200 text-left text-xs sm:text-sm space-y-1.5">
                     <p className="font-semibold text-stone-900">Teie broneeringu kokkuvõte:</p>
                     <p className="text-stone-700">• Teos: <strong>«{selectedBookForOrder.title}»</strong> ({orderQuantity} tk)</p>
-                    <p className="text-stone-700">• Tellija: {orderData.name} ({orderData.email})</p>
-                    <p className="text-stone-700">• Saatmisaadress / pakiautomaat: {orderData.address}</p>
-                    {orderType === "preorder" && (
-                      <p className="text-amber-800 font-medium pt-1">
-                        ★ Hoiame teid raamatu trükkimise ja ilmumise infoga kursis meili teel!
-                      </p>
+                    <p className="text-stone-700">• Tellija: {orderData.name}</p>
+                    <p className="text-stone-700">• E-post: {orderData.email}</p>
+                    {orderData.phone && (
+                      <p className="text-stone-700">• Telefon: {orderData.phone}</p>
                     )}
+                    <p className="text-amber-900 font-medium pt-1">
+                      ★ Hoiame teid raamatu valmimise ja ilmumise infoga kursis meili teel!
+                    </p>
                   </div>
 
                   <p className="text-xs sm:text-sm text-stone-600 leading-relaxed max-w-sm mx-auto">
-                    Kinnituskiri ja täpsem info on saadetud aadressile <strong>{orderData.email}</strong>. Andmed on salvestatud ka kirjastuse haldussüsteemi.
+                    Kinnituskiri ja täpsem info on saadetud aadressile <strong>{orderData.email}</strong>. Andmed on salvestatud kirjastuse ettetellimuste süsteemi.
                   </p>
 
                   <div className="pt-2">
@@ -1458,19 +1514,11 @@ export default function App() {
                 <form onSubmit={handleOrderSubmit} className="space-y-4 text-sm">
                   
                   {/* Selected Book card */}
-                  <div className={"p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 " + (
-                    orderType === "preorder" 
-                      ? "bg-amber-50/70 border-amber-300/80" 
-                      : "bg-[#f4f8f5] border-[#8ab897]/50"
-                  )}>
+                  <div className="p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-amber-50/70 border-amber-300/80">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className={"text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full " + (
-                          orderType === "preorder" 
-                            ? "bg-amber-600 text-white" 
-                            : "bg-[#1a6838] text-white"
-                        )}>
-                          {orderType === "preorder" ? "Ettetellimine" : "Tavaline tellimus"}
+                        <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-600 text-white">
+                          Ettetellimine
                         </span>
                         {selectedBookForOrder.price && (
                           <span className="text-xs font-bold text-stone-700">
@@ -1491,79 +1539,54 @@ export default function App() {
                           const found = content.books.find(b => b.id === e.target.value);
                           if (found) {
                             setSelectedBookForOrder(found);
-                            if (found.isPreOrder) setOrderType("preorder");
                           }
                         }}
                         className="w-full sm:w-44 text-xs font-medium bg-white border border-stone-300 rounded-lg px-2.5 py-1.5 focus:ring-1 focus:ring-[#1a6838] focus:outline-none"
                       >
                         {content.books.map(b => (
                           <option key={b.id} value={b.id}>
-                            {b.title} {b.isPreOrder ? "(Ettetelli)" : ""}
+                            {b.title} (Ettetellimine)
                           </option>
                         ))}
                       </select>
                     </div>
                   </div>
 
-                  {/* Quantity and Order Type Switch */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center pt-1">
-                    <div className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-200">
-                      <label className="font-bold text-stone-700 text-xs sm:text-sm">Kogus (tk):</label>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setOrderQuantity(Math.max(1, orderQuantity - 1))}
-                          className="w-8 h-8 rounded-lg bg-white border border-stone-300 hover:bg-stone-100 font-bold flex items-center justify-center cursor-pointer text-base shadow-2xs"
-                        >
-                          -
-                        </button>
-                        <span className="font-bold text-base w-8 text-center text-stone-800">{orderQuantity}</span>
-                        <button
-                          type="button"
-                          onClick={() => setOrderQuantity(orderQuantity + 1)}
-                          className="w-8 h-8 rounded-lg bg-white border border-stone-300 hover:bg-stone-100 font-bold flex items-center justify-center cursor-pointer text-base shadow-2xs"
-                        >
-                          +
-                        </button>
-                      </div>
+                  {/* Quantity */}
+                  <div className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-200">
+                    <div className="space-y-0.5">
+                      <label className="font-bold text-stone-800 text-xs sm:text-sm block">Tellitav kogus (tk):</label>
+                      <span className="text-[11px] text-stone-500">Määra eksemplaride arv</span>
                     </div>
-
-                    <div className="flex items-center gap-2 bg-stone-50 p-1.5 rounded-xl border border-stone-200">
+                    <div className="flex items-center gap-2">
                       <button
                         type="button"
-                        onClick={() => setOrderType("order")}
-                        className={"flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer " + (
-                          orderType === "order"
-                            ? "bg-white text-[#144225] shadow-xs border border-stone-200"
-                            : "text-stone-500 hover:text-stone-800"
-                        )}
+                        onClick={() => setOrderQuantity(Math.max(1, orderQuantity - 1))}
+                        className="w-8 h-8 rounded-lg bg-white border border-stone-300 hover:bg-stone-100 font-bold flex items-center justify-center cursor-pointer text-base shadow-2xs"
                       >
-                        Tavaline
+                        -
                       </button>
+                      <span className="font-bold text-base w-8 text-center text-stone-800">{orderQuantity}</span>
                       <button
                         type="button"
-                        onClick={() => setOrderType("preorder")}
-                        className={"flex-1 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer " + (
-                          orderType === "preorder"
-                            ? "bg-amber-600 text-white shadow-xs"
-                            : "text-amber-800 hover:text-amber-950"
-                        )}
+                        onClick={() => setOrderQuantity(orderQuantity + 1)}
+                        className="w-8 h-8 rounded-lg bg-white border border-stone-300 hover:bg-stone-100 font-bold flex items-center justify-center cursor-pointer text-base shadow-2xs"
                       >
-                        Ettetellimine
+                        +
                       </button>
                     </div>
                   </div>
 
-                  {/* Customer Information */}
+                  {/* Customer Information (Ilma pakiautomaadi väljata) */}
                   <div>
-                    <label className="block font-bold text-stone-700 text-xs mb-1">Tellija nimi *</label>
+                    <label className="block font-bold text-stone-700 text-xs mb-1">Tellija ees- ja perekonnanimi *</label>
                     <input
                       type="text"
                       required
                       placeholder="Ees- ja perekonnanimi"
                       value={orderData.name}
                       onChange={(e) => setOrderData({ ...orderData, name: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
                     />
                   </div>
 
@@ -1576,7 +1599,7 @@ export default function App() {
                         placeholder="sinu@epost.ee"
                         value={orderData.email}
                         onChange={(e) => setOrderData({ ...orderData, email: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
                       />
                     </div>
                     <div>
@@ -1587,23 +1610,9 @@ export default function App() {
                         placeholder="+372 5..."
                         value={orderData.phone}
                         onChange={(e) => setOrderData({ ...orderData, phone: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
                       />
                     </div>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-stone-700 text-xs mb-1">
-                      Pakiautomaat või kättetoimetamise aadress *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="nt Omniva / Smartpost Kristiine Keskus või postiaadress"
-                      value={orderData.address}
-                      onChange={(e) => setOrderData({ ...orderData, address: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
-                    />
                   </div>
 
                   <div>
@@ -1612,36 +1621,23 @@ export default function App() {
                     </label>
                     <textarea
                       rows={2}
-                      placeholder="Näiteks: erisoovid pühenduse või tarne osas..."
+                      placeholder="Näiteks erisoovid või küsimused kirjastusele..."
                       value={orderData.notes}
                       onChange={(e) => setOrderData({ ...orderData, notes: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-xs sm:text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none resize-none"
+                      className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-xs sm:text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none resize-none"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className={"w-full py-3.5 rounded-xl text-white font-bold text-sm sm:text-base shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2 mt-2 " + (
-                      orderType === "preorder"
-                        ? "bg-amber-600 hover:bg-amber-700"
-                        : "bg-[#1a6838] hover:bg-[#15542d]"
-                    )}
+                    className="w-full py-3.5 rounded-xl text-stone-900 font-bold text-sm sm:text-base shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2 mt-2 bg-amber-500 hover:bg-amber-600"
                   >
-                    {orderType === "preorder" ? (
-                      <>
-                        <Package className="w-4 h-4" />
-                        <span>Kinnita ja saada ettetellimus</span>
-                      </>
-                    ) : (
-                      <>
-                        <ShoppingCart className="w-4 h-4" />
-                        <span>Kinnita ja saada tellimissoov</span>
-                      </>
-                    )}
+                    <Package className="w-4 h-4 text-stone-900" />
+                    <span>Kinnita ettetellimus</span>
                   </button>
 
                   <p className="text-center text-[11px] text-stone-400">
-                    Andmeid hoitakse turvaliselt kirjastuse sisesüsteemis. Maksmine toimub arve või pangaülekande alusel.
+                    Ettetellimus salvestatakse kirjastuse sisesüsteemi. Täpsema info väljastamise kohta saadame teie meilile.
                   </p>
                 </form>
               )}
@@ -1649,6 +1645,16 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* ========================================================================= */}
+      {/* 13. TRÜKISED & PDF VAATLEJA (TÄISFUNKTSIONAALNE DOKUMENTIDE VAATLEJA) */}
+      {/* ========================================================================= */}
+      <PublicationsModal
+        isOpen={isPublicationsOpen}
+        onClose={() => setIsPublicationsOpen(false)}
+        publications={publications}
+        onUploadPublication={handleUploadPublication}
+      />
 
     </div>
   );

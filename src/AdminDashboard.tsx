@@ -28,9 +28,11 @@ import {
   Unlock,
   ShieldAlert,
   Flame,
-  Heart
+  Heart,
+  FileText,
+  Printer
 } from 'lucide-react';
-import { SiteContent, BookItem, OrderItem, ContactMessage, QuestionItem } from './types';
+import { SiteContent, BookItem, OrderItem, ContactMessage, QuestionItem, PublicationItem } from './types';
 
 interface AdminDashboardProps {
   content: SiteContent;
@@ -39,6 +41,8 @@ interface AdminDashboardProps {
   saveOrders: (newOrders: OrderItem[]) => void;
   messages: ContactMessage[];
   saveMessages: (newMessages: ContactMessage[]) => void;
+  publications: PublicationItem[];
+  savePublications: (newPubs: PublicationItem[]) => void;
   onClose: () => void;
   onResetToDefault: () => void;
 }
@@ -50,16 +54,133 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   saveOrders,
   messages,
   saveMessages,
+  publications,
+  savePublications,
   onClose,
   onResetToDefault,
 }) => {
-  const [activeTab, setActiveTab] = useState<'orders' | 'messages' | 'books' | 'content' | 'backup'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'messages' | 'publications' | 'books' | 'content' | 'backup'>('orders');
   const [orderFilter, setOrderFilter] = useState<'all' | 'preorder' | 'order' | 'uus' | 'kinnitatud' | 'postitatud'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [saveSuccessMsg, setSaveSuccessMsg] = useState(false);
   const [newOrderModalOpen, setNewOrderModalOpen] = useState(false);
   const [newBookModalOpen, setNewBookModalOpen] = useState(false);
   const [editingBook, setEditingBook] = useState<BookItem | null>(null);
+
+  // New Publication Modal State
+  const [newPubModalOpen, setNewPubModalOpen] = useState(false);
+  const [newPubData, setNewPubData] = useState<{
+    title: string;
+    author: string;
+    category: string;
+    description: string;
+    pages: number;
+    file: File | null;
+  }>({
+    title: '',
+    author: 'Kirjastus Saagu Valgus',
+    category: 'Infovoldik',
+    description: '',
+    pages: 2,
+    file: null
+  });
+
+  // Publication Handlers
+  const handleUploadPublication = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPubData.title.trim()) return;
+
+    const commitPublication = (pdfUrl?: string, fileName?: string, fileSize?: string) => {
+      const newPub: PublicationItem = {
+        id: 'pub-' + Date.now(),
+        title: newPubData.title,
+        author: newPubData.author || 'Kirjastus Saagu Valgus',
+        category: newPubData.category || 'Trükis',
+        description: newPubData.description || 'Kirjastuse ametlik väljaanne',
+        pages: Number(newPubData.pages) || 2,
+        uploadedAt: new Date().toISOString().split('T')[0],
+        fileName: fileName || `${newPubData.title.replace(/\s+/g, '_')}.pdf`,
+        fileSize: fileSize || '1.2 MB',
+        pdfUrl: pdfUrl,
+        downloadCount: 0,
+        contentPages: [
+          {
+            pageNumber: 1,
+            heading: newPubData.title,
+            text: newPubData.description || 'Kirjastuse ametlik infotrükis.'
+          }
+        ]
+      };
+      savePublications([newPub, ...publications]);
+      setNewPubModalOpen(false);
+      setNewPubData({
+        title: '',
+        author: 'Kirjastus Saagu Valgus',
+        category: 'Infovoldik',
+        description: '',
+        pages: 2,
+        file: null
+      });
+      notifySaved();
+    };
+
+    if (newPubData.file) {
+      const reader = new FileReader();
+      const fileName = newPubData.file.name;
+      const sizeMb = (newPubData.file.size / (1024 * 1024)).toFixed(1) + ' MB';
+      reader.onload = () => {
+        commitPublication(reader.result as string, fileName, sizeMb);
+      };
+      reader.readAsDataURL(newPubData.file);
+    } else {
+      commitPublication();
+    }
+  };
+
+  const handleDownloadPublication = (pub: PublicationItem) => {
+    if (pub.pdfUrl) {
+      const a = document.createElement('a');
+      a.href = pub.pdfUrl;
+      a.download = pub.fileName || `${pub.title.replace(/\s+/g, '_')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      return;
+    }
+    const docText = `======================================================
+KIRJASTUS SAAGU VALGUS - TRÜKIS
+======================================================
+Pealkiri: ${pub.title}
+Kategooria: ${pub.category}
+Autor: ${pub.author || 'Kirjastus Saagu Valgus'}
+Kuupäev: ${pub.uploadedAt}
+Kirjeldus: ${pub.description}
+
+------------------------------------------------------
+${(pub.contentPages || []).map(p => `
+[ LEHEKÜLG ${p.pageNumber} ]
+${p.heading.toUpperCase()}
+
+${p.text}
+`).join('\n------------------------------------------------------\n')}
+======================================================`;
+    const blob = new Blob([docText], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = pub.fileName ? pub.fileName.replace('.pdf', '.txt') : `${pub.title.replace(/\s+/g, '_')}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDeletePublication = (pubId: string) => {
+    if (window.confirm('Kas oled kindel, et soovid selle trükise kustutada?')) {
+      savePublications(publications.filter(p => p.id !== pubId));
+      notifySaved();
+    }
+  };
 
   // New Manual Order State
   const [manualOrder, setManualOrder] = useState<{
@@ -191,7 +312,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // CSV Export for orders
   const handleExportOrdersCSV = () => {
-    const headers = ['ID', 'Tüüp', 'Kuupäev', 'Nimi', 'E-post', 'Telefon', 'Aadress / Pakiautomaat', 'Raamat', 'Kogus', 'Staatus', 'Märkused'];
+    const headers = ['ID', 'Tüüp', 'Kuupäev', 'Nimi', 'E-post', 'Telefon', 'Aadress / Märkused', 'Raamat', 'Kogus', 'Staatus', 'Märkused'];
     const rows = orders.map(ord => [
       ord.id,
       ord.type === 'preorder' ? 'ETTETELLIMINE' : 'TAVATELLIMUS',
@@ -199,7 +320,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       `"${ord.name.replace(/"/g, '""')}"`,
       ord.email,
       `"${ord.phone}"`,
-      `"${ord.address.replace(/"/g, '""')}"`,
+      `"${(ord.address || '').replace(/"/g, '""')}"`,
       `"${ord.bookTitle.replace(/"/g, '""')}"`,
       ord.quantity,
       ord.status,
@@ -267,7 +388,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       const matchEmail = ord.email.toLowerCase().includes(q);
       const matchPhone = ord.phone.toLowerCase().includes(q);
       const matchBook = ord.bookTitle.toLowerCase().includes(q);
-      const matchAddress = ord.address.toLowerCase().includes(q);
+      const matchAddress = Boolean(ord.address && ord.address.toLowerCase().includes(q));
       return matchName || matchEmail || matchPhone || matchBook || matchAddress;
     }
     return true;
@@ -429,6 +550,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             {unreadMessagesCount > 0 && (
               <span className="w-2 h-2 rounded-full bg-red-500" />
             )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab('publications')}
+            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${
+              activeTab === 'publications' 
+                ? 'bg-[#1a6838] text-white shadow-sm' 
+                : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200'
+            }`}
+          >
+            <FileText className="w-4 h-4" />
+            <span>Trükised & PDF ({publications.length})</span>
           </button>
 
           <button
@@ -741,6 +874,94 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB: TRÜKISED & PDF FAILIDE HALDUS */}
+        {/* ========================================================================= */}
+        {activeTab === 'publications' && (
+          <div className="space-y-4">
+            <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-bold text-lg text-stone-900 font-display">Kirjastuse Trükised ja PDF failid</h3>
+                <p className="text-xs text-stone-500 max-w-xl">
+                  Laadi siia üles uusi PDF faile, infovoldikuid ja lehti. Külastajad saavad neid lehel vaadata ja printida. Samuti saad siit paneelist kõiki faile igal ajal alla laadida.
+                </p>
+              </div>
+              <button
+                onClick={() => setNewPubModalOpen(true)}
+                className="px-4 py-2.5 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer shadow-xs shrink-0"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Laadi üles uus PDF trükis</span>
+              </button>
+            </div>
+
+            {/* Publications Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {publications.map((pub) => (
+                <div
+                  key={pub.id}
+                  className="bg-white rounded-2xl border border-stone-200 p-5 shadow-xs flex flex-col justify-between space-y-4 hover:border-[#1a6838]/50 transition-colors"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-bold text-[#1a6838] bg-[#1a6838]/10 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                        {pub.category}
+                      </span>
+                      {pub.fileSize && (
+                        <span className="text-xs text-stone-400 font-mono">
+                          {pub.fileSize}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-900 flex items-center justify-center shrink-0">
+                        <FileText className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-sm text-stone-900 leading-snug">
+                          {pub.title}
+                        </h4>
+                        <p className="text-xs text-stone-500">
+                          {pub.author || 'Kirjastus Saagu Valgus'} • {pub.pages || pub.contentPages?.length || 1} lk
+                        </p>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-stone-600 line-clamp-3 leading-relaxed">
+                      {pub.description}
+                    </p>
+
+                    <div className="text-[11px] text-stone-400">
+                      Lisatud: {pub.uploadedAt}
+                    </div>
+                  </div>
+
+                  {/* Actions: Download PDF (Nõutud: administ peab saama alla laadida) & Delete */}
+                  <div className="pt-3 border-t border-stone-100 flex items-center justify-between gap-2">
+                    <button
+                      onClick={() => handleDownloadPublication(pub)}
+                      className="flex-1 py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#1a6838] border border-emerald-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      title="Laadi see PDF fail alla arvutisse"
+                    >
+                      <Download className="w-3.5 h-3.5 text-[#1a6838]" />
+                      <span>Laadi alla (PDF)</span>
+                    </button>
+
+                    <button
+                      onClick={() => handleDeletePublication(pub.id)}
+                      className="p-2 rounded-xl text-stone-400 hover:text-red-600 hover:bg-red-50 border border-stone-200 transition-colors cursor-pointer"
+                      title="Kustuta trükis"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -1307,6 +1528,132 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Laadi üles uus PDF trükis */}
+      {newPubModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-stone-300 shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="px-6 py-4 bg-[#144225] text-white flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-amber-300" />
+                <h3 className="font-bold text-base">Laadi üles uus PDF trükis</h3>
+              </div>
+              <button 
+                onClick={() => setNewPubModalOpen(false)} 
+                className="p-1 rounded-lg hover:bg-white/10 text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUploadPublication} className="p-6 space-y-4 text-xs sm:text-sm">
+              {/* PDF file input */}
+              <div className="p-4 bg-stone-50 border-2 border-dashed border-stone-300 rounded-2xl text-center space-y-2">
+                <FileText className="w-8 h-8 text-[#1a6838] mx-auto opacity-70" />
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 cursor-pointer">
+                    Vali PDF fail arvutist
+                  </label>
+                  <p className="text-[11px] text-stone-500">Toetatud on .pdf failid (kuni 10 MB)</p>
+                </div>
+                <input
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setNewPubData({
+                        ...newPubData,
+                        file: file,
+                        title: newPubData.title || file.name.replace(/\.[^/.]+$/, '').replace(/_/g, ' ')
+                      });
+                    }
+                  }}
+                  className="text-xs text-stone-600 block mx-auto file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#1a6838] file:text-white hover:file:bg-[#15542d] cursor-pointer"
+                />
+                {newPubData.file && (
+                  <p className="text-xs font-bold text-[#1a6838]">
+                    Valitud fail: {newPubData.file.name} ({(newPubData.file.size / 1024).toFixed(0)} KB)
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">Trükise pealkiri *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="nt Saagu Valgus: Tõde ja vabanemine"
+                  value={newPubData.title}
+                  onChange={(e) => setNewPubData({ ...newPubData, title: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Kategooria</label>
+                  <input
+                    type="text"
+                    placeholder="nt Infovoldik, Juhendmaterjal"
+                    value={newPubData.category}
+                    onChange={(e) => setNewPubData({ ...newPubData, category: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Lehekülgi</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={newPubData.pages}
+                    onChange={(e) => setNewPubData({ ...newPubData, pages: parseInt(e.target.value) || 1 })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">Autori või kirjastuse märge</label>
+                <input
+                  type="text"
+                  value={newPubData.author}
+                  onChange={(e) => setNewPubData({ ...newPubData, author: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">Kirjeldus ja tutvustus</label>
+                <textarea
+                  rows={3}
+                  placeholder="Lühike kokkuvõte trükise teemast..."
+                  value={newPubData.description}
+                  onChange={(e) => setNewPubData({ ...newPubData, description: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setNewPubModalOpen(false)}
+                  className="flex-1 py-2.5 rounded-xl border border-stone-300 font-bold text-stone-600 hover:bg-stone-50 cursor-pointer"
+                >
+                  Loobu
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white font-bold transition-colors cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
+                >
+                  <Upload className="w-4 h-4" />
+                  <span>Salvesta ja laadi üles</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
