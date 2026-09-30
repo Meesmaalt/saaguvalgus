@@ -49,8 +49,20 @@ interface AdminDashboardProps {
   saveMessages: (newMessages: ContactMessage[]) => void;
   publications: PublicationItem[];
   savePublications: (newPubs: PublicationItem[]) => void;
+  onUploadPublication?: (data: {
+    title: string;
+    author?: string;
+    category?: string;
+    description?: string;
+    pages?: number;
+    fileName?: string;
+    fileSize?: string;
+    pdfBase64?: string;
+    contentPages?: any[];
+  }) => Promise<PublicationItem>;
+  onDeletePublication?: (id: string) => Promise<void>;
   adminPassword?: string;
-  onChangePassword?: (newPassword: string) => void;
+  onChangePassword?: (currentPassword: string, newPassword: string) => Promise<{ success: boolean; error?: string }>;
   onLogout?: () => void;
   onClose: () => void;
   onResetToDefault: () => void;
@@ -65,6 +77,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   saveMessages,
   publications,
   savePublications,
+  onUploadPublication,
+  onDeletePublication,
   adminPassword = 'admin',
   onChangePassword,
   onLogout,
@@ -87,16 +101,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [pwdChangeErrorMsg, setPwdChangeErrorMsg] = useState('');
   const [showPasswordChange, setShowPasswordChange] = useState(false);
 
-  const handlePasswordChangeSubmit = (e: React.FormEvent) => {
+  const handlePasswordChangeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setPwdChangeStatus('idle');
     setPwdChangeErrorMsg('');
 
-    if (currentPwdInput !== adminPassword && currentPwdInput !== 'admin') {
-      setPwdChangeStatus('error');
-      setPwdChangeErrorMsg('Praegune parool on vale!');
-      return;
-    }
     if (newPwdInput.length < 4) {
       setPwdChangeStatus('error');
       setPwdChangeErrorMsg('Uus parool peab olema vähemalt 4 tähemärki pikk!');
@@ -109,7 +118,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     }
 
     if (onChangePassword) {
-      onChangePassword(newPwdInput);
+      const res = await onChangePassword(currentPwdInput, newPwdInput);
+      if (res && !res.success) {
+        setPwdChangeStatus('error');
+        setPwdChangeErrorMsg(res.error || 'Praegune parool on vale!');
+        return;
+      }
     }
     setPwdChangeStatus('success');
     setCurrentPwdInput('');
@@ -137,32 +151,72 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   });
 
   // Publication Handlers
-  const handleUploadPublication = (e: React.FormEvent) => {
+  const [isUploadingPub, setIsUploadingPub] = useState(false);
+
+  const handleUploadPublication = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPubData.title.trim()) return;
 
-    const commitPublication = (pdfUrl?: string, fileName?: string, fileSize?: string) => {
-      const newPub: PublicationItem = {
-        id: 'pub-' + Date.now(),
-        title: newPubData.title,
-        author: newPubData.author || 'Kirjastus Saagu Valgus',
-        category: newPubData.category || 'Trükis',
-        description: newPubData.description || 'Kirjastuse ametlik väljaanne',
-        pages: Number(newPubData.pages) || 2,
-        uploadedAt: new Date().toISOString().split('T')[0],
-        fileName: fileName || `${newPubData.title.replace(/\s+/g, '_')}.pdf`,
-        fileSize: fileSize || '1.2 MB',
-        pdfUrl: pdfUrl,
-        downloadCount: 0,
-        contentPages: [
-          {
-            pageNumber: 1,
-            heading: newPubData.title,
-            text: newPubData.description || 'Kirjastuse ametlik infotrükis.'
-          }
-        ]
-      };
-      savePublications([newPub, ...publications]);
+    setIsUploadingPub(true);
+    try {
+      let pdfBase64: string | undefined = undefined;
+      let fileName: string | undefined = undefined;
+      let fileSize: string | undefined = undefined;
+
+      if (newPubData.file) {
+        fileName = newPubData.file.name;
+        fileSize = (newPubData.file.size / (1024 * 1024)).toFixed(1) + ' MB';
+        pdfBase64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(newPubData.file!);
+        });
+      }
+
+      if (onUploadPublication) {
+        const created = await onUploadPublication({
+          title: newPubData.title,
+          author: newPubData.author || 'Kirjastus Saagu Valgus',
+          category: newPubData.category || 'Trükis',
+          description: newPubData.description || 'Kirjastuse ametlik väljaanne',
+          pages: Number(newPubData.pages) || 2,
+          fileName,
+          fileSize,
+          pdfBase64,
+          contentPages: [
+            {
+              pageNumber: 1,
+              heading: newPubData.title,
+              text: newPubData.description || 'Kirjastuse ametlik infotrükis.'
+            }
+          ]
+        });
+        savePublications([created, ...publications]);
+      } else {
+        const newPub: PublicationItem = {
+          id: 'pub-' + Date.now(),
+          title: newPubData.title,
+          author: newPubData.author || 'Kirjastus Saagu Valgus',
+          category: newPubData.category || 'Trükis',
+          description: newPubData.description || 'Kirjastuse ametlik väljaanne',
+          pages: Number(newPubData.pages) || 2,
+          uploadedAt: new Date().toISOString().split('T')[0],
+          fileName: fileName || `${newPubData.title.replace(/\s+/g, '_')}.pdf`,
+          fileSize: fileSize || '1.2 MB',
+          pdfUrl: pdfBase64,
+          downloadCount: 0,
+          contentPages: [
+            {
+              pageNumber: 1,
+              heading: newPubData.title,
+              text: newPubData.description || 'Kirjastuse ametlik infotrükis.'
+            }
+          ]
+        };
+        savePublications([newPub, ...publications]);
+      }
+
       setNewPubModalOpen(false);
       setNewPubData({
         title: '',
@@ -173,18 +227,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         file: null
       });
       notifySaved();
-    };
-
-    if (newPubData.file) {
-      const reader = new FileReader();
-      const fileName = newPubData.file.name;
-      const sizeMb = (newPubData.file.size / (1024 * 1024)).toFixed(1) + ' MB';
-      reader.onload = () => {
-        commitPublication(reader.result as string, fileName, sizeMb);
-      };
-      reader.readAsDataURL(newPubData.file);
-    } else {
-      commitPublication();
+    } catch (err: any) {
+      alert('Viga trükise lisamisel: ' + (err?.message || 'Palun proovige uuesti'));
+    } finally {
+      setIsUploadingPub(false);
     }
   };
 
@@ -226,8 +272,11 @@ ${p.text}
     URL.revokeObjectURL(url);
   };
 
-  const handleDeletePublication = (pubId: string) => {
+  const handleDeletePublication = async (pubId: string) => {
     if (window.confirm('Kas oled kindel, et soovid selle trükise kustutada?')) {
+      if (onDeletePublication) {
+        await onDeletePublication(pubId);
+      }
       savePublications(publications.filter(p => p.id !== pubId));
       notifySaved();
     }
@@ -1495,8 +1544,8 @@ ${p.text}
                     <span>Näita sisestatud paroole</span>
                   </label>
 
-                  <span className="text-[11px] text-stone-400">
-                    Aktiivne parool: <strong className="font-mono text-stone-700">{adminPassword}</strong>
+                  <span className="text-[11px] text-stone-500 font-medium">
+                    🛡️ Parool on salvestatud serverisse ja kehtib kõigis seadmetes
                   </span>
                 </div>
 

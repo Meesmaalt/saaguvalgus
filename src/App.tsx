@@ -47,6 +47,7 @@ import { INITIAL_SITE_CONTENT, INITIAL_PUBLICATIONS } from './data';
 import { SiteContent, QuestionItem, BookItem, BibleVerse, TestimonialItem, OrderItem, ContactMessage, PublicationItem } from './types';
 import { AdminDashboard } from './AdminDashboard';
 import { PublicationsModal } from './PublicationsModal';
+import { api } from './api';
 
 const STORAGE_KEY = 'saaguvalgus_site_content_v6';
 const ORDERS_STORAGE_KEY = 'saaguvalgus_orders_v2';
@@ -248,38 +249,14 @@ export default function App() {
     return INITIAL_SITE_CONTENT;
   });
 
-  // Orders State (Persisted in LocalStorage)
-  const [orders, setOrders] = useState<OrderItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(ORDERS_STORAGE_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error('Failed to parse orders:', e);
-    }
-    return INITIAL_ORDERS;
-  });
+  // Orders State (Persisted in Server)
+  const [orders, setOrders] = useState<OrderItem[]>(INITIAL_ORDERS);
 
-  // Contact Messages State (Persisted in LocalStorage)
-  const [messages, setMessages] = useState<ContactMessage[]>(() => {
-    try {
-      const saved = localStorage.getItem(MESSAGES_STORAGE_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error('Failed to parse contact messages:', e);
-    }
-    return INITIAL_MESSAGES;
-  });
+  // Contact Messages State (Persisted in Server)
+  const [messages, setMessages] = useState<ContactMessage[]>(INITIAL_MESSAGES);
 
-  // Publications (Trükised / PDF) State (Persisted in LocalStorage)
-  const [publications, setPublications] = useState<PublicationItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(PUBLICATIONS_STORAGE_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error('Failed to parse publications:', e);
-    }
-    return INITIAL_PUBLICATIONS;
-  });
+  // Publications (Trükised / PDF) State (Persisted in Server & Shared across all devices)
+  const [publications, setPublications] = useState<PublicationItem[]>(INITIAL_PUBLICATIONS);
   const [isPublicationsOpen, setIsPublicationsOpen] = useState(false);
 
   const [activeCentralQuestion, setActiveCentralQuestion] = useState<string>('noidade-selgeltnagijate-vagi');
@@ -300,27 +277,32 @@ export default function App() {
   const [orderSubmitted, setOrderSubmitted] = useState(false);
   const [lastSubmittedId, setLastSubmittedId] = useState('');
 
-  // Admin View & Authentication State with Session Storage & Customizable Password
+  // Admin View & Authentication State with Session Storage & Server Authentication
   const [isAdminView, setIsAdminView] = useState(() => typeof window !== 'undefined' && window.location.hash === '#admin');
-  const [adminPassword, setAdminPassword] = useState<string>(() => {
-    try {
-      const saved = localStorage.getItem(ADMIN_PASSWORD_KEY);
-      if (saved) return saved;
-    } catch (e) {
-      console.error('Failed to parse admin password:', e);
-    }
-    return DEFAULT_ADMIN_PASSWORD;
-  });
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
-    try {
-      return sessionStorage.getItem(ADMIN_SESSION_KEY) === 'true';
-    } catch {
-      return false;
-    }
-  });
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [adminAuthError, setAdminAuthError] = useState(false);
+  const [adminAuthErrorMsg, setAdminAuthErrorMsg] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  // Fetch initial data from server on startup
+  useEffect(() => {
+    api.fetchContent().then(setContent).catch(console.error);
+    api.fetchPublications().then(setPublications).catch(console.error);
+    api.fetchOrders().then(setOrders).catch(console.error);
+    api.fetchMessages().then(setMessages).catch(console.error);
+
+    const token = sessionStorage.getItem(ADMIN_SESSION_KEY);
+    if (token) {
+      api.verifySession(token).then((valid) => {
+        setIsAdminAuthenticated(valid);
+        if (!valid) sessionStorage.removeItem(ADMIN_SESSION_KEY);
+      }).catch(() => {
+        setIsAdminAuthenticated(false);
+      });
+    }
+  }, []);
 
   // Sync hash with admin view
   useEffect(() => {
@@ -353,57 +335,67 @@ export default function App() {
     closeAdmin();
   };
 
-  const handleChangeAdminPassword = (newPwd: string) => {
-    setAdminPassword(newPwd);
+  const handleChangeAdminPassword = async (currentPwd: string, newPwd: string) => {
     try {
-      localStorage.setItem(ADMIN_PASSWORD_KEY, newPwd);
-    } catch (e) {
-      console.error('Failed to save admin password:', e);
+      const res = await api.changeAdminPassword(currentPwd, newPwd);
+      if (res.success) {
+        if (res.token) {
+          try {
+            sessionStorage.setItem(ADMIN_SESSION_KEY, res.token);
+          } catch (e) {
+            console.error(e);
+          }
+        }
+        return { success: true };
+      }
+      return { success: false, error: res.error || 'Parooli muutmine ebaõnnestus' };
+    } catch (err: any) {
+      return { success: false, error: err?.message || 'Ühenduse viga serveriga' };
     }
   };
 
-  // Save content to localStorage
+  // Save content to Server
   const saveContent = (newContent: SiteContent) => {
     setContent(newContent);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newContent));
-    } catch (e) {
-      console.error('Error saving content:', e);
-    }
+    api.saveContent(newContent).catch(err => {
+      console.error('Error saving content to server:', err);
+    });
   };
 
-  // Save orders to localStorage
+  // Save orders to state
   const saveOrders = (newOrders: OrderItem[]) => {
     setOrders(newOrders);
-    try {
-      localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(newOrders));
-    } catch (e) {
-      console.error('Error saving orders:', e);
-    }
   };
 
-  // Save contact messages to localStorage
+  // Save contact messages to state
   const saveMessages = (newMessages: ContactMessage[]) => {
     setMessages(newMessages);
-    try {
-      localStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(newMessages));
-    } catch (e) {
-      console.error('Error saving messages:', e);
-    }
   };
 
-  // Save publications to localStorage
+  // Save publications to state
   const savePublications = (newPubs: PublicationItem[]) => {
     setPublications(newPubs);
-    try {
-      localStorage.setItem(PUBLICATIONS_STORAGE_KEY, JSON.stringify(newPubs));
-    } catch (e) {
-      console.error('Error saving publications:', e);
-    }
   };
 
-  const handleUploadPublication = (newPub: PublicationItem) => {
-    savePublications([newPub, ...publications]);
+  const handleUploadPublication = async (data: {
+    title: string;
+    author?: string;
+    category?: string;
+    description?: string;
+    pages?: number;
+    fileName?: string;
+    fileSize?: string;
+    pdfBase64?: string;
+    contentPages?: any[];
+  }) => {
+    const created = await api.uploadPublication(data);
+    setPublications(prev => [created, ...prev]);
+    return created;
+  };
+
+  const handleDeletePublication = async (id: string) => {
+    await api.deletePublication(id);
+    setPublications(prev => prev.filter(p => p.id !== id));
   };
 
   // Pure Pre-Order Openers (ainult ettetellimine)
@@ -420,64 +412,116 @@ export default function App() {
   };
 
   // Order submission (Pure preorder)
-  const handleOrderSubmit = (e: React.FormEvent) => {
+  const handleOrderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedBookForOrder) return;
-    const orderId = 'ord-' + Date.now().toString().slice(-6);
-    const newOrd: OrderItem = {
-      id: orderId,
-      type: 'preorder',
-      bookId: selectedBookForOrder.id,
-      bookTitle: selectedBookForOrder.title,
-      quantity: orderQuantity,
-      name: orderData.name,
-      email: orderData.email,
-      phone: orderData.phone,
-      notes: orderData.notes,
-      status: 'uus',
-      createdAt: new Date().toISOString()
-    };
-    saveOrders([newOrd, ...orders]);
-    setLastSubmittedId(orderId);
-    setOrderSubmitted(true);
-  };
-
-  // Contact form submission (without prayer requests)
-  const handleContactSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const msgId = 'msg-' + Date.now().toString().slice(-6);
-    const newMsg: ContactMessage = {
-      id: msgId,
-      name: formData.name,
-      email: formData.email,
-      message: formData.message,
-      createdAt: new Date().toISOString(),
-      read: false
-    };
-    saveMessages([newMsg, ...messages]);
-    setFormSent(true);
-    setFormData({ name: '', email: '', message: '' });
-  };
-
-  const handleResetToDefault = () => {
-    if (window.confirm('Kas oled kindel, et soovid taastada lehe esialgse sisu?')) {
-      saveContent(INITIAL_SITE_CONTENT);
+    try {
+      const created = await api.createOrder({
+        type: 'preorder',
+        bookId: selectedBookForOrder.id,
+        bookTitle: selectedBookForOrder.title,
+        quantity: orderQuantity,
+        name: orderData.name,
+        email: orderData.email,
+        phone: orderData.phone,
+        notes: orderData.notes,
+      });
+      setOrders(prev => [created, ...prev]);
+      setLastSubmittedId(created.id);
+      setOrderSubmitted(true);
+    } catch (err: any) {
+      console.error('Order creation error, fallback:', err);
+      const orderId = 'ord-' + Date.now().toString().slice(-6);
+      const newOrd: OrderItem = {
+        id: orderId,
+        type: 'preorder',
+        bookId: selectedBookForOrder.id,
+        bookTitle: selectedBookForOrder.title,
+        quantity: orderQuantity,
+        name: orderData.name,
+        email: orderData.email,
+        phone: orderData.phone,
+        notes: orderData.notes,
+        status: 'uus',
+        createdAt: new Date().toISOString()
+      };
+      setOrders(prev => [newOrd, ...prev]);
+      setLastSubmittedId(orderId);
+      setOrderSubmitted(true);
     }
   };
 
-  const handleAdminLogin = (e: React.FormEvent) => {
+  // Contact form submission (without prayer requests)
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const created = await api.createMessage({
+        name: formData.name,
+        email: formData.email,
+        message: formData.message,
+      });
+      setMessages(prev => [created, ...prev]);
+      setFormSent(true);
+      setFormData({ name: '', email: '', message: '' });
+    } catch (err) {
+      console.error('Message creation error, fallback:', err);
+      const msgId = 'msg-' + Date.now().toString().slice(-6);
+      const newMsg: ContactMessage = {
+        id: msgId,
+        name: formData.name,
+        email: formData.email,
+        message: formData.message,
+        createdAt: new Date().toISOString(),
+        read: false
+      };
+      setMessages(prev => [newMsg, ...prev]);
+      setFormSent(true);
+      setFormData({ name: '', email: '', message: '' });
+    }
+  };
+
+  const handleResetToDefault = async () => {
+    if (window.confirm('Kas oled kindel, et soovid taastada lehe esialgse sisu?')) {
+      try {
+        const resetContent = await api.resetContent();
+        setContent(resetContent);
+      } catch (err) {
+        saveContent(INITIAL_SITE_CONTENT);
+      }
+    }
+  };
+
+  const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const input = adminPasswordInput.trim();
-    if (input === adminPassword || input === 'admin' || input === 'saaguvalgus' || input === '1234') {
-      setIsAdminAuthenticated(true);
-      setAdminAuthError(false);
-      try {
-        sessionStorage.setItem(ADMIN_SESSION_KEY, 'true');
-      } catch (err) {
-        console.error('Session storage error:', err);
+    if (!input) return;
+
+    setIsLoggingIn(true);
+    setAdminAuthError(false);
+    setAdminAuthErrorMsg('');
+
+    try {
+      const res = await api.loginAdmin(input);
+      if (res.success) {
+        setIsAdminAuthenticated(true);
+        setAdminAuthError(false);
+        setAdminAuthErrorMsg('');
+        if (res.token) {
+          try {
+            sessionStorage.setItem(ADMIN_SESSION_KEY, res.token);
+          } catch (err) {
+            console.error(err);
+          }
+        }
+      } else {
+        setAdminAuthError(true);
+        setAdminAuthErrorMsg(res.error || 'Vale parool!');
       }
-    } else {
+    } catch (err: any) {
       setAdminAuthError(true);
+      setAdminAuthErrorMsg('Viga sisselogimisel serverisse.');
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -578,7 +622,7 @@ export default function App() {
               <div>
                 <label className="block text-xs font-bold text-stone-700 mb-1.5 flex items-center justify-between">
                   <span>Admin parool</span>
-                  <span className="text-[11px] text-stone-400 font-normal">Vaikimisi: <strong>admin</strong></span>
+                  <span className="text-[11px] text-stone-400 font-normal">Turvaline ligipääs</span>
                 </label>
                 <div className="relative">
                   <input
@@ -604,7 +648,7 @@ export default function App() {
                 {adminAuthError && (
                   <div className="mt-2 p-2.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-center gap-1.5 font-medium">
                     <ShieldAlert className="w-4 h-4 shrink-0 text-red-600" />
-                    <span>Vale parool! Vaikimisi parool on <strong>admin</strong>.</span>
+                    <span>{adminAuthErrorMsg || 'Vale parool! Palun kontrolli sisestust.'}</span>
                   </div>
                 )}
               </div>
@@ -612,10 +656,11 @@ export default function App() {
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
+                  disabled={isLoggingIn}
+                  className="w-full py-3.5 rounded-xl bg-[#1a6838] hover:bg-[#15542d] disabled:opacity-50 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
                 >
                   <Unlock className="w-4 h-4" />
-                  <span>Logi sisse</span>
+                  <span>{isLoggingIn ? 'Kontrollin...' : 'Logi sisse'}</span>
                 </button>
               </div>
             </form>
@@ -648,7 +693,8 @@ export default function App() {
         saveMessages={saveMessages}
         publications={publications}
         savePublications={savePublications}
-        adminPassword={adminPassword}
+        onUploadPublication={handleUploadPublication}
+        onDeletePublication={handleDeletePublication}
         onChangePassword={handleChangeAdminPassword}
         onLogout={handleAdminLogout}
         onClose={closeAdmin}

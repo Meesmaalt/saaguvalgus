@@ -1,4 +1,4 @@
-import { SiteContent, PublicationItem } from './types';
+import { SiteContent, PublicationItem, OrderItem, ContactMessage } from './types';
 
 export const INITIAL_SITE_CONTENT: SiteContent = {
   brandName: 'Kirjastus Saagu Valgus',
@@ -456,3 +456,46 @@ export const INITIAL_PUBLICATIONS: PublicationItem[] = [
     ]
   }
 ];
+
+export const INITIAL_ORDERS: OrderItem[] = [
+  {
+    id: 'ord-101',
+    type: 'preorder',
+    bookId: 'saagu-valgus-raamat',
+    bookTitle: 'Saagu Valgus: Tõde ja vabanemine',
+    quantity: 2,
+    name: 'Marek Tamm',
+    email: 'marek.tamm@gmail.com',
+    phone: '+372 5551 2345',
+    address: 'Omniva Tallinna Kristiine Keskus',
+    notes: 'Soovin kindlasti esimese trüki eksemplari.',
+    status: 'uus',
+    createdAt: new Date(Date.now() - 3600000 * 5).toISOString()
+  },
+  {
+    id: 'ord-102',
+    type: 'order',
+    bookId: 'laps-ja-jumal',
+    bookTitle: 'Laps ja Jumal',
+    quantity: 1,
+    name: 'Kristiina Kallas',
+    email: 'kristiina.kallas@neti.ee',
+    phone: '+372 5123 9876',
+    address: 'Smartpost Tartu Kaubamaja',
+    notes: 'Palun pakkida kingitusena.',
+    status: 'kinnitatud',
+    createdAt: new Date(Date.now() - 3600000 * 24).toISOString()
+  }
+];
+
+export const INITIAL_MESSAGES: ContactMessage[] = [
+  {
+    id: 'msg-201',
+    name: 'Andres Kuusk',
+    email: 'andres.kuusk@mail.ee',
+    message: 'Tere! Kas teie trükiseid ja raamatuid saab tellida ka suuremas koguses kohalikule kogudusele levitamiseks?',
+    createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
+    read: false
+  }
+];
+
