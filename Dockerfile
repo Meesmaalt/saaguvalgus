@@ -1,9 +1,9 @@
-# Multi-stage Docker build for Kirjastus Saagu Valgus web application
-FROM node:20-alpine AS builder
+# Full-stack Docker build for Kirjastus Saagu Valgus web application
+FROM node:22-alpine
 
 WORKDIR /app
 
-# Copy dependency manifests
+# Copy package manifests
 COPY package*.json ./
 
 # Install dependencies cleanly
@@ -15,17 +15,10 @@ COPY . .
 # Build Vite application into /app/dist
 RUN npm run build
 
-# Production runtime using lightweight Nginx
-FROM nginx:alpine
+# Expose port (Cloud Run defaults to PORT env var or 3000)
+EXPOSE 3000
+ENV PORT=3000
+ENV NODE_ENV=production
 
-# Copy built static assets to Nginx html directory
-COPY --from=builder /app/dist /usr/share/nginx/html
-
-# Copy custom Nginx configuration for Single Page Application routing
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Expose standard HTTP port
-EXPOSE 80
-
-# Run nginx in foreground
-CMD ["nginx", "-g", "daemon off;"]
+# Run full-stack Node server (serves frontend dist/ + /api endpoints + /uploads)
+CMD ["node", "server.ts"]

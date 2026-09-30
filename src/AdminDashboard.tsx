@@ -445,12 +445,13 @@ ${p.text}
       exportedAt: new Date().toISOString(),
       content,
       orders,
-      messages
+      messages,
+      publications
     };
     const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(fullBackup, null, 2));
     const dlAnchor = document.createElement('a');
     dlAnchor.setAttribute('href', dataStr);
-    dlAnchor.setAttribute('download', `saaguvalgus-taiestaust-${new Date().toISOString().slice(0, 10)}.json`);
+    dlAnchor.setAttribute('download', `saaguvalgus-varundus-${new Date().toISOString().slice(0, 10)}.json`);
     document.body.appendChild(dlAnchor);
     dlAnchor.click();
     dlAnchor.remove();
@@ -466,7 +467,8 @@ ${p.text}
         if (parsed.content) saveContent(parsed.content);
         if (parsed.orders && Array.isArray(parsed.orders)) saveOrders(parsed.orders);
         if (parsed.messages && Array.isArray(parsed.messages)) saveMessages(parsed.messages);
-        alert('Kõik andmed (sisu, tellimused ja sõnumid) edukalt imporditud!');
+        if (parsed.publications && Array.isArray(parsed.publications)) savePublications(parsed.publications);
+        alert('Kõik andmed (sisu, trükised, tellimused ja sõnumid) edukalt imporditud!');
       } catch (err) {
         alert('Viga faili lugemisel. Palun kontrolli faili formaati.');
       }
@@ -1021,69 +1023,81 @@ ${p.text}
             </div>
 
             {/* Publications Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {publications.map((pub) => (
-                <div
-                  key={pub.id}
-                  className="bg-white rounded-2xl border border-stone-200 p-5 shadow-xs flex flex-col justify-between space-y-4 hover:border-[#1a6838]/50 transition-colors"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[11px] font-bold text-[#1a6838] bg-[#1a6838]/10 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
-                        {pub.category}
-                      </span>
-                      {pub.fileSize && (
-                        <span className="text-xs text-stone-400 font-mono">
-                          {pub.fileSize}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-900 flex items-center justify-center shrink-0">
-                        <FileText className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-sm text-stone-900 leading-snug">
-                          {pub.title}
-                        </h4>
-                        <p className="text-xs text-stone-500">
-                          {pub.author || 'Kirjastus Saagu Valgus'} • {pub.pages || pub.contentPages?.length || 1} lk
-                        </p>
-                      </div>
-                    </div>
-
-                    <p className="text-xs text-stone-600 line-clamp-3 leading-relaxed">
-                      {pub.description}
-                    </p>
-
-                    <div className="text-[11px] text-stone-400">
-                      Lisatud: {pub.uploadedAt}
-                    </div>
-                  </div>
-
-                  {/* Actions: Download PDF (Nõutud: administ peab saama alla laadida) & Delete */}
-                  <div className="pt-3 border-t border-stone-100 flex items-center justify-between gap-2">
-                    <button
-                      onClick={() => handleDownloadPublication(pub)}
-                      className="flex-1 py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#1a6838] border border-emerald-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                      title="Laadi see PDF fail alla arvutisse"
-                    >
-                      <Download className="w-3.5 h-3.5 text-[#1a6838]" />
-                      <span>Laadi alla (PDF)</span>
-                    </button>
-
-                    <button
-                      onClick={() => handleDeletePublication(pub.id)}
-                      className="p-2 rounded-xl text-stone-400 hover:text-red-600 hover:bg-red-50 border border-stone-200 transition-colors cursor-pointer"
-                      title="Kustuta trükis"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
+            {publications.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-stone-200 p-12 text-center space-y-3">
+                <div className="w-12 h-12 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center mx-auto">
+                  <FileText className="w-6 h-6 text-stone-400" />
                 </div>
-              ))}
-            </div>
+                <h4 className="font-bold text-stone-800">Ühtegi trükist ei ole veel lisatud</h4>
+                <p className="text-xs text-stone-500 max-w-md mx-auto">
+                  Vaikimisi 3 trükist on eemaldatud. Uute trükiste lisamiseks vajuta ülalolevat nuppu «Laadi üles uus PDF trükis».
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {publications.map((pub) => (
+                  <div
+                    key={pub.id}
+                    className="bg-white rounded-2xl border border-stone-200 p-5 shadow-xs flex flex-col justify-between space-y-4 hover:border-[#1a6838]/50 transition-colors"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] font-bold text-[#1a6838] bg-[#1a6838]/10 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                          {pub.category}
+                        </span>
+                        {pub.fileSize && (
+                          <span className="text-xs text-stone-400 font-mono">
+                            {pub.fileSize}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-900 flex items-center justify-center shrink-0">
+                          <FileText className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-sm text-stone-900 leading-snug">
+                            {pub.title}
+                          </h4>
+                          <p className="text-xs text-stone-500">
+                            {pub.author || 'Kirjastus Saagu Valgus'} • {pub.pages || pub.contentPages?.length || 1} lk
+                          </p>
+                        </div>
+                      </div>
+
+                      <p className="text-xs text-stone-600 line-clamp-3 leading-relaxed">
+                        {pub.description}
+                      </p>
+
+                      <div className="text-[11px] text-stone-400">
+                        Lisatud: {pub.uploadedAt}
+                      </div>
+                    </div>
+
+                    {/* Actions: Download PDF & Delete */}
+                    <div className="pt-3 border-t border-stone-100 flex items-center justify-between gap-2">
+                      <button
+                        onClick={() => handleDownloadPublication(pub)}
+                        className="flex-1 py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-[#1a6838] border border-emerald-200 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                        title="Laadi see PDF fail alla arvutisse"
+                      >
+                        <Download className="w-3.5 h-3.5 text-[#1a6838]" />
+                        <span>Laadi alla (PDF)</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleDeletePublication(pub.id)}
+                        className="p-2 rounded-xl text-stone-400 hover:text-red-600 hover:bg-red-50 border border-stone-200 transition-colors cursor-pointer"
+                        title="Kustuta trükis"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
