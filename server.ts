@@ -414,9 +414,23 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Saagu Valgus Server running on http://0.0.0.0:${PORT}`);
+  const primaryPort = PORT;
+  app.listen(primaryPort, '0.0.0.0', () => {
+    console.log(`🚀 Saagu Valgus Server running on http://0.0.0.0:${primaryPort}`);
   });
+
+  // Support dual-port listening for Docker host mappings (-p 3002:80 or -p 3002:3000)
+  const secondaryPort = primaryPort === 80 ? 3000 : (primaryPort === 3000 ? 80 : null);
+  if (secondaryPort) {
+    try {
+      const secondaryServer = app.listen(secondaryPort, '0.0.0.0', () => {
+        console.log(`🚀 Also listening on http://0.0.0.0:${secondaryPort}`);
+      });
+      secondaryServer.on('error', () => {
+        // Port might be in use or require root privileges, ignore gracefully
+      });
+    } catch {}
+  }
 }
 
 startServer().catch((err) => {
