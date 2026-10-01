@@ -14,16 +14,17 @@ import {
   Maximize2,
   Minimize2,
   PanelLeftClose,
-  PanelLeft,
-  BookOpen
+  PanelLeft
 } from 'lucide-react';
 import { PublicationItem } from './types';
+import { UI_TRANSLATIONS, Language } from './translations';
 
 interface PublicationsModalProps {
   isOpen: boolean;
   onClose: () => void;
   publications: PublicationItem[];
   initialPublicationId?: string;
+  lang?: Language;
 }
 
 export const PublicationsModal: React.FC<PublicationsModalProps> = ({
@@ -31,6 +32,7 @@ export const PublicationsModal: React.FC<PublicationsModalProps> = ({
   onClose,
   publications,
   initialPublicationId,
+  lang = 'et',
 }) => {
   const [selectedId, setSelectedId] = useState<string>(() => {
     return initialPublicationId || publications[0]?.id || '';
@@ -42,6 +44,8 @@ export const PublicationsModal: React.FC<PublicationsModalProps> = ({
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isWideMode, setIsWideMode] = useState(false);
+
+  const t = UI_TRANSLATIONS[lang]?.publicationsModal || UI_TRANSLATIONS.et.publicationsModal;
 
   if (!isOpen) return null;
 
@@ -71,7 +75,6 @@ export const PublicationsModal: React.FC<PublicationsModalProps> = ({
     try {
       const printWindow = window.open('', '_blank', 'width=850,height=950,top=50,left=50');
       if (!printWindow) {
-        // Fallback to standard window.print if popups are blocked
         window.print();
         return;
       }
@@ -79,7 +82,7 @@ export const PublicationsModal: React.FC<PublicationsModalProps> = ({
       const pagesHtml = (currentPub.contentPages && currentPub.contentPages.length > 0)
         ? currentPub.contentPages.map((cp) => `
             <div class="page-block">
-              <div class="page-num">Lehekülg ${cp.pageNumber} / ${totalPages}</div>
+              <div class="page-num">${t.page} ${cp.pageNumber} / ${totalPages}</div>
               <div class="page-heading">${cp.heading}</div>
               <div class="page-text">${cp.text}</div>
             </div>
@@ -94,10 +97,10 @@ export const PublicationsModal: React.FC<PublicationsModalProps> = ({
       printWindow.document.open();
       printWindow.document.write(`
         <!DOCTYPE html>
-        <html lang="et">
+        <html lang="${lang}">
           <head>
             <meta charset="utf-8">
-            <title>${currentPub.title} - Kirjastus Saagu Valgus</title>
+            <title>${currentPub.title} - ${lang === 'en' ? 'Let There Be Light Publishing' : 'Kirjastus Saagu Valgus'}</title>
             <style>
               @page { 
                 size: A4 portrait; 
@@ -189,20 +192,20 @@ export const PublicationsModal: React.FC<PublicationsModalProps> = ({
           <body>
             <div class="header">
               <div>
-                <div class="brand">Kirjastus Saagu Valgus</div>
-                <div class="subbrand">Ametlik infotrükis ja evangeelne materjal</div>
+                <div class="brand">${lang === 'en' ? 'Let There Be Light Publishing' : 'Kirjastus Saagu Valgus'}</div>
+                <div class="subbrand">${lang === 'en' ? 'Official literature & evangelistic resources' : 'Ametlik infotrükis ja evangeelne materjal'}</div>
               </div>
-              <div class="date">${new Date().toLocaleDateString('et-EE')}</div>
+              <div class="date">${new Date().toLocaleDateString(lang === 'en' ? 'en-US' : 'et-EE')}</div>
             </div>
 
-            <span class="category">${currentPub.category || 'Trükis'}</span>
+            <span class="category">${currentPub.category || (lang === 'en' ? 'Publication' : 'Trükis')}</span>
             <h1 class="title">${currentPub.title}</h1>
             <p class="desc">${currentPub.description}</p>
 
             ${pagesHtml}
 
             <div class="footer">
-              <span>Kirjastus Saagu Valgus • info@saaguvalgus.eu</span>
+              <span>${lang === 'en' ? 'Let There Be Light Publishing • info@saaguvalgus.eu' : 'Kirjastus Saagu Valgus • info@saaguvalgus.eu'}</span>
               <span>www.saaguvalgus.eu</span>
             </div>
 
@@ -235,30 +238,29 @@ export const PublicationsModal: React.FC<PublicationsModalProps> = ({
       return;
     }
 
-    // Generate downloadable formatted document
     const content = `======================================================
-KIRJASTUS SAAGU VALGUS - AMETLIK TRÜKIS
+${lang === 'en' ? 'LET THERE BE LIGHT PUBLISHING - OFFICIAL PUBLICATION' : 'KIRJASTUS SAAGU VALGUS - AMETLIK TRÜKIS'}
 ======================================================
-Pealkiri: ${currentPub?.title}
-Kategooria: ${currentPub?.category}
-Autor: ${currentPub?.author || 'Kirjastus Saagu Valgus'}
-Kuupäev: ${currentPub?.uploadedAt || ''}
-Kirjeldus: ${currentPub?.description}
+${lang === 'en' ? 'Title' : 'Pealkiri'}: ${currentPub?.title}
+${lang === 'en' ? 'Category' : 'Kategooria'}: ${currentPub?.category}
+${lang === 'en' ? 'Author' : 'Autor'}: ${currentPub?.author || (lang === 'en' ? 'Let There Be Light Publishing' : 'Kirjastus Saagu Valgus')}
+${lang === 'en' ? 'Date' : 'Kuupäev'}: ${currentPub?.uploadedAt || ''}
+${lang === 'en' ? 'Description' : 'Kirjeldus'}: ${currentPub?.description}
 
 ------------------------------------------------------
-SISU:
+${lang === 'en' ? 'CONTENT:' : 'SISU:'}
 ------------------------------------------------------
 ${(currentPub?.contentPages || []).map(p => `
-[ LEHEKÜLG ${p.pageNumber} ]
+[ ${lang === 'en' ? 'PAGE' : 'LEHEKÜLG'} ${p.pageNumber} ]
 ${p.heading.toUpperCase()}
 
 ${p.text}
 `).join('\n------------------------------------------------------\n')}
 
 ======================================================
-Kirjastus Saagu Valgus
-Koduleht: https://saaguvalgus.eu
-E-post: info@saaguvalgus.eu
+${lang === 'en' ? 'Let There Be Light Publishing' : 'Kirjastus Saagu Valgus'}
+${lang === 'en' ? 'Website' : 'Koduleht'}: https://saaguvalgus.eu
+${lang === 'en' ? 'Email' : 'E-post'}: info@saaguvalgus.eu
 ======================================================`;
 
     const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
@@ -290,7 +292,7 @@ E-post: info@saaguvalgus.eu
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
               className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
-              title={isSidebarOpen ? "Peida trükiste nimekiri" : "Näita trükiste nimekirja"}
+              title={isSidebarOpen ? (lang === 'en' ? 'Hide list' : 'Peida trükiste nimekiri') : (lang === 'en' ? 'Show list' : 'Näita trükiste nimekirja')}
             >
               {isSidebarOpen ? <PanelLeftClose className="w-5 h-5 text-emerald-300" /> : <PanelLeft className="w-5 h-5 text-amber-300" />}
             </button>
@@ -301,13 +303,13 @@ E-post: info@saaguvalgus.eu
               </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-base sm:text-lg font-bold font-display tracking-tight leading-tight">Trükised</h2>
+                  <h2 className="text-base sm:text-lg font-bold font-display tracking-tight leading-tight">{t.title}</h2>
                   <span className="text-[11px] font-semibold bg-emerald-700/60 text-emerald-200 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                    PDF & Lugemine
+                    {t.badge}
                   </span>
                 </div>
                 <p className="text-xs text-emerald-100/80 hidden sm:block truncate max-w-md">
-                  Kirjastuse Saagu Valgus voldikud, infomaterjalid ja trükised
+                  {t.subtitle}
                 </p>
               </div>
             </div>
@@ -319,34 +321,34 @@ E-post: info@saaguvalgus.eu
             <button
               onClick={() => setIsWideMode(!isWideMode)}
               className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold hidden md:flex items-center gap-1.5 transition-colors cursor-pointer"
-              title={isWideMode ? "Lülita A4 lehevaatele" : "Lülita laiale vaatele"}
+              title={isWideMode ? t.a4View : t.wideView}
             >
               {isWideMode ? <Minimize2 className="w-4 h-4 text-amber-300" /> : <Maximize2 className="w-4 h-4 text-emerald-300" />}
-              <span>{isWideMode ? "A4 lehevaade" : "Lai vaade"}</span>
+              <span>{isWideMode ? t.a4View : t.wideView}</span>
             </button>
 
             <button
               onClick={handlePrint}
               className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-              title="Prindi see trükis välja (A4 formaat)"
+              title={t.print}
             >
               <Printer className="w-4 h-4" />
-              <span>Prindi</span>
+              <span>{t.print}</span>
             </button>
 
             <button
               onClick={handleDownload}
               className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-900 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
-              title="Laadi trükise fail alla arvutisse"
+              title={t.download}
             >
               <Download className="w-4 h-4 text-stone-900" />
-              <span className="hidden sm:inline">Laadi alla</span>
+              <span className="hidden sm:inline">{t.download}</span>
             </button>
 
             <button
               onClick={onClose}
               className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer ml-1"
-              title="Sulge vaatleja"
+              title={t.close}
             >
               <X className="w-5 h-5" />
             </button>
@@ -356,7 +358,7 @@ E-post: info@saaguvalgus.eu
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
           
-          {/* Left Sidebar: Publications Selector (Collapsible) */}
+          {/* Left Sidebar: Publications Selector */}
           {isSidebarOpen && (
             <div className="w-full md:w-72 lg:w-80 bg-white border-r border-stone-200 flex flex-col shrink-0 h-44 md:h-auto overflow-hidden animate-in slide-in-from-left-2 duration-150">
               
@@ -366,7 +368,7 @@ E-post: info@saaguvalgus.eu
                   <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
-                    placeholder="Otsi trükist..."
+                    placeholder={t.searchPlaceholder}
                     value={searchFilter}
                     onChange={(e) => setSearchFilter(e.target.value)}
                     className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-stone-200 bg-white focus:outline-none focus:ring-2 focus:ring-[#1a6838]"
@@ -385,7 +387,7 @@ E-post: info@saaguvalgus.eu
                           : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-100'
                       }`}
                     >
-                      {cat === 'all' ? 'Kõik' : cat}
+                      {cat === 'all' ? t.allCategories : cat}
                     </button>
                   ))}
                 </div>
@@ -395,7 +397,7 @@ E-post: info@saaguvalgus.eu
               <div className="flex-1 overflow-y-auto p-2.5 space-y-1.5">
                 {filteredPubs.length === 0 ? (
                   <div className="text-center py-8 text-stone-400 text-xs">
-                    Trükiseid ei leitud.
+                    {t.noPubs}
                   </div>
                 ) : (
                   filteredPubs.map((pub) => {
@@ -417,7 +419,7 @@ E-post: info@saaguvalgus.eu
                             {pub.category}
                           </span>
                           <span className="text-[10px] text-stone-400 font-medium">
-                            {pub.pages || pub.contentPages?.length || 1} lk
+                            {pub.pages || pub.contentPages?.length || 1} {lang === 'en' ? 'p.' : 'lk'}
                           </span>
                         </div>
 
@@ -438,12 +440,12 @@ E-post: info@saaguvalgus.eu
 
               {/* Sidebar Footer */}
               <div className="p-2.5 bg-stone-50 border-t border-stone-200 text-center text-[11px] text-stone-500">
-                Kirjastus Saagu Valgus väljaanded
+                {lang === 'en' ? 'Let There Be Light Publishing' : 'Kirjastus Saagu Valgus väljaanded'}
               </div>
             </div>
           )}
 
-          {/* Right Main Viewer Area (EXPANSIVE & GENEROUS WIDTH) */}
+          {/* Right Main Viewer Area */}
           <div className="flex-1 flex flex-col bg-[#e6ebe7] overflow-hidden">
             
             {/* Viewer Toolbar */}
@@ -451,7 +453,7 @@ E-post: info@saaguvalgus.eu
               
               <div className="flex items-center gap-3">
                 <span className="text-xs font-bold text-stone-700">
-                  Lehekülg {currentPage} / {totalPages}
+                  {t.page} {currentPage} {t.of} {totalPages}
                 </span>
 
                 <div className="flex items-center gap-1">
@@ -459,7 +461,7 @@ E-post: info@saaguvalgus.eu
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage <= 1}
                     className="p-1.5 rounded-lg border border-stone-200 hover:bg-stone-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                    title="Eelmine leht"
+                    title={t.prevPage}
                   >
                     <ChevronLeft className="w-4 h-4 text-stone-700" />
                   </button>
@@ -467,7 +469,7 @@ E-post: info@saaguvalgus.eu
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                     disabled={currentPage >= totalPages}
                     className="p-1.5 rounded-lg border border-stone-200 hover:bg-stone-100 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                    title="Järgmine leht"
+                    title={t.nextPage}
                   >
                     <ChevronRight className="w-4 h-4 text-stone-700" />
                   </button>
@@ -485,7 +487,7 @@ E-post: info@saaguvalgus.eu
                   <button
                     onClick={() => setZoomLevel(Math.max(80, zoomLevel - 15))}
                     className="p-1 hover:bg-white rounded cursor-pointer"
-                    title="Vähenda"
+                    title="Zoom Out"
                   >
                     <ZoomOut className="w-3.5 h-3.5 text-stone-600" />
                   </button>
@@ -493,7 +495,7 @@ E-post: info@saaguvalgus.eu
                   <button
                     onClick={() => setZoomLevel(Math.min(160, zoomLevel + 15))}
                     className="p-1 hover:bg-white rounded cursor-pointer"
-                    title="Suurenda"
+                    title="Zoom In"
                   >
                     <ZoomIn className="w-3.5 h-3.5 text-stone-600" />
                   </button>
@@ -502,19 +504,18 @@ E-post: info@saaguvalgus.eu
                 <button
                   onClick={handleCopyLink}
                   className="px-2.5 py-1.5 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 text-xs font-semibold text-stone-700 flex items-center gap-1 cursor-pointer transition-colors"
-                  title="Kopeeri link"
+                  title={t.copyLink}
                 >
                   {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5 text-stone-600" />}
-                  <span className="hidden sm:inline">{copiedLink ? 'Kopeeritud' : 'Jaga'}</span>
+                  <span className="hidden sm:inline">{copiedLink ? t.copiedLink : t.copyLink}</span>
                 </button>
               </div>
             </div>
 
-            {/* Document Reader Screen (Expansive, High-Readability A4 Canvas) */}
+            {/* Document Reader Screen */}
             <div className="flex-1 overflow-y-auto p-3 sm:p-6 md:p-8 flex justify-center items-start">
               
               {currentPub?.pdfUrl ? (
-                /* Native PDF rendering via iframe */
                 <div className="w-full h-full min-h-[550px] bg-white rounded-2xl shadow-md overflow-hidden border border-stone-300">
                   <iframe 
                     src={currentPub.pdfUrl} 
@@ -523,7 +524,6 @@ E-post: info@saaguvalgus.eu
                   />
                 </div>
               ) : (
-                /* Generously Spaced, Wide Printable Document View */
                 <div 
                   id="printable-publication-content"
                   style={{ 
@@ -542,7 +542,7 @@ E-post: info@saaguvalgus.eu
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-black uppercase tracking-widest text-[#1a6838]">
-                          Kirjastus Saagu Valgus
+                          {lang === 'en' ? 'Let There Be Light Publishing' : 'Kirjastus Saagu Valgus'}
                         </span>
                         <span className="text-stone-300">•</span>
                         <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">
@@ -556,7 +556,7 @@ E-post: info@saaguvalgus.eu
 
                     <div className="text-right shrink-0">
                       <span className="inline-block text-xs font-bold text-stone-600 bg-stone-100 px-3.5 py-1.5 rounded-full border border-stone-200 shadow-2xs">
-                        Lk {currentPage} / {totalPages}
+                        {t.page} {currentPage} {t.of} {totalPages}
                       </span>
                     </div>
                   </div>
@@ -568,7 +568,7 @@ E-post: info@saaguvalgus.eu
                     </div>
                   )}
 
-                  {/* Document Page Content (Generous text container & typography) */}
+                  {/* Document Page Content */}
                   <div className="space-y-5 min-h-[360px]">
                     {activePageData ? (
                       <>
@@ -581,7 +581,7 @@ E-post: info@saaguvalgus.eu
                       </>
                     ) : (
                       <div className="py-12 text-center text-stone-400">
-                        Lehekülje sisu laaditakse...
+                        {lang === 'en' ? 'Loading page content...' : 'Lehekülje sisu laaditakse...'}
                       </div>
                     )}
                   </div>
@@ -590,7 +590,7 @@ E-post: info@saaguvalgus.eu
                   <div className="pt-6 border-t border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs sm:text-sm text-stone-500">
                     <div className="flex items-center gap-2">
                       <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                      <span>Trükis sobib väljaprintimiseks A4 lehena</span>
+                      <span>{lang === 'en' ? 'Suitable for A4 home & church printing' : 'Trükis sobib väljaprintimiseks A4 lehena'}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <button
@@ -598,7 +598,7 @@ E-post: info@saaguvalgus.eu
                         className="text-[#1a6838] font-bold hover:underline flex items-center gap-1.5 cursor-pointer"
                       >
                         <Printer className="w-4 h-4" />
-                        <span>Prindi kohe</span>
+                        <span>{t.print}</span>
                       </button>
                       <span className="text-stone-300">•</span>
                       <button
@@ -606,7 +606,7 @@ E-post: info@saaguvalgus.eu
                         className="text-stone-700 font-bold hover:underline flex items-center gap-1.5 cursor-pointer"
                       >
                         <Download className="w-4 h-4" />
-                        <span>Salvesta dokument</span>
+                        <span>{t.download}</span>
                       </button>
                     </div>
                   </div>
@@ -619,7 +619,7 @@ E-post: info@saaguvalgus.eu
             {/* Bottom Page Navigation Bar */}
             <div className="bg-white border-t border-stone-200 px-4 sm:px-6 py-3 flex items-center justify-between text-xs text-stone-600 shrink-0 shadow-2xs">
               <span className="font-medium text-stone-600 truncate max-w-xs sm:max-w-md">
-                Dokument: <strong className="text-stone-900">{currentPub?.title}</strong>
+                {t.document} <strong className="text-stone-900">{currentPub?.title}</strong>
               </span>
 
               <div className="flex items-center gap-2">
@@ -628,14 +628,14 @@ E-post: info@saaguvalgus.eu
                   disabled={currentPage <= 1}
                   className="px-3.5 py-1.5 rounded-xl border border-stone-300 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed font-bold text-xs cursor-pointer transition-colors"
                 >
-                  Eelmine leht
+                  {t.prevPage}
                 </button>
                 <button
                   onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage >= totalPages}
                   className="px-4 py-1.5 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white disabled:opacity-40 disabled:cursor-not-allowed font-bold text-xs cursor-pointer transition-colors shadow-2xs"
                 >
-                  Järgmine leht
+                  {t.nextPage}
                 </button>
               </div>
             </div>
