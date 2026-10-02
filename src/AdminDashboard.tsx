@@ -1326,129 +1326,235 @@ ${p.text}
               ))}
             </div>
 
-            {/* Support / Bank Info */}
-            <div className="space-y-4 pt-4 border-t border-stone-200">
-              <h4 className="font-bold text-sm text-[#144225] uppercase tracking-wider">3. Kirjastuse Missioon & Raamatute Sektsioon</h4>
-              <div className="space-y-3">
+            {/* 3. Book Covers & Media Image Editor */}
+            <div className="space-y-6 pt-4 border-t border-[#E2D7C8]">
+              <h4 className="font-sans font-bold text-sm text-[#14532D] uppercase tracking-wider flex items-center gap-2">
+                <Upload className="w-4 h-4 text-[#14532D]" />
+                <span>3. Raamatute Kaanepildid & Meedia Pildid</span>
+              </h4>
+              <p className="text-xs text-stone-600 font-sans">
+                Laadi siin üles raamatute kaanepilte (PNG, JPG, WebP) või sisesta pildi otselink. Muudatused uuendavad pilti koheselt esilehel.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {content.books.map((book, bIdx) => (
+                  <div key={book.id} className="p-5 rounded-2xl bg-[#FAF7F2] border border-[#E2D7C8] space-y-4 shadow-2xs text-left">
+                    <div className="flex items-center justify-between border-b border-stone-200 pb-2">
+                      <span className="font-serif font-bold text-sm text-[#14532D]">«{book.title}»</span>
+                      <span className="text-[11px] font-mono text-stone-500">ID: {book.id}</span>
+                    </div>
+
+                    {/* Image Preview */}
+                    <div className="aspect-[3/4] rounded-xl overflow-hidden bg-white border border-stone-300 shadow-inner relative flex items-center justify-center">
+                      {book.coverImage ? (
+                        <img 
+                          src={book.coverImage} 
+                          alt={book.title} 
+                          className="w-full h-full object-cover" 
+                          referrerPolicy="no-referrer"
+                        />
+                      ) : (
+                        <div className="p-4 text-center space-y-2">
+                          <BookOpen className="w-8 h-8 text-stone-400 mx-auto" />
+                          <span className="text-xs font-sans text-stone-500 block">Standard kaanepilt kasutusel</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Image Upload Input */}
+                    <div className="space-y-2 font-sans">
+                      <label className="block text-xs font-bold text-stone-800">
+                        Laadi üles uus pildifail:
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              const base64 = reader.result as string;
+                              const updated = [...content.books];
+                              updated[bIdx].coverImage = base64;
+                              saveContent({ ...content, books: updated });
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                        className="block w-full text-xs text-stone-600 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#14532D] file:text-white hover:file:bg-[#0F3D24] cursor-pointer"
+                      />
+                    </div>
+
+                    {/* Image URL fallback input */}
+                    <div className="space-y-1 font-sans">
+                      <label className="block text-[11px] font-bold text-stone-700">
+                        Või pildi veebilink (URL):
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="https://..."
+                        value={book.coverImage || ''}
+                        onChange={(e) => {
+                          const updated = [...content.books];
+                          updated[bIdx].coverImage = e.target.value;
+                          saveContent({ ...content, books: updated });
+                        }}
+                        className="w-full px-3 py-2 rounded-lg border border-stone-300 text-xs font-mono bg-white"
+                      />
+                    </div>
+
+                    {book.coverImage && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = [...content.books];
+                          delete updated[bIdx].coverImage;
+                          saveContent({ ...content, books: updated });
+                        }}
+                        className="w-full py-1.5 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold transition-colors cursor-pointer"
+                      >
+                        Taasta algne pilt
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 4. Publisher Story & Mission */}
+            <div className="space-y-5 pt-4 border-t border-[#E2D7C8] bg-[#FAF7F2] p-6 rounded-2xl border border-[#E2D7C8]">
+              <h4 className="font-sans font-bold text-sm text-[#14532D] uppercase tracking-wider flex items-center gap-2">
+                <FileText className="w-4 h-4 text-[#14532D]" />
+                <span>4. Kirjastuse Missioon & Lugu</span>
+              </h4>
+              <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Kirjastuse missiooni pealkiri</label>
+                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Kirjastuse missiooni pealkiri</label>
                   <input
                     type="text"
                     value={content.publisherStoryTitle}
                     onChange={(e) => saveContent({ ...content, publisherStoryTitle: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-bold"
+                    className="w-full px-4 py-3 rounded-xl border border-stone-300 text-base sm:text-lg font-serif font-bold text-stone-900 bg-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Kirjastuse missiooni teksti sisu</label>
+                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Kirjastuse missiooni teksti sisu</label>
                   <textarea
-                    rows={4}
+                    rows={6}
                     value={content.publisherStoryText}
                     onChange={(e) => saveContent({ ...content, publisherStoryText: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-serif leading-relaxed"
+                    className="w-full p-4 rounded-xl border border-stone-300 text-base sm:text-lg font-serif leading-relaxed text-stone-900 bg-white"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Support / Bank Info */}
-            <div className="space-y-4 pt-4 border-t border-stone-200">
-              <h4 className="font-bold text-sm text-[#144225] uppercase tracking-wider">4. Toetuse pangaandmed & Tekstid</h4>
+            {/* 5. Support & Bank Information */}
+            <div className="space-y-5 pt-4 border-t border-[#E2D7C8] bg-[#FAF7F2] p-6 rounded-2xl border border-[#E2D7C8]">
+              <h4 className="font-sans font-bold text-sm text-[#14532D] uppercase tracking-wider flex items-center gap-2">
+                <Heart className="w-4 h-4 text-[#14532D]" />
+                <span>5. Toetuse pangaandmed & Tekstid</span>
+              </h4>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Toetuse sektsiooni pealkiri</label>
+                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Toetuse sektsiooni pealkiri</label>
                   <input
                     type="text"
                     value={content.support.title}
                     onChange={(e) => saveContent({ ...content, support: { ...content.support, title: e.target.value } })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-bold"
+                    className="w-full px-4 py-3 rounded-xl border border-stone-300 text-base sm:text-lg font-serif font-bold text-stone-900 bg-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Alapealkiri / Teema</label>
+                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Alapealkiri / Teema</label>
                   <input
                     type="text"
                     value={content.support.subtitle}
                     onChange={(e) => saveContent({ ...content, support: { ...content.support, subtitle: e.target.value } })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs"
+                    className="w-full px-4 py-3 rounded-xl border border-stone-300 text-sm sm:text-base font-bold text-stone-900 bg-white"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-stone-700 mb-1">Toetuse kirjelduse tekst</label>
+                <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Toetuse kirjelduse tekst</label>
                 <textarea
-                  rows={3}
+                  rows={4}
                   value={content.support.description}
                   onChange={(e) => saveContent({ ...content, support: { ...content.support, description: e.target.value } })}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs"
+                  className="w-full p-4 rounded-xl border border-stone-300 text-base sm:text-lg font-serif leading-relaxed text-stone-900 bg-white"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Saaja nimi (OÜ / Kirjastus)</label>
+                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Saaja nimi (OÜ / Kirjastus)</label>
                   <input
                     type="text"
                     value={content.support.recipientName}
                     onChange={(e) => saveContent({ ...content, support: { ...content.support, recipientName: e.target.value } })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-bold"
+                    className="w-full px-4 py-3 rounded-xl border border-stone-300 text-base font-serif font-bold text-stone-900 bg-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Pangakonto (IBAN)</label>
+                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Pangakonto (IBAN)</label>
                   <input
                     type="text"
                     value={content.support.iban}
                     onChange={(e) => saveContent({ ...content, support: { ...content.support, iban: e.target.value } })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-mono font-bold"
+                    className="w-full px-4 py-3 rounded-xl border border-stone-300 text-base font-mono font-bold text-[#14532D] bg-white"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Pank / Pangad</label>
+                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Pank / Pangad</label>
                   <input
                     type="text"
                     value={content.support.bankName}
                     onChange={(e) => saveContent({ ...content, support: { ...content.support, bankName: e.target.value } })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs"
+                    className="w-full px-4 py-3 rounded-xl border border-stone-300 text-sm font-bold text-stone-900 bg-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Selgitus (makse selgitus)</label>
+                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Selgitus (makse selgitus)</label>
                   <input
                     type="text"
                     value={content.support.explanation}
                     onChange={(e) => saveContent({ ...content, support: { ...content.support, explanation: e.target.value } })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs"
+                    className="w-full px-4 py-3 rounded-xl border border-stone-300 text-sm font-bold text-stone-900 bg-white"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Prayers Section */}
-            <div className="space-y-4 pt-4 border-t border-stone-200">
-              <h4 className="font-bold text-sm text-[#144225] uppercase tracking-wider">5. Päästepalve & Meie Isa Palve</h4>
+            {/* 6. Prayers Section */}
+            <div className="space-y-5 pt-4 border-t border-[#E2D7C8] bg-[#FAF7F2] p-6 rounded-2xl border border-[#E2D7C8]">
+              <h4 className="font-sans font-bold text-sm text-[#14532D] uppercase tracking-wider flex items-center gap-2">
+                <Flame className="w-4 h-4 text-[#14532D]" />
+                <span>6. Päästepalve & Meie Isa Palve</span>
+              </h4>
               
               <div>
-                <label className="block text-xs font-bold text-stone-700 mb-1">Päästepalve tekst</label>
+                <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Päästepalve tekst</label>
                 <textarea
-                  rows={6}
+                  rows={8}
                   value={content.salvationPrayerText}
                   onChange={(e) => saveContent({ ...content, salvationPrayerText: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-serif leading-relaxed"
+                  className="w-full p-4 rounded-xl border border-stone-300 text-base sm:text-lg font-serif leading-relaxed text-stone-900 bg-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-stone-700 mb-1">Meie Isa palve tekst</label>
+                <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Meie Isa palve tekst</label>
                 <textarea
-                  rows={4}
+                  rows={6}
                   value={content.lordPrayer.text}
                   onChange={(e) => saveContent({ ...content, lordPrayer: { ...content.lordPrayer, text: e.target.value } })}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-serif leading-relaxed"
+                  className="w-full p-4 rounded-xl border border-stone-300 text-base sm:text-lg font-serif leading-relaxed text-stone-900 bg-white"
                 />
               </div>
             </div>

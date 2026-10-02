@@ -26,6 +26,7 @@ export interface BookItem {
   price?: number;
   description: string;
   highlights: string[];
+  coverImage?: string; // Image data URL or file URL
   isFeatured?: boolean;
   isPreOrder?: boolean;
   preOrderNote?: string;

@@ -104,10 +104,11 @@ const renderAuthorParagraphs = (fullText: string) => {
   );
 };
 
-// Map book ID to its respective cover image
-const getBookCoverImage = (id: string) => {
-  if (id === 'laps-ja-jumal') return lapsJaJumalCover;
-  if (id === 'ma-olin-saatana-vang') return saatanaVangCover;
+// Map book object to its respective cover image
+const getBookCoverImage = (book: BookItem) => {
+  if (book.coverImage && book.coverImage.trim()) return book.coverImage;
+  if (book.id === 'laps-ja-jumal') return lapsJaJumalCover;
+  if (book.id === 'ma-olin-saatana-vang') return saatanaVangCover;
   return saaguValgusCover;
 };
 
@@ -897,7 +898,7 @@ export default function App() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {activeContent.books.map((book) => {
-                const coverImg = getBookCoverImage(book.id);
+                const coverImg = getBookCoverImage(book);
                 return (
                   <div key={book.id} className="bg-white rounded-3xl border border-[#E7E0D5] p-6 shadow-xs flex flex-col justify-between space-y-6">
                     
