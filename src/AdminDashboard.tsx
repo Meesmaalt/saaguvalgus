@@ -1320,15 +1320,71 @@ ${p.text}
 
             {/* Support / Bank Info */}
             <div className="space-y-4 pt-4 border-t border-stone-200">
-              <h4 className="font-bold text-sm text-[#144225] uppercase tracking-wider">3. Toetuse pangaandmed</h4>
+              <h4 className="font-bold text-sm text-[#144225] uppercase tracking-wider">3. Kirjastuse Missioon & Raamatute Sektsioon</h4>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">Kirjastuse missiooni pealkiri</label>
+                  <input
+                    type="text"
+                    value={content.publisherStoryTitle}
+                    onChange={(e) => saveContent({ ...content, publisherStoryTitle: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">Kirjastuse missiooni teksti sisu</label>
+                  <textarea
+                    rows={4}
+                    value={content.publisherStoryText}
+                    onChange={(e) => saveContent({ ...content, publisherStoryText: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-serif leading-relaxed"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Support / Bank Info */}
+            <div className="space-y-4 pt-4 border-t border-stone-200">
+              <h4 className="font-bold text-sm text-[#144225] uppercase tracking-wider">4. Toetuse pangaandmed & Tekstid</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Saaja nimi</label>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">Toetuse sektsiooni pealkiri</label>
+                  <input
+                    type="text"
+                    value={content.support.title}
+                    onChange={(e) => saveContent({ ...content, support: { ...content.support, title: e.target.value } })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-bold"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">Alapealkiri / Teema</label>
+                  <input
+                    type="text"
+                    value={content.support.subtitle}
+                    onChange={(e) => saveContent({ ...content, support: { ...content.support, subtitle: e.target.value } })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-stone-700 mb-1">Toetuse kirjelduse tekst</label>
+                <textarea
+                  rows={3}
+                  value={content.support.description}
+                  onChange={(e) => saveContent({ ...content, support: { ...content.support, description: e.target.value } })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">Saaja nimi (OÜ / Kirjastus)</label>
                   <input
                     type="text"
                     value={content.support.recipientName}
                     onChange={(e) => saveContent({ ...content, support: { ...content.support, recipientName: e.target.value } })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs"
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-bold"
                   />
                 </div>
                 <div>
@@ -1340,6 +1396,52 @@ ${p.text}
                     className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-mono font-bold"
                   />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">Pank / Pangad</label>
+                  <input
+                    type="text"
+                    value={content.support.bankName}
+                    onChange={(e) => saveContent({ ...content, support: { ...content.support, bankName: e.target.value } })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">Selgitus (makse selgitus)</label>
+                  <input
+                    type="text"
+                    value={content.support.explanation}
+                    onChange={(e) => saveContent({ ...content, support: { ...content.support, explanation: e.target.value } })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Prayers Section */}
+            <div className="space-y-4 pt-4 border-t border-stone-200">
+              <h4 className="font-bold text-sm text-[#144225] uppercase tracking-wider">5. Päästepalve & Meie Isa Palve</h4>
+              
+              <div>
+                <label className="block text-xs font-bold text-stone-700 mb-1">Päästepalve tekst</label>
+                <textarea
+                  rows={6}
+                  value={content.salvationPrayerText}
+                  onChange={(e) => saveContent({ ...content, salvationPrayerText: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-serif leading-relaxed"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-stone-700 mb-1">Meie Isa palve tekst</label>
+                <textarea
+                  rows={4}
+                  value={content.lordPrayer.text}
+                  onChange={(e) => saveContent({ ...content, lordPrayer: { ...content.lordPrayer, text: e.target.value } })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-serif leading-relaxed"
+                />
               </div>
             </div>
 

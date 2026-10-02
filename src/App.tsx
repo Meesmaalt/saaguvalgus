@@ -21,6 +21,7 @@ import { SiteContent, BookItem, OrderItem, ContactMessage, PublicationItem } fro
 import { AdminDashboard } from './AdminDashboard';
 import { PublicationsModal } from './PublicationsModal';
 import { LegalModal, LegalTab } from './LegalModal';
+import { BrandLogo } from './BrandLogo';
 import { api } from './api';
 import { SITE_CONTENT_EN, UI_TRANSLATIONS, Language } from './translations';
 
@@ -108,75 +109,6 @@ const getBookCoverImage = (id: string) => {
   if (id === 'laps-ja-jumal') return lapsJaJumalCover;
   if (id === 'ma-olin-saatana-vang') return saatanaVangCover;
   return saaguValgusCover;
-};
-
-// Official Kirjastus Saagu Valgus Brand Logo Component (Matching uploaded image.png 1:1)
-const BrandLogo: React.FC<{ size?: 'sm' | 'md' | 'lg'; className?: string }> = ({ size = 'md', className = '' }) => {
-  const isSm = size === 'sm';
-  const isLg = size === 'lg';
-
-  return (
-    <div className={`inline-flex items-center gap-3 select-none ${className}`}>
-      {/* Vector Mark: Open Book + Radiant Sun Rays */}
-      <svg 
-        viewBox="0 0 160 140" 
-        className={isSm ? 'w-10 h-9 shrink-0' : isLg ? 'w-20 h-18 shrink-0' : 'w-14 h-12 shrink-0'}
-        fill="none" 
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        {/* Radiant Sun Rays */}
-        <g stroke="#0F4A24" strokeWidth="2.2" strokeLinecap="round">
-          <line x1="80" y1="58" x2="80" y2="10" strokeWidth="2.8" />
-          <line x1="72" y1="60" x2="52" y2="18" />
-          <line x1="88" y1="60" x2="108" y2="18" />
-          <line x1="64" y1="64" x2="30" y2="34" />
-          <line x1="96" y1="64" x2="130" y2="34" />
-          <line x1="60" y1="70" x2="18" y2="52" />
-          <line x1="100" y1="70" x2="142" y2="52" />
-        </g>
-
-        {/* Sun Semi-circle */}
-        <path 
-          d="M 66 65 A 14 14 0 0 1 94 65" 
-          stroke="#8AB897" 
-          strokeWidth="3.5" 
-          strokeLinecap="round" 
-        />
-
-        {/* Open Book Outer Spine & Pages */}
-        <path 
-          d="M 22 75 C 48 70, 72 73, 80 82 C 88 73, 112 70, 138 75 L 138 116 C 112 111, 88 114, 80 125 C 72 114, 48 111, 22 116 Z" 
-          fill="#0F4A24" 
-        />
-
-        {/* Inner Pages */}
-        <path 
-          d="M 25 78 C 50 73, 72 76, 80 84 L 80 123 C 72 115, 50 112, 25 117 Z" 
-          fill="#14532D" 
-        />
-        <path 
-          d="M 135 78 C 110 73, 88 76, 80 84 L 80 123 C 88 115, 110 112, 135 117 Z" 
-          fill="#1C5E35" 
-        />
-
-        {/* Center Spine Divider */}
-        <line x1="80" y1="84" x2="80" y2="123" stroke="#8AB897" strokeWidth="2.5" />
-      </svg>
-
-      {/* Brand Typography 1:1 matching uploaded logo */}
-      <div className="flex flex-col text-left leading-tight">
-        <span className="font-script text-[#0F4A24] text-xl sm:text-2xl font-semibold -mb-1 tracking-wide">
-          Kirjastus
-        </span>
-        <span className="font-display font-extrabold text-[#8AB897] tracking-widest text-base sm:text-lg uppercase leading-none">
-          SAAGU
-        </span>
-        <span className="font-display font-black text-[#0F4A24] tracking-widest text-base sm:text-lg uppercase leading-none">
-          VALGUS
-        </span>
-      </div>
-    </div>
-  );
 };
 
 export default function App() {
@@ -607,12 +539,6 @@ export default function App() {
 
           {/* Zone 2: Clean Navigation Links */}
           <nav className="hidden md:flex items-center gap-6 text-xs sm:text-sm font-medium text-stone-700">
-            <button onClick={() => scrollTo('kusimused')} className="hover:text-[#14532D] font-bold text-[#14532D] transition-colors cursor-pointer">
-              3 Põhiküsimust
-            </button>
-            <button onClick={() => scrollTo('puhas-kodu')} className="hover:text-[#14532D] transition-colors cursor-pointer">
-              {t.nav.cleanHome}
-            </button>
             <button onClick={() => scrollTo('tunnistused')} className="hover:text-[#14532D] transition-colors cursor-pointer">
               {t.nav.testimonials}
             </button>
@@ -1049,8 +975,12 @@ export default function App() {
       <section id="toetus" className="py-16 sm:py-20 bg-[#F5F0E6] border-b border-[#E2D7C8]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-10">
           
-          <div className="text-center space-y-2 max-w-2xl mx-auto">
-            <span className="text-xs uppercase tracking-widest font-bold text-[#9A3412] font-sans">
+          <div className="text-center space-y-3 max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl font-serif font-bold text-[#14532D] leading-relaxed italic border-y border-[#E2D7C8] py-3 bg-white/60 rounded-2xl shadow-2xs">
+              «Kui see lehekülg on olnud Sulle õnnistuseks, saad selle toimimist toetada siin:»
+            </p>
+
+            <span className="text-xs uppercase tracking-widest font-bold text-[#9A3412] font-sans block pt-2">
               {activeContent.support.subtitle}
             </span>
             <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#1C1917]">
