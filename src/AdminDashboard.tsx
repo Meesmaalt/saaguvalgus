@@ -1218,78 +1218,86 @@ ${p.text}
         {/* TAB 4: KODULEHE SISU HALDUS (CMS) */}
         {/* ========================================================================= */}
         {activeTab === 'content' && (
-          <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-xs space-y-6">
+          <div className="bg-white rounded-3xl border border-[#E2D7C8] p-6 sm:p-8 shadow-md space-y-8 text-left">
             
-            <div className="flex items-center justify-between border-b border-stone-200 pb-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-[#E2D7C8] pb-5 gap-4">
               <div>
-                <h3 className="font-bold text-lg text-[#144225]">Kodulehe tekstide ja küsimuste muutmine</h3>
-                <p className="text-xs text-stone-500">Kõik muudatused salvestatakse koheselt ning uuendavad lehte reaalajas.</p>
+                <h3 className="font-serif font-bold text-2xl text-[#14532D]">Kodulehe Tekstide ja Sisu Toimetamine</h3>
+                <p className="text-xs sm:text-sm text-stone-600 font-sans mt-0.5">Kõik muudatused salvestatakse automaatselt serverisse ning on nähtavad kõigile külastajatele.</p>
               </div>
               <button
                 onClick={() => notifySaved()}
-                className="px-4 py-2 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                className="px-6 py-3 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white text-sm font-bold flex items-center gap-2 transition-colors cursor-pointer shadow-md shrink-0"
               >
-                <Save className="w-4 h-4" />
+                <Save className="w-4 h-4 text-amber-300" />
                 <span>Salvesta muudatused</span>
               </button>
             </div>
 
             {/* Hero & Brand */}
-            <div className="space-y-4">
-              <h4 className="font-bold text-sm text-[#144225] uppercase tracking-wider">1. Päis ja Pealkiri</h4>
+            <div className="space-y-5 bg-[#FAF7F2] p-6 rounded-2xl border border-[#E2D7C8]">
+              <h4 className="font-sans font-bold text-sm text-[#14532D] uppercase tracking-wider flex items-center gap-2">
+                <Edit3 className="w-4 h-4" />
+                <span>1. Päis, Pealkirjad & Kontakt</span>
+              </h4>
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Päise bänner / hüüdlause</label>
+                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Päise teema / hüüdlause</label>
                   <input
                     type="text"
                     value={content.heroBadge}
                     onChange={(e) => saveContent({ ...content, heroBadge: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-stone-300 text-sm sm:text-base font-bold text-stone-900 focus:ring-2 focus:ring-[#14532D] focus:outline-none bg-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-stone-700 mb-1">Kirjastuse ametlik e-post</label>
+                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Kirjastuse ametlik e-post</label>
                   <input
                     type="email"
                     value={content.contactEmail}
                     onChange={(e) => saveContent({ ...content, contactEmail: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
+                    className="w-full px-4 py-3 rounded-xl border border-stone-300 text-sm sm:text-base font-mono font-bold text-[#14532D] focus:ring-2 focus:ring-[#14532D] focus:outline-none bg-white"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-stone-700 mb-1">Pealkirja tekst</label>
+                <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Avalehe pealkirja tekst</label>
                 <input
                   type="text"
                   value={content.heroTitle}
                   onChange={(e) => saveContent({ ...content, heroTitle: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
+                  className="w-full px-4 py-3 rounded-xl border border-stone-300 text-base sm:text-lg font-serif font-bold text-stone-900 focus:ring-2 focus:ring-[#14532D] focus:outline-none bg-white"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-stone-700 mb-1">Autori sissejuhatav pöördumine</label>
+                <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Autori sissejuhatav pöördumine</label>
                 <textarea
-                  rows={3}
+                  rows={4}
                   value={content.heroDescription}
                   onChange={(e) => saveContent({ ...content, heroDescription: e.target.value })}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
+                  className="w-full p-4 rounded-xl border border-stone-300 text-base sm:text-lg font-serif leading-relaxed text-stone-900 focus:ring-2 focus:ring-[#14532D] focus:outline-none bg-white"
                 />
               </div>
             </div>
 
             {/* Central Questions (1:1 Text) */}
-            <div className="space-y-4 pt-4 border-t border-stone-200">
-              <h4 className="font-bold text-sm text-[#144225] uppercase tracking-wider">2. Kolm Peamist Küsimust (1:1 Tekst)</h4>
+            <div className="space-y-6 pt-4 border-t border-[#E2D7C8]">
+              <h4 className="font-sans font-bold text-sm text-[#14532D] uppercase tracking-wider flex items-center gap-2">
+                <BookOpen className="w-4 h-4" />
+                <span>2. Kolm Põhiküsimust (Autori täistekstid)</span>
+              </h4>
               
               {content.centralQuestions.map((q, idx) => (
-                <div key={q.id} className="p-4 rounded-xl bg-stone-50 border border-stone-200 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-[#1a6838]">Küsimus {q.number}</span>
+                <div key={q.id} className="p-6 rounded-2xl bg-[#FAF7F2] border border-[#E2D7C8] space-y-4 shadow-2xs">
+                  <div className="flex items-center justify-between border-b border-stone-200 pb-2">
+                    <span className="font-mono font-bold text-sm text-[#9A3412]">Põhiküsimus 0{q.number}.</span>
+                    <span className="text-xs font-sans text-stone-500 font-semibold">Muuda pealkirja ja täisvastust</span>
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-stone-600 mb-1">Küsimuse pealkiri</label>
+                    <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Küsimuse pealkiri</label>
                     <input
                       type="text"
                       value={q.question}
@@ -1298,20 +1306,20 @@ ${p.text}
                         updated[idx].question = e.target.value;
                         saveContent({ ...content, centralQuestions: updated });
                       }}
-                      className="w-full px-3 py-2 rounded-lg border border-stone-300 text-xs bg-white font-bold"
+                      className="w-full px-4 py-3 rounded-xl border border-stone-300 text-base sm:text-lg font-serif font-bold text-stone-900 bg-white"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-stone-600 mb-1">Autori täistekst (vastus)</label>
+                    <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Autori täistekst (vastuse sisu)</label>
                     <textarea
-                      rows={5}
+                      rows={8}
                       value={q.fullText}
                       onChange={(e) => {
                         const updated = [...content.centralQuestions];
                         updated[idx].fullText = e.target.value;
                         saveContent({ ...content, centralQuestions: updated });
                       }}
-                      className="w-full px-3 py-2 rounded-lg border border-stone-300 text-xs bg-white font-serif leading-relaxed"
+                      className="w-full p-4 rounded-xl border border-stone-300 text-base sm:text-lg font-serif leading-relaxed text-stone-900 bg-white"
                     />
                   </div>
                 </div>

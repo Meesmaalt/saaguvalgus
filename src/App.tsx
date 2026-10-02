@@ -628,37 +628,37 @@ export default function App() {
             </div>
 
             {/* The 3 Question Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               {activeContent.centralQuestions.map((q) => {
                 const isSelected = activeCentralQuestion === q.id;
                 return (
                   <button
                     key={q.id}
                     onClick={() => setActiveCentralQuestion(q.id)}
-                    className={`p-6 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-4 ${
+                    className={`p-6 sm:p-7 rounded-3xl border text-left transition-all duration-200 cursor-pointer flex flex-col justify-between gap-5 relative overflow-hidden ${
                       isSelected 
-                        ? 'bg-[#14532D] text-white border-[#14532D] shadow-md' 
-                        : 'bg-white hover:bg-[#F5F0E6] border-[#E7E0D5] text-[#1C1917] shadow-2xs'
+                        ? 'bg-gradient-to-br from-[#14532D] via-[#0F3D24] to-[#14532D] text-white border-[#14532D] shadow-lg scale-[1.02] ring-2 ring-amber-300/50' 
+                        : 'bg-gradient-to-b from-white to-[#FAF7F2] hover:bg-[#F5F0E6] border-[#E2D7C8] border-l-4 border-l-[#14532D] text-[#1C1917] shadow-sm hover:shadow-md'
                     }`}
                   >
                     <div className="flex items-center justify-between text-xs font-sans">
-                      <span className={`font-mono font-bold text-sm ${isSelected ? 'text-amber-300' : 'text-[#9A3412]'}`}>
+                      <span className={`font-mono font-extrabold text-sm px-2.5 py-1 rounded-lg ${isSelected ? 'bg-emerald-900/60 text-amber-300' : 'bg-[#F5F0E6] text-[#9A3412]'}`}>
                         0{q.number}.
                       </span>
-                      <span className={isSelected ? 'text-emerald-200' : 'text-stone-500'}>
+                      <span className={`font-semibold ${isSelected ? 'text-emerald-200' : 'text-stone-500'}`}>
                         {lang === 'en' ? 'Core Question' : 'Põhiküsimus'}
                       </span>
                     </div>
 
-                    <h3 className={`font-serif font-bold text-base sm:text-lg leading-snug ${isSelected ? 'text-white' : 'text-[#1C1917]'}`}>
+                    <h3 className={`font-serif font-bold text-lg sm:text-xl leading-snug ${isSelected ? 'text-white' : 'text-[#1C1917]'}`}>
                       {q.question}
                     </h3>
 
-                    <div className={`text-xs font-semibold pt-2 border-t flex items-center justify-between ${
-                      isSelected ? 'border-emerald-800 text-amber-300' : 'border-[#E2D7C8] text-[#14532D]'
+                    <div className={`text-xs font-bold pt-3 border-t flex items-center justify-between font-sans ${
+                      isSelected ? 'border-emerald-800/80 text-amber-300' : 'border-[#E2D7C8] text-[#14532D]'
                     }`}>
                       <span>{lang === 'en' ? 'Read full answer' : 'Loe vastust & tõde'}</span>
-                      <span>→</span>
+                      <span className="text-base">→</span>
                     </div>
                   </button>
                 );
@@ -669,14 +669,14 @@ export default function App() {
             {(() => {
               const current = activeContent.centralQuestions.find(q => q.id === activeCentralQuestion) || activeContent.centralQuestions[0];
               return (
-                <div className="bg-white rounded-3xl border border-[#E2D7C8] p-6 sm:p-10 shadow-sm space-y-8 text-left">
+                <div className="bg-gradient-to-b from-white via-white to-[#FAF7F2] rounded-3xl border border-[#E2D7C8] border-t-4 border-t-[#14532D] p-6 sm:p-10 shadow-md space-y-8 text-left relative">
                   
                   <div className="border-b border-[#E2D7C8] pb-6 space-y-2">
                     <div className="flex items-center gap-3 text-xs text-stone-500 font-sans">
-                      <span className="font-mono font-bold text-[#9A3412] text-sm">Põhiküsimus 0{current.number}.</span>
-                      <span>{lang === 'en' ? 'Spiritual Truth' : 'Vaimulik tõde & Piibellik vastus'}</span>
+                      <span className="font-mono font-bold text-[#9A3412] text-sm px-3 py-1 bg-[#F5F0E6] rounded-lg">Põhiküsimus 0{current.number}.</span>
+                      <span className="font-semibold">{lang === 'en' ? 'Spiritual Truth' : 'Vaimulik tõde & Piibellik vastus'}</span>
                     </div>
-                    <h3 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-[#1C1917] leading-tight">
+                    <h3 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-[#1C1917] leading-tight pt-1">
                       {current.question}
                     </h3>
                   </div>
