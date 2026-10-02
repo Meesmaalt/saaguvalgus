@@ -321,7 +321,7 @@ Te ei või juua Issanda karikast ja kurjade vaimude karikast, te ei või osa saa
     title: 'Tule toetajaks!',
     subtitle: 'Aita levitada Valgust üle kogu Eestimaa',
     description: 'Kirjastus Saagu Valgus annab välja evangeelseid materjale ja elumuutvaid raamatuid. Sinu toetus aitab trükkida uusi infomaterjale, postitada raamatuid ning viia tõe sõnumit nendeni, kes seda kõige enam vajavad.',
-    recipientName: 'Kirjastus Saagu Valgus',
+    recipientName: 'Saagu Valgus OÜ',
     iban: 'EE123456789012345678',
     bankName: 'Swedbank / LHV Pank',
     swift: 'HABALV22',

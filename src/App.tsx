@@ -7,17 +7,20 @@ import {
   Volume2, 
   VolumeX, 
   Lock, 
-  Package, 
   FileText, 
   Eye, 
   EyeOff, 
   Building2, 
-  X
+  Heart,
+  Send,
+  ShieldCheck,
+  CreditCard
 } from 'lucide-react';
 import { INITIAL_SITE_CONTENT, INITIAL_PUBLICATIONS } from './data';
 import { SiteContent, BookItem, OrderItem, ContactMessage, PublicationItem } from './types';
 import { AdminDashboard } from './AdminDashboard';
 import { PublicationsModal } from './PublicationsModal';
+import { LegalModal, LegalTab } from './LegalModal';
 import { api } from './api';
 import { SITE_CONTENT_EN, UI_TRANSLATIONS, Language } from './translations';
 
@@ -30,22 +33,7 @@ const STORAGE_KEY = 'saaguvalgus_site_content_v6';
 const ADMIN_SESSION_KEY = 'saaguvalgus_admin_session_v1';
 const LANG_STORAGE_KEY = 'saaguvalgus_lang';
 
-const INITIAL_ORDERS: OrderItem[] = [
-  {
-    id: 'ord-101',
-    type: 'preorder',
-    bookId: 'saagu-valgus-raamat',
-    bookTitle: 'Saagu Valgus: Tõde ja vabanemine',
-    quantity: 2,
-    name: 'Marek Tamm',
-    email: 'marek.tamm@gmail.com',
-    phone: '+372 5551 2345',
-    address: 'Omniva Tallinna Kristiine Keskus',
-    notes: 'Soovin kindlasti esimese trüki eksemplari.',
-    status: 'uus',
-    createdAt: new Date(Date.now() - 3600000 * 5).toISOString()
-  }
-];
+const INITIAL_ORDERS: OrderItem[] = [];
 
 const INITIAL_MESSAGES: ContactMessage[] = [
   {
@@ -122,6 +110,75 @@ const getBookCoverImage = (id: string) => {
   return saaguValgusCover;
 };
 
+// Official Kirjastus Saagu Valgus Brand Logo Component (Matching uploaded image.png 1:1)
+const BrandLogo: React.FC<{ size?: 'sm' | 'md' | 'lg'; className?: string }> = ({ size = 'md', className = '' }) => {
+  const isSm = size === 'sm';
+  const isLg = size === 'lg';
+
+  return (
+    <div className={`inline-flex items-center gap-3 select-none ${className}`}>
+      {/* Vector Mark: Open Book + Radiant Sun Rays */}
+      <svg 
+        viewBox="0 0 160 140" 
+        className={isSm ? 'w-10 h-9 shrink-0' : isLg ? 'w-20 h-18 shrink-0' : 'w-14 h-12 shrink-0'}
+        fill="none" 
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        {/* Radiant Sun Rays */}
+        <g stroke="#0F4A24" strokeWidth="2.2" strokeLinecap="round">
+          <line x1="80" y1="58" x2="80" y2="10" strokeWidth="2.8" />
+          <line x1="72" y1="60" x2="52" y2="18" />
+          <line x1="88" y1="60" x2="108" y2="18" />
+          <line x1="64" y1="64" x2="30" y2="34" />
+          <line x1="96" y1="64" x2="130" y2="34" />
+          <line x1="60" y1="70" x2="18" y2="52" />
+          <line x1="100" y1="70" x2="142" y2="52" />
+        </g>
+
+        {/* Sun Semi-circle */}
+        <path 
+          d="M 66 65 A 14 14 0 0 1 94 65" 
+          stroke="#8AB897" 
+          strokeWidth="3.5" 
+          strokeLinecap="round" 
+        />
+
+        {/* Open Book Outer Spine & Pages */}
+        <path 
+          d="M 22 75 C 48 70, 72 73, 80 82 C 88 73, 112 70, 138 75 L 138 116 C 112 111, 88 114, 80 125 C 72 114, 48 111, 22 116 Z" 
+          fill="#0F4A24" 
+        />
+
+        {/* Inner Pages */}
+        <path 
+          d="M 25 78 C 50 73, 72 76, 80 84 L 80 123 C 72 115, 50 112, 25 117 Z" 
+          fill="#14532D" 
+        />
+        <path 
+          d="M 135 78 C 110 73, 88 76, 80 84 L 80 123 C 88 115, 110 112, 135 117 Z" 
+          fill="#1C5E35" 
+        />
+
+        {/* Center Spine Divider */}
+        <line x1="80" y1="84" x2="80" y2="123" stroke="#8AB897" strokeWidth="2.5" />
+      </svg>
+
+      {/* Brand Typography 1:1 matching uploaded logo */}
+      <div className="flex flex-col text-left leading-tight">
+        <span className="font-script text-[#0F4A24] text-xl sm:text-2xl font-semibold -mb-1 tracking-wide">
+          Kirjastus
+        </span>
+        <span className="font-display font-extrabold text-[#8AB897] tracking-widest text-base sm:text-lg uppercase leading-none">
+          SAAGU
+        </span>
+        <span className="font-display font-black text-[#0F4A24] tracking-widest text-base sm:text-lg uppercase leading-none">
+          VALGUS
+        </span>
+      </div>
+    </div>
+  );
+};
+
 export default function App() {
   const [lang, setLang] = useState<Language>(() => {
     try {
@@ -150,9 +207,17 @@ export default function App() {
   const [publications, setPublications] = useState<PublicationItem[]>(INITIAL_PUBLICATIONS);
   const [isPublicationsOpen, setIsPublicationsOpen] = useState(false);
 
-  // Strictly 3 Põhiküsimust state
+  // Legal Modal State (Privaatsuspoliitika, Müügitingimused jne)
+  const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
+  const [legalModalTab, setLegalModalTab] = useState<LegalTab>('privacy');
+
+  const openLegalModal = (tab: LegalTab) => {
+    setLegalModalTab(tab);
+    setIsLegalModalOpen(true);
+  };
+
+  // Strictly 3 Põhiküsimust
   const [activeCentralQuestion, setActiveCentralQuestion] = useState<string>('noidade-selgeltnagijate-vagi');
-  const [activeTractQuestion, setActiveTractQuestion] = useState<string>('igauele-oma-jumal');
 
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedPrayer, setCopiedPrayer] = useState(false);
@@ -162,12 +227,6 @@ export default function App() {
   const [isSpeakingLordPrayer, setIsSpeakingLordPrayer] = useState(false);
   const [formSent, setFormSent] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
-
-  const [selectedBookForOrder, setSelectedBookForOrder] = useState<BookItem | null>(null);
-  const [orderQuantity, setOrderQuantity] = useState(1);
-  const [orderData, setOrderData] = useState({ name: '', email: '', phone: '', notes: '' });
-  const [orderSubmitted, setOrderSubmitted] = useState(false);
-  const [lastSubmittedId, setLastSubmittedId] = useState('');
 
   const [isAdminView, setIsAdminView] = useState(() => typeof window !== 'undefined' && window.location.hash === '#admin');
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
@@ -295,52 +354,6 @@ export default function App() {
   const handleDeletePublication = async (id: string) => {
     await api.deletePublication(id);
     setPublications(prev => prev.filter(p => p.id !== id));
-  };
-
-  const openPreOrderModal = (book?: BookItem) => {
-    const targetBook = book || activeContent.books.find(b => b.isPreOrder) || activeContent.books[0];
-    setSelectedBookForOrder(targetBook);
-    setOrderQuantity(1);
-    setOrderData({ name: '', email: '', phone: '', notes: '' });
-    setOrderSubmitted(false);
-  };
-
-  const handleOrderSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedBookForOrder) return;
-    try {
-      const created = await api.createOrder({
-        type: 'preorder',
-        bookId: selectedBookForOrder.id,
-        bookTitle: selectedBookForOrder.title,
-        quantity: orderQuantity,
-        name: orderData.name,
-        email: orderData.email,
-        phone: orderData.phone,
-        notes: orderData.notes,
-      });
-      setOrders(prev => [created, ...prev]);
-      setLastSubmittedId(created.id);
-      setOrderSubmitted(true);
-    } catch (err: any) {
-      const orderId = 'ord-' + Date.now().toString().slice(-6);
-      const newOrd: OrderItem = {
-        id: orderId,
-        type: 'preorder',
-        bookId: selectedBookForOrder.id,
-        bookTitle: selectedBookForOrder.title,
-        quantity: orderQuantity,
-        name: orderData.name,
-        email: orderData.email,
-        phone: orderData.phone,
-        notes: orderData.notes,
-        status: 'uus',
-        createdAt: new Date().toISOString()
-      };
-      setOrders(prev => [newOrd, ...prev]);
-      setLastSubmittedId(orderId);
-      setOrderSubmitted(true);
-    }
   };
 
   const handleContactSubmit = async (e: React.FormEvent) => {
@@ -583,19 +596,16 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#FAF7F2] text-[#1C1917] flex flex-col font-sans selection:bg-[#14532D]/15 selection:text-[#14532D] relative overflow-x-hidden">
       
-      {/* Top Bar */}
+      {/* Top Bar with Official Brand Logo */}
       <header className="sticky top-0 z-40 bg-[#FAF7F2]/95 backdrop-blur-md border-b border-[#E7E0D5] shadow-2xs">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between gap-4">
           
-          <a href="#" className="flex flex-col text-left group">
-            <span className="text-xl sm:text-2xl font-bold font-display tracking-tight text-[#14532D]">
-              Saagu Valgus
-            </span>
-            <span className="text-[10px] uppercase tracking-[0.2em] text-stone-500 font-sans font-semibold">
-              {lang === 'en' ? 'Publishing Ministry' : 'Kirjastus'}
-            </span>
+          {/* Zone 1: Official Brand Logo */}
+          <a href="#" className="flex items-center hover:opacity-90 transition-opacity">
+            <BrandLogo size="md" />
           </a>
 
+          {/* Zone 2: Clean Navigation Links */}
           <nav className="hidden md:flex items-center gap-6 text-xs sm:text-sm font-medium text-stone-700">
             <button onClick={() => scrollTo('kusimused')} className="hover:text-[#14532D] font-bold text-[#14532D] transition-colors cursor-pointer">
               3 Põhiküsimust
@@ -622,8 +632,12 @@ export default function App() {
             <button onClick={() => scrollTo('paastepalve')} className="hover:text-[#14532D] font-bold text-[#14532D] transition-colors cursor-pointer">
               {t.nav.prayer}
             </button>
+            <button onClick={() => scrollTo('kontakt')} className="hover:text-[#14532D] transition-colors cursor-pointer">
+              {t.nav.contact}
+            </button>
           </nav>
 
+          {/* Zone 3: Language & PDF Action Button */}
           <div className="flex items-center gap-3 shrink-0">
             <div className="flex items-center text-xs font-semibold text-stone-600 border border-[#E2D7C8] rounded-lg p-0.5 bg-white">
               <button
@@ -645,10 +659,11 @@ export default function App() {
             </div>
 
             <button
-              onClick={() => openPreOrderModal()}
-              className="px-4 py-2 rounded-lg bg-[#14532D] hover:bg-[#0F3D24] text-white text-xs font-semibold transition-colors cursor-pointer shadow-2xs whitespace-nowrap"
+              onClick={() => setIsPublicationsOpen(true)}
+              className="px-4 py-2 rounded-lg bg-[#14532D] hover:bg-[#0F3D24] text-white text-xs font-semibold transition-colors cursor-pointer shadow-2xs whitespace-nowrap flex items-center gap-1.5"
             >
-              {t.books.preOrder}
+              <FileText className="w-3.5 h-3.5 text-amber-300" />
+              <span>{t.nav.publications}</span>
             </button>
           </div>
         </div>
@@ -660,7 +675,7 @@ export default function App() {
           
           <div className="text-center space-y-3 max-w-3xl mx-auto">
             <span className="text-xs font-semibold tracking-widest text-[#9A3412] uppercase font-sans">
-              {lang === 'en' ? 'EVANGELISTIC LITERATURE & TRUTH' : 'KIRJASTUS SAAGU VALGUS'}
+              Kirjastus Saagu Valgus
             </span>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-[#1C1917] tracking-tight leading-[1.12]">
@@ -679,10 +694,10 @@ export default function App() {
             
             <div className="flex items-center justify-between border-b border-[#E2D7C8] pb-3">
               <h2 className="text-xl sm:text-2xl font-serif font-bold text-[#1C1917]">
-                {t.questions.title}
+                3 Põhiküsimust
               </h2>
               <span className="text-xs font-semibold text-stone-500 font-sans">
-                {lang === 'en' ? 'Select question to read full answer:' : 'Vali küsimus vastuse lugemiseks:'}
+                {lang === 'en' ? 'Select question to read answer:' : 'Vali küsimus vastuse lugemiseks:'}
               </span>
             </div>
 
@@ -935,7 +950,7 @@ export default function App() {
           {/* Publisher Story */}
           <div className="p-8 sm:p-10 rounded-3xl bg-white border border-[#E7E0D5] shadow-xs space-y-4 max-w-4xl mx-auto text-left">
             <span className="text-xs font-bold text-[#14532D] uppercase tracking-widest font-sans">
-              {lang === 'en' ? 'Publishing Ministry' : 'Kirjastuse Sünnilugu & Missioon'}
+              Kirjastuse Saagu Valgus Missioon
             </span>
             <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#1C1917]">
               {activeContent.publisherStoryTitle}
@@ -949,9 +964,9 @@ export default function App() {
           <div className="space-y-6">
             <div className="text-center space-y-2">
               <h3 className="text-3xl sm:text-4xl font-serif font-bold text-[#1C1917]">
-                {t.books.title}
+                Kirjastuse Raamatud
               </h3>
-              <p className="text-sm font-serif text-stone-600">{t.books.subtitle}</p>
+              <p className="text-sm font-serif text-stone-600">Vaimulik kirjandus ja teosed</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -971,10 +986,7 @@ export default function App() {
                       </div>
 
                       <div className="space-y-1 text-left">
-                        <div className="flex items-center justify-between text-xs text-stone-500 font-sans">
-                          <span>{book.category}</span>
-                          <span className="font-bold text-[#9A3412]">{t.books.preOrder}</span>
-                        </div>
+                        <span className="text-xs text-stone-500 font-sans block">{book.category}</span>
                         <h4 className="text-xl font-serif font-bold text-[#1C1917]">«{book.title}»</h4>
                         <p className="text-xs text-stone-500 font-sans">{book.author}</p>
                       </div>
@@ -994,10 +1006,11 @@ export default function App() {
                     </div>
 
                     <button
-                      onClick={() => openPreOrderModal(book)}
-                      className="w-full py-3 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-semibold text-sm transition-colors cursor-pointer shadow-2xs"
+                      onClick={() => setIsPublicationsOpen(true)}
+                      className="w-full py-3 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-semibold text-sm transition-colors cursor-pointer shadow-2xs flex items-center justify-center gap-2"
                     >
-                      {t.books.preOrder}
+                      <FileText className="w-4 h-4 text-amber-300" />
+                      <span>{lang === 'en' ? 'View Literature (PDF)' : 'Loe trükist (PDF)'}</span>
                     </button>
 
                   </div>
@@ -1022,16 +1035,17 @@ export default function App() {
 
             <button
               onClick={() => setIsPublicationsOpen(true)}
-              className="px-6 py-3 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-semibold text-sm transition-colors cursor-pointer whitespace-nowrap shrink-0"
+              className="px-6 py-3 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-semibold text-sm transition-colors cursor-pointer whitespace-nowrap shrink-0 flex items-center gap-2"
             >
-              {t.publicationsBanner.openBtn}
+              <FileText className="w-4 h-4 text-amber-300" />
+              <span>{t.publicationsBanner.openBtn}</span>
             </button>
           </div>
 
         </div>
       </section>
 
-      {/* Support Section */}
+      {/* Support Section WITH RECIPIENT SET TO Saagu Valgus OÜ */}
       <section id="toetus" className="py-16 sm:py-20 bg-[#F5F0E6] border-b border-[#E2D7C8]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-10">
           
@@ -1054,9 +1068,10 @@ export default function App() {
               <h4 className="font-serif font-bold text-lg text-[#1C1917]">{t.support.bankDetails}</h4>
 
               <div className="space-y-3 text-xs font-sans">
+                {/* RECIPIENT NAME: Saagu Valgus OÜ */}
                 <div className="p-3.5 bg-[#FAF7F2] rounded-xl border border-[#E7E0D5]">
                   <span className="text-stone-500 block text-[10px] uppercase font-bold">{t.support.recipient}</span>
-                  <span className="font-bold text-stone-900 text-sm">{activeContent.support.recipientName}</span>
+                  <span className="font-bold text-stone-900 text-sm">Saagu Valgus OÜ</span>
                 </div>
 
                 <div className="p-3.5 bg-[#FAF7F2] rounded-xl border border-[#E7E0D5] flex items-center justify-between">
@@ -1292,9 +1307,10 @@ export default function App() {
                   </div>
                   <button
                     type="submit"
-                    className="w-full py-3 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-semibold text-sm transition-colors cursor-pointer shadow-2xs"
+                    className="w-full py-3 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-semibold text-sm transition-colors cursor-pointer shadow-2xs flex items-center justify-center gap-2"
                   >
-                    {t.contact.sendBtn}
+                    <Send className="w-4 h-4" />
+                    <span>{t.contact.sendBtn}</span>
                   </button>
                 </form>
               )}
@@ -1305,170 +1321,66 @@ export default function App() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-[#E7E0D5] py-10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-stone-600 font-sans">
-          <div className="text-left space-y-0.5">
-            <span className="font-bold text-[#14532D] text-sm block font-serif">
-              {activeContent.brandName}
-            </span>
-            <span>© {new Date().getFullYear()}. {t.footer.rights}</span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-6 font-semibold justify-center">
-            <button onClick={() => scrollTo("kusimused")} className="hover:text-[#14532D] cursor-pointer">3 Põhiküsimust</button>
-            <button onClick={() => scrollTo("puhas-kodu")} className="hover:text-[#14532D] cursor-pointer">{t.nav.cleanHome}</button>
-            <button onClick={() => scrollTo("tunnistused")} className="hover:text-[#14532D] cursor-pointer">{t.nav.testimonials}</button>
-            <button onClick={() => scrollTo("kirjastus")} className="hover:text-[#14532D] cursor-pointer">{t.nav.books}</button>
-            <button onClick={() => scrollTo("toetus")} className="hover:text-[#14532D] cursor-pointer">{t.nav.support}</button>
-            <button 
-              onClick={openAdmin} 
-              className="hover:text-[#14532D] cursor-pointer border border-[#E7E0D5] px-3 py-1 rounded-md bg-[#FAF7F2]"
-            >
-              {t.footer.adminLink}
-            </button>
-          </div>
-        </div>
-      </footer>
-
-      {/* Pre-Order Modal */}
-      {selectedBookForOrder && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl border border-[#E2D7C8] shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150 my-6 text-left">
+      {/* Footer with Merchant Compliance & Legal Links */}
+      <footer className="bg-white border-t border-[#E7E0D5] py-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
+          
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-xs text-stone-600 font-sans">
             
-            <div className="px-6 py-4 text-white flex items-center justify-between bg-[#14532D] border-b border-[#0F3D24]">
-              <div className="flex items-center gap-2">
-                <Package className="w-5 h-5 text-amber-300" />
-                <h3 className="font-serif font-bold text-lg">
-                  {t.orderModal.titlePreOrder}
-                </h3>
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <BrandLogo size="sm" />
+              <div className="text-left space-y-0.5 border-l border-stone-200 pl-4">
+                <span className="font-bold text-stone-900 block font-serif">Saagu Valgus OÜ</span>
+                <span>Reg. kood: 16842102 · info@saaguvalgus.eu</span>
+                <span className="block text-[11px] text-stone-500">© {new Date().getFullYear()}. Kõik õigused kaitstud.</span>
               </div>
+            </div>
+
+            {/* Legal & Compliance Footer Links for Bank Links / Payment Providers */}
+            <div className="flex flex-wrap items-center gap-4 text-xs font-semibold">
               <button 
-                onClick={() => setSelectedBookForOrder(null)} 
-                className="p-1 rounded-lg hover:bg-white/10 text-white cursor-pointer"
+                onClick={() => openLegalModal('privacy')} 
+                className="hover:text-[#14532D] underline cursor-pointer flex items-center gap-1"
               >
-                <X className="w-5 h-5" />
+                <ShieldCheck className="w-3.5 h-3.5 text-[#14532D]" />
+                <span>Privaatsuspoliitika</span>
+              </button>
+
+              <span>·</span>
+
+              <button 
+                onClick={() => openLegalModal('terms')} 
+                className="hover:text-[#14532D] underline cursor-pointer flex items-center gap-1"
+              >
+                <FileText className="w-3.5 h-3.5 text-[#14532D]" />
+                <span>Müügi- ja kasutustingimused</span>
+              </button>
+
+              <span>·</span>
+
+              <button 
+                onClick={() => openLegalModal('delivery')} 
+                className="hover:text-[#14532D] underline cursor-pointer flex items-center gap-1"
+              >
+                <CreditCard className="w-3.5 h-3.5 text-[#14532D]" />
+                <span>Makseviisid & Tarne</span>
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
-              {orderSubmitted ? (
-                <div className="text-center py-6 space-y-4">
-                  <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto bg-emerald-100 text-[#14532D]">
-                    <Check className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="font-serif font-bold text-2xl text-[#1C1917]">
-                      {t.orderModal.successTitle}
-                    </h4>
-                    <p className="text-xs text-stone-500 mt-1 font-mono">
-                      #{lastSubmittedId || "ORD-SAV"}
-                    </p>
-                  </div>
-
-                  <p className="text-sm font-serif text-stone-700 max-w-sm mx-auto">
-                    {t.orderModal.successMsg}
-                  </p>
-
-                  <button
-                    onClick={() => setSelectedBookForOrder(null)}
-                    className="px-6 py-2.5 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-semibold text-sm cursor-pointer"
-                  >
-                    {t.orderModal.close}
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleOrderSubmit} className="space-y-4 text-sm font-sans">
-                  
-                  <div className="p-4 rounded-2xl bg-[#FAF7F2] border border-[#E2D7C8] space-y-1">
-                    <span className="text-[11px] font-bold text-[#9A3412] uppercase tracking-wider block">{t.books.preOrder}</span>
-                    <h4 className="font-serif font-bold text-base text-[#1C1917]">«{selectedBookForOrder.title}»</h4>
-                    <p className="text-xs text-stone-500">{selectedBookForOrder.author}</p>
-                  </div>
-
-                  <div className="flex items-center justify-between p-3.5 bg-[#FAF7F2] rounded-xl border border-[#E7E0D5]">
-                    <label className="font-bold text-stone-800 text-xs">{t.orderModal.quantity}</label>
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setOrderQuantity(Math.max(1, orderQuantity - 1))}
-                        className="w-8 h-8 rounded-lg bg-white border border-stone-300 font-bold flex items-center justify-center cursor-pointer"
-                      >
-                        -
-                      </button>
-                      <span className="font-bold text-sm w-6 text-center text-stone-800">{orderQuantity}</span>
-                      <button
-                        type="button"
-                        onClick={() => setOrderQuantity(orderQuantity + 1)}
-                        className="w-8 h-8 rounded-lg bg-white border border-stone-300 font-bold flex items-center justify-center cursor-pointer"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-stone-700 text-xs mb-1">{t.orderModal.name}</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder={lang === 'en' ? 'First and last name' : 'Ees- ja perekonnanimi'}
-                      value={orderData.name}
-                      onChange={(e) => setOrderData({ ...orderData, name: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#E7E0D5] text-sm focus:ring-2 focus:ring-[#14532D] focus:outline-none bg-[#FAF7F2]"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="block font-bold text-stone-700 text-xs mb-1">{t.orderModal.email}</label>
-                      <input
-                        type="email"
-                        required
-                        placeholder="you@email.com"
-                        value={orderData.email}
-                        onChange={(e) => setOrderData({ ...orderData, email: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-[#E7E0D5] text-sm focus:ring-2 focus:ring-[#14532D] focus:outline-none bg-[#FAF7F2]"
-                      />
-                    </div>
-                    <div>
-                      <label className="block font-bold text-stone-700 text-xs mb-1">{t.orderModal.phone}</label>
-                      <input
-                        type="tel"
-                        required
-                        placeholder="+372 ..."
-                        value={orderData.phone}
-                        onChange={(e) => setOrderData({ ...orderData, phone: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-[#E7E0D5] text-sm focus:ring-2 focus:ring-[#14532D] focus:outline-none bg-[#FAF7F2]"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-stone-700 text-xs mb-1">
-                      {t.orderModal.notes}
-                    </label>
-                    <textarea
-                      rows={2}
-                      placeholder={t.orderModal.notesPlaceholder}
-                      value={orderData.notes}
-                      onChange={(e) => setOrderData({ ...orderData, notes: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl border border-[#E7E0D5] text-xs sm:text-sm focus:ring-2 focus:ring-[#14532D] focus:outline-none bg-[#FAF7F2] resize-none"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="w-full py-3 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-semibold text-sm transition-colors cursor-pointer"
-                  >
-                    {t.orderModal.submitPreOrder}
-                  </button>
-                </form>
-              )}
+            {/* Navigation & Admin Link */}
+            <div className="flex items-center gap-4 font-semibold">
+              <button 
+                onClick={openAdmin} 
+                className="hover:text-[#14532D] cursor-pointer border border-[#E7E0D5] px-3 py-1.5 rounded-lg bg-[#FAF7F2] text-xs"
+              >
+                {t.footer.adminLink}
+              </button>
             </div>
+
           </div>
+
         </div>
-      )}
+      </footer>
 
       {/* Publications Modal */}
       <PublicationsModal
@@ -1476,6 +1388,13 @@ export default function App() {
         onClose={() => setIsPublicationsOpen(false)}
         publications={publications}
         lang={lang}
+      />
+
+      {/* Merchant Compliance Legal Modal */}
+      <LegalModal
+        isOpen={isLegalModalOpen}
+        onClose={() => setIsLegalModalOpen(false)}
+        initialTab={legalModalTab}
       />
 
     </div>
