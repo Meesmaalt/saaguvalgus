@@ -2,18 +2,24 @@
 
 @theme {
   --font-serif: 'Lora', Georgia, Cambria, serif;
+  --font-editorial: 'Cormorant Garamond', Georgia, serif;
   --font-display: 'Cinzel', serif;
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --font-script: 'Caveat', cursive, sans-serif;
 
-  --color-brand-dark: #1a6838;
-  --color-brand-sage: #8ab897;
-  --color-brand-light: #f4f8f5;
+  --color-brand-dark: #14532d;
+  --color-brand-sage: #789f8a;
+  --color-brand-paper: #FAF7F2;
+  --color-brand-linen: #EBE5DA;
+  --color-brand-ink: #1C1917;
+  --color-brand-terracotta: #9A3412;
 }
 
 @layer base {
   body {
     font-family: var(--font-sans);
+    background-color: #FAF7F2;
+    color: #1C1917;
   }
   .font-display {
     font-family: var(--font-display);
@@ -21,13 +27,30 @@
   .font-serif {
     font-family: var(--font-serif);
   }
+  .font-editorial {
+    font-family: var(--font-editorial);
+  }
   .font-script {
     font-family: var(--font-script);
   }
 }
 
-.cross-pattern {
-  background-image: radial-gradient(rgba(26, 104, 56, 0.08) 1px, transparent 0);
+.paper-grain {
+  background-color: #FAF7F2;
+  background-image: radial-gradient(#1C1917 0.35px, transparent 0.35px);
   background-size: 24px 24px;
+  background-position: 0 0;
+  opacity: 0.98;
+}
+
+.paper-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E7E0D5;
+  box-shadow: 0 1px 3px rgba(28, 25, 23, 0.04);
+}
+
+.paper-card-warm {
+  background-color: #F5F0E6;
+  border: 1px solid #E2D7C8;
 }
 

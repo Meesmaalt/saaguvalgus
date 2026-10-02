@@ -1,59 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  BookOpen, 
-  Flame, 
   ShieldAlert, 
   Mail, 
   Check, 
   Copy, 
   Volume2, 
   VolumeX, 
-  Sparkles, 
-  Send,
-  Lock,
-  Unlock,
-  Save,
-  RotateCcw,
-  Download,
-  Upload,
-  Plus,
-  Trash2,
-  Server,
-  Layers,
-  FileCode,
-  CheckCircle2,
+  Lock, 
+  Package, 
+  FileText, 
+  Eye, 
+  EyeOff, 
+  Key, 
+  Building2, 
   X,
-  Heart,
-  Video,
-  Play,
-  ShoppingCart,
-  CreditCard,
-  Building2,
-  Share2,
-  Edit3,
-  Calendar,
-  Package,
-  FileText,
-  Printer,
-  Eye,
-  EyeOff,
-  Key,
-  LogOut,
-  Shield,
-  Globe
+  MessageSquare
 } from 'lucide-react';
 import { INITIAL_SITE_CONTENT, INITIAL_PUBLICATIONS } from './data';
-import { SiteContent, QuestionItem, BookItem, BibleVerse, TestimonialItem, OrderItem, ContactMessage, PublicationItem } from './types';
+import { SiteContent, BookItem, OrderItem, ContactMessage, PublicationItem, QuestionItem } from './types';
 import { AdminDashboard } from './AdminDashboard';
 import { PublicationsModal } from './PublicationsModal';
 import { api } from './api';
 import { SITE_CONTENT_EN, UI_TRANSLATIONS, Language } from './translations';
 
+import lapsJaJumalCover from './assets/images/book_laps_ja_jumal_1790963503364.jpg';
+import saatanaVangCover from './assets/images/book_saatana_vang_1790963515414.jpg';
+import saaguValgusCover from './assets/images/book_saagu_valgus_1790963525251.jpg';
+import heroPublisherImage from './assets/images/publisher_hero_image_1790963536689.jpg';
+
 const STORAGE_KEY = 'saaguvalgus_site_content_v6';
-const ORDERS_STORAGE_KEY = 'saaguvalgus_orders_v2';
-const MESSAGES_STORAGE_KEY = 'saaguvalgus_messages_v2';
-const PUBLICATIONS_STORAGE_KEY = 'saaguvalgus_publications_v2';
-const ADMIN_PASSWORD_KEY = 'saaguvalgus_admin_password_v1';
 const ADMIN_SESSION_KEY = 'saaguvalgus_admin_session_v1';
 const LANG_STORAGE_KEY = 'saaguvalgus_lang';
 
@@ -71,20 +46,6 @@ const INITIAL_ORDERS: OrderItem[] = [
     notes: 'Soovin kindlasti esimese trüki eksemplari.',
     status: 'uus',
     createdAt: new Date(Date.now() - 3600000 * 5).toISOString()
-  },
-  {
-    id: 'ord-102',
-    type: 'order',
-    bookId: 'laps-ja-jumal',
-    bookTitle: 'Laps ja Jumal',
-    quantity: 1,
-    name: 'Kristiina Kallas',
-    email: 'kristiina.kallas@neti.ee',
-    phone: '+372 5123 9876',
-    address: 'Smartpost Tartu Kaubamaja',
-    notes: 'Palun pakkida kingitusena.',
-    status: 'kinnitatud',
-    createdAt: new Date(Date.now() - 3600000 * 24).toISOString()
   }
 ];
 
@@ -99,7 +60,7 @@ const INITIAL_MESSAGES: ContactMessage[] = [
   }
 ];
 
-// Helper to render question text with "new age" in italics as requested
+// Helper to render text with italicized "new age"
 const renderFormattedText = (text: string) => {
   if (!text) return null;
   const parts = text.split(/(new age)/i);
@@ -107,7 +68,7 @@ const renderFormattedText = (text: string) => {
     <>
       {parts.map((part, idx) => 
         part.toLowerCase() === 'new age' ? (
-          <em key={idx} className="italic font-serif font-bold tracking-normal">new age</em>
+          <em key={idx} className="italic font-serif font-semibold text-[#14532D]">new age</em>
         ) : (
           <span key={idx}>{part}</span>
         )
@@ -116,12 +77,12 @@ const renderFormattedText = (text: string) => {
   );
 };
 
-// Helper to render author's exact text preserving paragraphs and Bible citations
+// Helper for author prose paragraphs
 const renderAuthorParagraphs = (fullText: string) => {
   if (!fullText) return null;
   const paragraphs = fullText.split(/\n\s*\n/);
   return (
-    <div className="space-y-4 font-serif text-base leading-relaxed text-[#1e3427]">
+    <div className="space-y-5 font-serif text-base sm:text-lg leading-relaxed text-[#292524]">
       {paragraphs.map((p, idx) => {
         const trimmed = p.trim();
         const isBibleQuote = 
@@ -146,7 +107,7 @@ const renderAuthorParagraphs = (fullText: string) => {
         return (
           <p 
             key={idx} 
-            className={isBibleQuote ? 'p-4 sm:p-5 rounded-2xl bg-amber-500/10 border-l-4 border-amber-600 text-[#144225] font-semibold italic shadow-2xs text-base leading-relaxed' : ''}
+            className={isBibleQuote ? 'p-5 sm:p-6 rounded-2xl bg-[#F5F0E6] border-l-4 border-[#14532D] text-[#14532D] font-serif font-semibold italic text-base sm:text-lg leading-relaxed shadow-2xs my-4' : ''}
           >
             {renderFormattedText(trimmed)}
           </p>
@@ -156,69 +117,14 @@ const renderAuthorParagraphs = (fullText: string) => {
   );
 };
 
-// Official Kirjastus Saagu Valgus Brand Logo
-const BrandLogo: React.FC<{ size?: 'sm' | 'md' | 'lg'; className?: string }> = ({ size = 'md', className = '' }) => {
-  const isSm = size === 'sm';
-  const isLg = size === 'lg';
-
-  return (
-    <div className={`inline-flex items-center gap-3 select-none ${className}`}>
-      {/* SVG Icon: Open Book with Radiant Sun Rays */}
-      <svg 
-        viewBox="0 0 160 140" 
-        className={isSm ? 'w-9 h-8 shrink-0' : isLg ? 'w-20 h-16 shrink-0' : 'w-12 h-10 shrink-0'}
-        fill="none" 
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <g stroke="#1a6838" strokeWidth="2.5" strokeLinecap="round">
-          <line x1="80" y1="58" x2="80" y2="8" strokeWidth="3" />
-          <line x1="72" y1="60" x2="52" y2="18" />
-          <line x1="88" y1="60" x2="108" y2="18" />
-          <line x1="64" y1="64" x2="32" y2="34" />
-          <line x1="96" y1="64" x2="128" y2="34" />
-          <line x1="60" y1="70" x2="20" y2="52" />
-          <line x1="100" y1="70" x2="140" y2="52" />
-        </g>
-        
-        <path 
-          d="M 66 65 A 14 14 0 0 1 94 65" 
-          stroke="#8ab897" 
-          strokeWidth="3.5" 
-          strokeLinecap="round" 
-        />
-
-        <path 
-          d="M 22 75 C 48 70, 72 73, 80 82 C 88 73, 112 70, 138 75 L 138 116 C 112 111, 88 114, 80 125 C 72 114, 48 111, 22 116 Z" 
-          fill="#144225" 
-        />
-
-        <path 
-          d="M 25 78 C 50 73, 72 76, 80 84 L 80 123 C 72 115, 50 112, 25 117 Z" 
-          fill="#1b5430" 
-        />
-        <path 
-          d="M 135 78 C 110 73, 88 76, 80 84 L 80 123 C 88 115, 110 112, 135 117 Z" 
-          fill="#256b3e" 
-        />
-
-        <line x1="80" y1="84" x2="80" y2="123" stroke="#8ab897" strokeWidth="2.5" />
-      </svg>
-
-      {/* Brand Text */}
-      <div className="flex flex-col text-left">
-        <span className={`${isSm ? 'text-base' : isLg ? 'text-3xl sm:text-4xl' : 'text-xl sm:text-2xl'} font-bold font-display tracking-tight text-[#144225] leading-none`}>
-          Saagu Valgus
-        </span>
-        <span className={`${isSm ? 'text-[9px]' : isLg ? 'text-sm sm:text-base' : 'text-[11px] sm:text-xs'} uppercase tracking-[0.22em] text-[#1a6838] font-bold mt-1`}>
-          Kirjastus • Publishing
-        </span>
-      </div>
-    </div>
-  );
+// Map book ID to its respective cover image
+const getBookCoverImage = (id: string) => {
+  if (id === 'laps-ja-jumal') return lapsJaJumalCover;
+  if (id === 'ma-olin-saatana-vang') return saatanaVangCover;
+  return saaguValgusCover;
 };
 
 export default function App() {
-  // Language State: 'et' | 'en'
   const [lang, setLang] = useState<Language>(() => {
     try {
       const saved = localStorage.getItem(LANG_STORAGE_KEY);
@@ -229,7 +135,6 @@ export default function App() {
 
   const t = UI_TRANSLATIONS[lang] || UI_TRANSLATIONS.et;
 
-  // Primary Site Content State
   const [content, setContent] = useState<SiteContent>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -240,21 +145,20 @@ export default function App() {
     return INITIAL_SITE_CONTENT;
   });
 
-  // Dynamic active content based on language
   const activeContent: SiteContent = lang === 'en' ? SITE_CONTENT_EN : content;
 
-  // Orders State (Persisted in Server)
+  // Combined 5-chapter question list (deduplicated)
+  const allQuestionChapters: QuestionItem[] = [
+    ...activeContent.centralQuestions,
+    ...activeContent.tractQuestions.filter(q => q.id !== 'hoia-kodu-puhas')
+  ].map((q, idx) => ({ ...q, number: idx + 1 }));
+
   const [orders, setOrders] = useState<OrderItem[]>(INITIAL_ORDERS);
-
-  // Contact Messages State (Persisted in Server)
   const [messages, setMessages] = useState<ContactMessage[]>(INITIAL_MESSAGES);
-
-  // Publications (Trükised / PDF) State (Persisted in Server & Shared across all devices)
   const [publications, setPublications] = useState<PublicationItem[]>(INITIAL_PUBLICATIONS);
   const [isPublicationsOpen, setIsPublicationsOpen] = useState(false);
 
-  const [activeCentralQuestion, setActiveCentralQuestion] = useState<string>('noidade-selgeltnagijate-vagi');
-  const [activeTractQuestion, setActiveTractQuestion] = useState<string>('igauele-oma-jumal');
+  const [activeQuestionId, setActiveQuestionId] = useState<string>('noidade-selgeltnagijate-vagi');
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [copiedPrayer, setCopiedPrayer] = useState(false);
   const [copiedLordPrayer, setCopiedLordPrayer] = useState(false);
@@ -264,14 +168,12 @@ export default function App() {
   const [formSent, setFormSent] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
 
-  // Pure Pre-Order Modal State
   const [selectedBookForOrder, setSelectedBookForOrder] = useState<BookItem | null>(null);
   const [orderQuantity, setOrderQuantity] = useState(1);
   const [orderData, setOrderData] = useState({ name: '', email: '', phone: '', notes: '' });
   const [orderSubmitted, setOrderSubmitted] = useState(false);
   const [lastSubmittedId, setLastSubmittedId] = useState('');
 
-  // Admin View & Authentication State
   const [isAdminView, setIsAdminView] = useState(() => typeof window !== 'undefined' && window.location.hash === '#admin');
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
@@ -280,7 +182,6 @@ export default function App() {
   const [adminAuthErrorMsg, setAdminAuthErrorMsg] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // Language switch handler
   const handleSetLanguage = (newLang: Language) => {
     setLang(newLang);
     try {
@@ -288,7 +189,6 @@ export default function App() {
     } catch {}
   };
 
-  // Sync document title and HTML lang attribute
   useEffect(() => {
     document.documentElement.lang = lang;
     document.title = lang === 'en'
@@ -296,7 +196,6 @@ export default function App() {
       : 'Kirjastus Saagu Valgus | Vaimulik kirjandus ja evangeelsed materjalid';
   }, [lang]);
 
-  // Fetch initial data from server on startup
   useEffect(() => {
     api.fetchContent().then(setContent).catch(console.error);
     api.fetchPublications().then(setPublications).catch(console.error);
@@ -314,7 +213,6 @@ export default function App() {
     }
   }, []);
 
-  // Sync hash with admin view
   useEffect(() => {
     const handleHashChange = () => {
       setIsAdminView(window.location.hash === '#admin');
@@ -364,11 +262,10 @@ export default function App() {
     }
   };
 
-  // Save content to Server
   const saveContent = (newContent: SiteContent) => {
     setContent(newContent);
     api.saveContent(newContent).catch(err => {
-      console.error('Error saving content to server:', err);
+      console.error('Error saving content:', err);
     });
   };
 
@@ -405,7 +302,6 @@ export default function App() {
     setPublications(prev => prev.filter(p => p.id !== id));
   };
 
-  // Pre-Order Openers
   const openPreOrderModal = (book?: BookItem) => {
     const targetBook = book || activeContent.books.find(b => b.isPreOrder) || activeContent.books[0];
     setSelectedBookForOrder(targetBook);
@@ -414,7 +310,6 @@ export default function App() {
     setOrderSubmitted(false);
   };
 
-  // Order submission
   const handleOrderSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedBookForOrder) return;
@@ -433,7 +328,6 @@ export default function App() {
       setLastSubmittedId(created.id);
       setOrderSubmitted(true);
     } catch (err: any) {
-      console.error('Order creation error, fallback:', err);
       const orderId = 'ord-' + Date.now().toString().slice(-6);
       const newOrd: OrderItem = {
         id: orderId,
@@ -467,7 +361,6 @@ export default function App() {
       setFormSent(true);
       setFormData({ name: '', email: '', message: '' });
     } catch (err) {
-      console.error('Message creation error, fallback:', err);
       const msgId = 'msg-' + Date.now().toString().slice(-6);
       const newMsg: ContactMessage = {
         id: msgId,
@@ -606,22 +499,22 @@ export default function App() {
   if (isAdminView) {
     if (!isAdminAuthenticated) {
       return (
-        <div className="min-h-screen bg-[#f1f5f2] flex flex-col items-center justify-center p-4">
-          <div className="bg-white rounded-3xl border border-stone-200 p-8 sm:p-10 shadow-xl max-w-md w-full space-y-6 text-center animate-in fade-in duration-150">
-            <div className="w-16 h-16 rounded-2xl bg-[#144225] text-white flex items-center justify-center mx-auto shadow-sm">
-              <Lock className="w-8 h-8 text-amber-400" />
+        <div className="min-h-screen bg-[#FAF7F2] flex flex-col items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-[#E7E0D5] p-8 sm:p-10 shadow-lg max-w-md w-full space-y-6 text-center">
+            <div className="w-12 h-12 rounded-xl bg-[#14532D] text-white flex items-center justify-center mx-auto shadow-sm">
+              <Lock className="w-6 h-6 text-amber-300" />
             </div>
             
             <div className="space-y-1">
-              <h2 className="text-2xl font-bold font-display text-[#144225]">{activeContent.brandName}</h2>
-              <p className="text-xs text-stone-500 font-semibold uppercase tracking-wider">{t.footer.adminLink}</p>
+              <h2 className="text-2xl font-bold font-display text-[#1C1917]">{activeContent.brandName}</h2>
+              <p className="text-xs text-stone-500 uppercase tracking-widest font-sans">{t.footer.adminLink}</p>
             </div>
 
             <form onSubmit={handleAdminLogin} className="space-y-4 text-left">
               <div>
                 <label className="block text-xs font-bold text-stone-700 mb-1.5 flex items-center justify-between">
                   <span>Admin parool</span>
-                  <span className="text-[11px] text-stone-400 font-normal">Turvaline ligipääs</span>
+                  <span className="text-[11px] text-stone-400">Turvaline sisselogimine</span>
                 </label>
                 <div className="relative">
                   <input
@@ -632,22 +525,20 @@ export default function App() {
                       setAdminPasswordInput(e.target.value);
                       if (adminAuthError) setAdminAuthError(false);
                     }}
-                    className="w-full pl-4 pr-11 py-3 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-[#1a6838] focus:outline-none bg-stone-50/60"
+                    className="w-full pl-4 pr-11 py-3 rounded-xl border border-[#E7E0D5] text-sm focus:ring-2 focus:ring-[#14532D] focus:outline-none bg-[#FAF7F2]"
                     autoFocus
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-stone-400 hover:text-stone-700 cursor-pointer"
-                    title={showPassword ? "Peida parool" : "Näita parooli"}
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
                 {adminAuthError && (
-                  <div className="mt-2 p-2.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-center gap-1.5 font-medium">
-                    <ShieldAlert className="w-4 h-4 shrink-0 text-red-600" />
-                    <span>{adminAuthErrorMsg}</span>
+                  <div className="mt-2 p-2.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 font-medium">
+                    {adminAuthErrorMsg}
                   </div>
                 )}
               </div>
@@ -655,23 +546,16 @@ export default function App() {
               <button
                 type="submit"
                 disabled={isLoggingIn}
-                className="w-full py-3.5 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white font-bold text-sm shadow-md transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-70"
+                className="w-full py-3 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-semibold text-sm transition-colors cursor-pointer flex items-center justify-center gap-2"
               >
-                {isLoggingIn ? (
-                  <span>Kontrollin...</span>
-                ) : (
-                  <>
-                    <Key className="w-4 h-4" />
-                    <span>Logi administraatorina sisse</span>
-                  </>
-                )}
+                {isLoggingIn ? <span>Kontrollin...</span> : <span>Logi administraatorina sisse</span>}
               </button>
             </form>
 
             <div className="pt-2 border-t border-stone-100">
               <button
                 onClick={closeAdmin}
-                className="text-xs text-stone-500 hover:text-stone-800 font-bold transition-colors cursor-pointer"
+                className="text-xs text-stone-500 hover:text-stone-800 font-semibold cursor-pointer"
               >
                 ← Tagasi avalikule lehele
               </button>
@@ -702,298 +586,304 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#fcfdfc] text-[#1c2e24] flex flex-col font-sans selection:bg-[#8ab897]/30 selection:text-[#1a6838] relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#FAF7F2] text-[#1C1917] flex flex-col font-sans selection:bg-[#14532D]/15 selection:text-[#14532D] relative overflow-x-hidden">
       
-      {/* 1. Header & Navigation with Bilingual Language Selector */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#8ab897]/20 shadow-2xs">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between gap-3">
+      {/* Top Bar Contract */}
+      <header className="sticky top-0 z-40 bg-[#FAF7F2]/95 backdrop-blur-md border-b border-[#E7E0D5] shadow-2xs">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between gap-4">
           
-          <a href="#" className="flex items-center hover:opacity-90 transition-opacity shrink-0">
-            <BrandLogo size="md" />
+          {/* Zone 1: Single text wordmark */}
+          <a href="#" className="flex flex-col text-left group">
+            <span className="text-xl sm:text-2xl font-bold font-display tracking-tight text-[#14532D]">
+              Saagu Valgus
+            </span>
+            <span className="text-[10px] uppercase tracking-[0.2em] text-stone-500 font-sans font-semibold">
+              {lang === 'en' ? 'Publishing Ministry' : 'Kirjastus'}
+            </span>
           </a>
 
-          {/* Clean Nav Links */}
-          <nav className="hidden lg:flex items-center gap-5 xl:gap-6 text-sm font-semibold text-[#2c4c3b]">
-            <button onClick={() => scrollTo('kusimused')} className="hover:text-[#1a6838] transition-colors font-bold text-[#144225] cursor-pointer">
+          {/* Zone 2: Clean text links */}
+          <nav className="hidden md:flex items-center gap-6 text-xs sm:text-sm font-medium text-stone-700">
+            <button onClick={() => scrollTo('teemad')} className="hover:text-[#14532D] transition-colors cursor-pointer">
               {t.nav.topics}
             </button>
-            <button onClick={() => scrollTo('puhas-kodu')} className="hover:text-[#1a6838] transition-colors cursor-pointer">
+            <button onClick={() => scrollTo('puhas-kodu')} className="hover:text-[#14532D] transition-colors cursor-pointer">
               {t.nav.cleanHome}
+            </button>
+            <button onClick={() => scrollTo('tunnistused')} className="hover:text-[#14532D] transition-colors cursor-pointer">
+              {t.nav.testimonials}
+            </button>
+            <button onClick={() => scrollTo('kirjastus')} className="hover:text-[#14532D] transition-colors cursor-pointer">
+              {t.nav.books}
             </button>
             <button 
               onClick={() => setIsPublicationsOpen(true)} 
-              className="hover:text-[#1a6838] transition-colors cursor-pointer flex items-center gap-1.5 font-bold text-[#144225]"
-              title="Ava trükised ja PDF vaatleja"
+              className="hover:text-[#14532D] font-bold text-[#14532D] transition-colors cursor-pointer flex items-center gap-1"
             >
-              <FileText className="w-4 h-4 text-emerald-700" />
+              <FileText className="w-3.5 h-3.5 text-[#14532D]" />
               <span>{t.nav.publications}</span>
             </button>
-            <button onClick={() => scrollTo('tunnistused')} className="hover:text-[#1a6838] transition-colors cursor-pointer">
-              {t.nav.testimonials}
-            </button>
-            <button onClick={() => scrollTo('kirjastus')} className="hover:text-[#1a6838] transition-colors cursor-pointer">
-              {t.nav.books}
-            </button>
-            <button onClick={() => scrollTo('toetus')} className="hover:text-[#1a6838] transition-colors cursor-pointer">
+            <button onClick={() => scrollTo('toetus')} className="hover:text-[#14532D] transition-colors cursor-pointer">
               {t.nav.support}
             </button>
-            <button onClick={() => scrollTo('paastepalve')} className="hover:text-[#1a6838] transition-colors cursor-pointer text-[#1a6838]">
+            <button onClick={() => scrollTo('paastepalve')} className="hover:text-[#14532D] font-bold text-[#14532D] transition-colors cursor-pointer">
               {t.nav.prayer}
-            </button>
-            <button onClick={() => scrollTo('kontakt')} className="hover:text-[#1a6838] transition-colors cursor-pointer">
-              {t.nav.contact}
             </button>
           </nav>
 
-          {/* Right Action: Language Switcher & Pre-Order Button */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            
-            {/* Bilingual Selector Button */}
-            <div className="flex items-center bg-[#f0f5f1] p-1 rounded-2xl border border-[#8ab897]/40 shadow-inner">
+          {/* Zone 3: Language & Action */}
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="flex items-center text-xs font-semibold text-stone-600 border border-[#E2D7C8] rounded-lg p-0.5 bg-white">
               <button
                 onClick={() => handleSetLanguage('et')}
-                className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
-                  lang === 'et' 
-                    ? 'bg-[#1a6838] text-white shadow-xs' 
-                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/50'
+                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                  lang === 'et' ? 'bg-[#14532D] text-white font-bold' : 'hover:text-stone-900'
                 }`}
-                title="Eesti keel"
               >
-                <span>🇪🇪</span>
-                <span>ET</span>
+                ET
               </button>
               <button
                 onClick={() => handleSetLanguage('en')}
-                className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 cursor-pointer ${
-                  lang === 'en' 
-                    ? 'bg-[#1a6838] text-white shadow-xs' 
-                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/50'
+                className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                  lang === 'en' ? 'bg-[#14532D] text-white font-bold' : 'hover:text-stone-900'
                 }`}
-                title="English Language"
               >
-                <span>🇬🇧</span>
-                <span>EN</span>
+                EN
               </button>
             </div>
 
             <button
               onClick={() => openPreOrderModal()}
-              className="px-3.5 sm:px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-900 text-xs sm:text-sm font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
-              title={t.books.preOrder}
+              className="px-4 py-2 rounded-lg bg-[#14532D] hover:bg-[#0F3D24] text-white text-xs font-semibold transition-colors cursor-pointer shadow-2xs whitespace-nowrap"
             >
-              <Package className="w-4 h-4 text-stone-900" />
-              <span>{t.books.preOrder}</span>
+              {t.books.preOrder}
             </button>
           </div>
         </div>
       </header>
 
-      {/* 2. Hero Section */}
-      <section className="relative pt-8 pb-16 sm:pt-12 sm:pb-20 bg-gradient-to-b from-[#f4f8f5] via-white to-white border-b border-[#8ab897]/20 overflow-hidden z-10">
-        <div className="absolute inset-0 pointer-events-none cross-pattern opacity-30" />
-
-        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 space-y-8">
+      {/* Hero Section */}
+      <section className="relative pt-12 pb-16 sm:pt-16 sm:pb-20 border-b border-[#E7E0D5] bg-[#FAF7F2] paper-grain">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-10">
           
-          <div className="text-center space-y-4 max-w-4xl mx-auto">
-            {/* Top Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1a6838]/10 border border-[#1a6838]/20 text-[#1a6838] text-xs sm:text-sm font-semibold">
-              <Sparkles className="w-4 h-4 text-[#1a6838]" />
-              <span>{activeContent.heroBadge}</span>
-            </div>
-
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold font-display text-[#144225] tracking-tight leading-tight">
-              {activeContent.heroTitle} <span className="text-[#1a6838]">{activeContent.heroHighlight}</span>
-            </h1>
-          </div>
-
-          {/* 3 Core Questions */}
-          <div id="kusimused" className="pt-2 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {activeContent.centralQuestions.map((q) => {
-                const isSelected = activeCentralQuestion === q.id;
-                return (
-                  <button
-                    key={q.id}
-                    onClick={() => setActiveCentralQuestion(q.id)}
-                    className={`p-5 sm:p-6 rounded-3xl border-2 text-left transition-all flex flex-col justify-between gap-4 group cursor-pointer ${
-                      isSelected 
-                        ? 'bg-[#1a6838] text-white border-[#1a6838] shadow-lg ring-2 ring-[#1a6838]/25' 
-                        : 'bg-white hover:bg-[#f4f8f5] border-[#8ab897]/40 text-[#144225] shadow-xs hover:border-[#1a6838]'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between w-full">
-                      <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-2xl font-black shrink-0 shadow-md ${
-                        isSelected ? 'bg-amber-400 text-stone-900' : 'bg-red-600 text-white group-hover:scale-105 transition-transform'
-                      }`}>
-                        ?
-                      </div>
-                      <span className={`text-[11px] font-black uppercase tracking-wider px-2.5 py-1 rounded-full ${
-                        isSelected ? 'bg-white/20 text-white' : 'bg-[#1a6838]/10 text-[#1a6838]'
-                      }`}>
-                        {lang === 'en' ? `Question ${q.number}` : `Küsimus ${q.number}`}
-                      </span>
-                    </div>
+            {/* Left Column */}
+            <div className="lg:col-span-7 space-y-6 text-left">
+              
+              <div className="flex items-center gap-2 text-xs font-semibold tracking-widest text-[#9A3412] uppercase font-sans">
+                <span>{lang === 'en' ? 'EVANGELISTIC LITERATURE & TRUTH' : 'KIRJASTUS SAAGU VALGUS'}</span>
+              </div>
 
-                    <div className="space-y-2">
-                      <h3 className={`font-bold font-display text-base sm:text-lg leading-snug line-clamp-3 ${
-                        isSelected ? 'text-white' : 'text-[#144225]'
-                      }`}>
-                        {q.question}
-                      </h3>
-                      <p className={`text-xs line-clamp-2 leading-relaxed ${
-                        isSelected ? 'text-emerald-100' : 'text-[#446752]'
-                      }`}>
-                        {q.fullText.slice(0, 110)}...
-                      </p>
-                    </div>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-[#1C1917] tracking-tight leading-[1.12]">
+                {activeContent.heroTitle} <span className="text-[#14532D] italic">{activeContent.heroHighlight}</span>
+              </h1>
 
-                    <div className={`text-xs font-bold pt-2 border-t flex items-center justify-between ${
-                      isSelected ? 'border-white/20 text-amber-300' : 'border-stone-100 text-[#1a6838]'
-                    }`}>
-                      <span>{lang === 'en' ? 'Read explanation' : 'Loe vastust & tõde'}</span>
-                      <span>→</span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Selected Question Detail Card */}
-            {(() => {
-              const current = activeContent.centralQuestions.find(q => q.id === activeCentralQuestion) || activeContent.centralQuestions[0];
-              return (
-                <div className="bg-white rounded-3xl border-2 border-[#1a6838]/30 p-6 sm:p-10 shadow-md space-y-6">
-                  
-                  <div className="flex items-start gap-4 pb-4 border-b border-stone-100">
-                    <div className="w-14 h-14 rounded-2xl bg-amber-400 text-stone-900 font-black text-3xl flex items-center justify-center shrink-0 shadow-md">
-                      ?
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold uppercase text-[#1a6838] tracking-wider mb-1">
-                        {lang === 'en' ? `Core Question ${current.number}` : `Põhiküsimus ${current.number}`}
-                      </div>
-                      <h4 className="text-xl sm:text-3xl font-bold font-display text-[#144225] leading-tight">
-                        {current.question}
-                      </h4>
-                    </div>
-                  </div>
-
-                  <div className="pt-2">
-                    {renderAuthorParagraphs(current.fullText)}
-                  </div>
-
-                  {/* Bible Verses */}
-                  {current.bibleVerses && current.bibleVerses.length > 0 && (
-                    <div className="pt-2 space-y-2">
-                      <h5 className="font-bold text-xs uppercase tracking-wider text-stone-600">
-                        {t.questions.biblicalVerses}
-                      </h5>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {current.bibleVerses.map((verse, idx) => (
-                          <div key={idx} className="p-3.5 rounded-2xl bg-[#fcfdfc] border border-[#8ab897]/30 shadow-2xs space-y-1">
-                            <span className="text-xs sm:text-sm font-bold text-[#1a6838] block">
-                              📖 {verse.ref}
-                            </span>
-                            <p className="text-xs sm:text-sm font-serif italic text-[#314c3e]">
-                              «{verse.text}»
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Practical steps */}
-                  {current.practicalSteps && (
-                    <div className="p-5 rounded-2xl bg-emerald-50/80 border border-emerald-200 space-y-2.5">
-                      <h5 className="font-bold text-[#1a6838] text-sm sm:text-base flex items-center gap-2">
-                        <ShieldAlert className="w-5 h-5 text-[#1a6838]" />
-                        <span>{t.questions.practicalSteps}</span>
-                      </h5>
-                      <ul className="space-y-2 text-xs sm:text-sm text-[#243d2e]">
-                        {current.practicalSteps.map((step, i) => (
-                          <li key={i} className="flex items-start gap-2.5">
-                            <span className="w-5 h-5 rounded-full bg-[#1a6838] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">✓</span>
-                            <span className="font-medium">{step}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                </div>
-              );
-            })()}
-
-          </div>
-
-          {/* Scripture Bar */}
-          <div className="pt-6 border-t border-[#8ab897]/25 space-y-6 max-w-4xl mx-auto">
-            
-            <div className="p-5 sm:p-6 rounded-3xl bg-[#f4f8f5] border border-[#8ab897]/30 text-center shadow-2xs">
-              <p className="text-base sm:text-lg text-[#1e382b] font-serif leading-relaxed italic">
+              <p className="text-lg sm:text-xl font-serif text-[#292524] leading-relaxed italic border-l-2 border-[#14532D]/30 pl-4 py-1">
                 «{activeContent.heroDescription}»
               </p>
-            </div>
 
-            {/* PRIMARY BIBLE SCRIPTURE */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-[#1a6838]/10 to-amber-500/10 border-2 border-[#1a6838]/30 shadow-xs relative">
-              <div className="flex items-center justify-center gap-2 mb-1.5">
-                <span className="text-[11px] font-black uppercase tracking-widest text-[#1a6838] bg-white/90 px-3 py-0.5 rounded-full border border-[#1a6838]/30 shadow-2xs">
-                  {lang === 'en' ? 'Core Biblical Scripture' : 'Peamine Piibli tõotus'} • {activeContent.primaryVerse?.ref || 'Joel 2:32'}
+              {/* Primary Scripture */}
+              <div className="p-5 rounded-2xl bg-[#F5F0E6] border border-[#E2D7C8] space-y-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#14532D] font-sans block">
+                  📖 {activeContent.primaryVerse?.ref || 'Joel 2:32'}
                 </span>
+                <p className="text-lg sm:text-xl font-serif font-semibold text-[#1C1917]">
+                  «{activeContent.primaryVerse?.text}»
+                </p>
               </div>
-              <p className="text-lg sm:text-2xl font-serif font-bold text-[#144225] italic text-center leading-snug">
-                «{activeContent.primaryVerse?.text}»
-              </p>
+
+              <div className="flex flex-wrap items-center gap-4 pt-2">
+                <button
+                  onClick={() => scrollTo('teemad')}
+                  className="px-6 py-3 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-semibold text-sm transition-colors cursor-pointer shadow-xs"
+                >
+                  {t.hero.read3Questions}
+                </button>
+                <button
+                  onClick={() => setIsPublicationsOpen(true)}
+                  className="px-6 py-3 rounded-xl bg-white hover:bg-stone-50 text-[#1C1917] border border-[#E7E0D5] font-semibold text-sm transition-colors cursor-pointer"
+                >
+                  {t.hero.viewBooks}
+                </button>
+              </div>
+
             </div>
 
-            {/* Core Bible Verses */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
-              {activeContent.coreVerses.map((v, i) => (
-                <div key={i} className="bg-white p-4 sm:p-5 rounded-2xl border border-[#8ab897]/40 shadow-xs flex flex-col justify-between relative group hover:border-[#1a6838]/60 transition-colors">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-black text-[#1a6838] uppercase tracking-wider">{v.ref}</span>
-                      {v.theme && <span className="text-[11px] text-stone-600 font-bold bg-stone-100 px-2 py-0.5 rounded-md">{v.theme}</span>}
-                    </div>
-                    <p className="text-sm sm:text-base italic font-serif text-[#1c2e24] leading-relaxed">«{v.text}»</p>
-                  </div>
+            {/* Right Column: Hero Photo */}
+            <div className="lg:col-span-5 relative">
+              <div className="relative rounded-2xl overflow-hidden border border-[#E2D7C8] shadow-md bg-white p-2">
+                <img
+                  src={heroPublisherImage}
+                  alt="Holy Bible and literature on warm wooden desk"
+                  className="w-full h-auto object-cover rounded-xl"
+                  referrerPolicy="no-referrer"
+                />
+                <div className="p-3 text-center text-xs font-serif italic text-stone-600">
+                  {lang === 'en' ? 'Let There Be Light — Literature for Truth and Freedom' : 'Saagu Valgus — Vaimulik kirjandus ja tõe tundmine'}
                 </div>
-              ))}
+              </div>
             </div>
 
+          </div>
+
+          {/* 2 Complementary Scripture Verses */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-6 border-t border-[#E7E0D5]">
+            {activeContent.coreVerses.slice(1).map((v, i) => (
+              <div key={i} className="p-5 rounded-xl bg-white border border-[#E7E0D5] shadow-2xs space-y-2 text-left">
+                <div className="flex items-center justify-between text-xs text-stone-500 font-sans">
+                  <span className="font-bold text-[#14532D]">{v.ref}</span>
+                  {v.theme && <span>{v.theme}</span>}
+                </div>
+                <p className="text-sm font-serif italic text-[#1C1917] leading-relaxed">
+                  «{v.text}»
+                </p>
+              </div>
+            ))}
           </div>
 
         </div>
       </section>
 
-      {/* 3. Hoia oma kodu puhas (Clean Home) Section */}
-      <section id="puhas-kodu" className="py-14 sm:py-20 bg-white border-b border-[#8ab897]/20 z-10">
+      {/* 5 Vaimulikku Peatükki (Unified 5-Chapter Question Catalogue) */}
+      <section id="teemad" className="py-16 sm:py-20 bg-white border-b border-[#E7E0D5]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-10">
           
-          <div className="text-center space-y-2">
-            <span className="text-xs uppercase tracking-widest text-[#1a6838] font-bold">
+          <div className="text-center space-y-2 max-w-3xl mx-auto">
+            <span className="text-xs uppercase tracking-widest font-bold text-[#9A3412] font-sans">
+              {t.questions.badge}
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#1C1917]">
+              {t.questions.title}
+            </h2>
+            <p className="text-sm sm:text-base font-serif text-stone-600 leading-relaxed">
+              {t.questions.subtitle}
+            </p>
+          </div>
+
+          {/* Chapter Selector Grid (1 to 5) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            {allQuestionChapters.map((q) => {
+              const isSelected = activeQuestionId === q.id;
+              return (
+                <button
+                  key={q.id}
+                  onClick={() => setActiveQuestionId(q.id)}
+                  className={`p-4 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between gap-3 ${
+                    isSelected 
+                      ? 'bg-[#14532D] text-white border-[#14532D] shadow-sm' 
+                      : 'bg-[#FAF7F2] hover:bg-[#F5F0E6] border-[#E7E0D5] text-[#1C1917]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between text-xs font-sans">
+                    <span className={`font-mono font-bold text-xs ${isSelected ? 'text-amber-300' : 'text-[#9A3412]'}`}>
+                      0{q.number}.
+                    </span>
+                    <span className={isSelected ? 'text-emerald-200' : 'text-stone-500'}>
+                      {lang === 'en' ? 'Chapter' : 'Peatükk'}
+                    </span>
+                  </div>
+
+                  <h3 className={`font-serif font-bold text-xs sm:text-sm leading-snug line-clamp-3 ${isSelected ? 'text-white' : 'text-[#1C1917]'}`}>
+                    {q.question}
+                  </h3>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active Chapter Broadside Reader */}
+          {(() => {
+            const current = allQuestionChapters.find(q => q.id === activeQuestionId) || allQuestionChapters[0];
+            return (
+              <div className="bg-[#FAF7F2] rounded-3xl border border-[#E2D7C8] p-6 sm:p-10 shadow-sm space-y-8 text-left">
+                
+                <div className="border-b border-[#E2D7C8] pb-6 space-y-2">
+                  <div className="flex items-center gap-3 text-xs text-stone-500 font-sans">
+                    <span className="font-mono font-bold text-[#9A3412] text-sm">Peatükk 0{current.number}.</span>
+                    <span>{lang === 'en' ? 'Spiritual Truth' : 'Vaimulik tõde & Piibellik vastus'}</span>
+                  </div>
+                  <h3 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-[#1C1917] leading-tight">
+                    {current.question}
+                  </h3>
+                </div>
+
+                {/* Author Prose */}
+                <div>
+                  {renderAuthorParagraphs(current.fullText)}
+                </div>
+
+                {/* Bible Verses */}
+                {current.bibleVerses && current.bibleVerses.length > 0 && (
+                  <div className="space-y-3 pt-4 border-t border-[#E2D7C8]">
+                    <h5 className="font-sans font-bold text-xs uppercase tracking-widest text-[#14532D]">
+                      {t.questions.biblicalVerses}
+                    </h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {current.bibleVerses.map((verse, idx) => (
+                        <div key={idx} className="p-4 rounded-xl bg-white border border-[#E7E0D5] shadow-2xs space-y-1">
+                          <span className="text-xs font-bold text-[#14532D] font-sans block">
+                            📖 {verse.ref}
+                          </span>
+                          <p className="text-sm font-serif italic text-stone-800">
+                            «{verse.text}»
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Practical Steps */}
+                {current.practicalSteps && (
+                  <div className="p-6 rounded-2xl bg-[#F5F0E6] border border-[#E2D7C8] space-y-3">
+                    <h5 className="font-sans font-bold text-[#14532D] text-sm sm:text-base flex items-center gap-2">
+                      <ShieldAlert className="w-5 h-5 text-[#14532D]" />
+                      <span>{t.questions.practicalSteps}</span>
+                    </h5>
+                    <ul className="space-y-2 text-sm font-serif text-stone-800">
+                      {current.practicalSteps.map((step, i) => (
+                        <li key={i} className="flex items-start gap-3">
+                          <span className="font-sans font-bold text-[#14532D] text-xs mt-0.5">0{i+1}.</span>
+                          <span>{step}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+              </div>
+            );
+          })()}
+
+        </div>
+      </section>
+
+      {/* Clean Home Section */}
+      <section id="puhas-kodu" className="py-16 sm:py-20 bg-[#FAF7F2] border-b border-[#E7E0D5] paper-grain">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-10">
+          
+          <div className="text-center space-y-2 max-w-3xl mx-auto">
+            <span className="text-xs uppercase tracking-widest font-bold text-[#9A3412] font-sans">
               {activeContent.cleanlinessSubtitle}
             </span>
-            <h2 className="text-2xl sm:text-4xl font-bold font-display text-[#144225]">
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#1C1917]">
               {activeContent.cleanlinessTitle}
             </h2>
-            <p className="text-sm sm:text-base text-[#41624f] max-w-2xl mx-auto leading-relaxed">
+            <p className="text-sm sm:text-base font-serif text-stone-700 leading-relaxed">
               {activeContent.cleanlinessDescription}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {activeContent.cleanlinessSteps.map((step, idx) => (
-              <div key={idx} className="p-6 rounded-3xl bg-[#f4f8f5] border border-[#8ab897]/30 shadow-xs space-y-3 flex flex-col justify-between">
+              <div key={idx} className="p-6 rounded-2xl bg-white border border-[#E7E0D5] shadow-2xs space-y-3 flex flex-col justify-between text-left">
                 <div className="space-y-2">
-                  <div className="w-10 h-10 rounded-2xl bg-[#1a6838] text-white font-bold flex items-center justify-center text-sm shadow-xs">
-                    {idx + 1}
-                  </div>
-                  <h3 className="text-lg font-bold font-display text-[#144225]">{step.title}</h3>
-                  <p className="text-xs sm:text-sm text-[#2c4938] leading-relaxed font-serif">{step.desc}</p>
+                  <span className="font-mono text-xs font-bold text-[#9A3412] uppercase tracking-wider block">
+                    {lang === 'en' ? `Step 0${idx + 1}` : `Samm 0${idx + 1}`}
+                  </span>
+                  <h3 className="text-lg font-serif font-bold text-[#1C1917]">{step.title}</h3>
+                  <p className="text-sm font-serif text-stone-600 leading-relaxed">{step.desc}</p>
                 </div>
               </div>
             ))}
@@ -1002,245 +892,221 @@ export default function App() {
         </div>
       </section>
 
-      {/* 4. Testimonials & Real Stories */}
-      <section id="tunnistused" className="py-14 sm:py-20 max-w-5xl mx-auto px-4 sm:px-6 space-y-10 z-10">
-        <div className="text-center space-y-2">
-          <span className="text-xs uppercase tracking-widest text-[#1a6838] font-bold">
-            {t.testimonials.badge}
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-bold font-display text-[#144225]">
-            {t.testimonials.title}
-          </h2>
-          <p className="text-sm text-[#41624f]">
-            {t.testimonials.subtitle}
-          </p>
-        </div>
+      {/* Testimonials */}
+      <section id="tunnistused" className="py-16 sm:py-20 bg-white border-b border-[#E7E0D5]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-10">
+          
+          <div className="text-center space-y-2 max-w-3xl mx-auto">
+            <span className="text-xs uppercase tracking-widest font-bold text-[#14532D] font-sans">
+              {t.testimonials.badge}
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#1C1917]">
+              {t.testimonials.title}
+            </h2>
+            <p className="text-sm sm:text-base font-serif text-stone-600">
+              {t.testimonials.subtitle}
+            </p>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {activeContent.testimonials.map((test) => (
-            <div key={test.id} className="bg-white p-6 sm:p-8 rounded-3xl border border-[#8ab897]/30 shadow-2xs flex flex-col justify-between space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full ${
-                    test.type === 'vabanemine' ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-900'
-                  }`}>
-                    {test.type === 'vabanemine' ? (lang === 'en' ? 'Deliverance' : 'Vabanemine') : (lang === 'en' ? 'Healing' : 'Tervenemine')}
-                  </span>
-                  <span className="text-xs text-stone-500 font-medium">{test.person}</span>
-                </div>
-
-                <h3 className="text-xl font-bold font-display text-[#144225]">{test.title}</h3>
-                
-                <p className="text-sm text-[#2d4937] leading-relaxed font-serif">
-                  {test.summary}
-                </p>
-
-                {test.fullStory && (
-                  <div className="p-4 rounded-2xl bg-[#f4f8f5] text-xs sm:text-sm text-[#243d2e] italic leading-relaxed border border-[#8ab897]/20">
-                    «{test.fullStory}»
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {activeContent.testimonials.map((test) => (
+              <div key={test.id} className="p-8 rounded-3xl bg-[#FAF7F2] border border-[#E2D7C8] shadow-2xs flex flex-col justify-between space-y-6 text-left">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between text-xs text-stone-500 font-sans">
+                    <span className="font-bold uppercase tracking-wider text-[#9A3412]">
+                      {test.type === 'vabanemine' ? (lang === 'en' ? 'Deliverance' : 'Vabanemine') : (lang === 'en' ? 'Healing' : 'Tervenemine')}
+                    </span>
+                    <span>{test.person}</span>
                   </div>
-                )}
-              </div>
 
-              <div className="pt-3 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500">
-                <span>{lang === 'en' ? 'Share your story:' : 'Jaga oma lugu:'}</span>
-                <button
-                  onClick={() => scrollTo('kontakt')}
-                  className="font-bold text-[#1a6838] hover:underline cursor-pointer"
-                >
-                  {lang === 'en' ? 'Send your testimony' : 'Saada oma tunnistus'}
-                </button>
+                  <h3 className="text-2xl font-serif font-bold text-[#1C1917] leading-snug">{test.title}</h3>
+                  
+                  <p className="text-base font-serif text-stone-800 leading-relaxed italic">
+                    «{test.summary}»
+                  </p>
+
+                  {test.fullStory && (
+                    <p className="text-sm font-serif text-stone-700 leading-relaxed">
+                      {test.fullStory}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          {/* Single clean callout to share testimony */}
+          <div className="p-8 rounded-2xl bg-[#F5F0E6] border border-[#E2D7C8] text-center max-w-2xl mx-auto space-y-3">
+            <h4 className="text-xl font-serif font-bold text-[#1C1917]">
+              {lang === 'en' ? 'Do you have a testimony of God\'s grace?' : 'Kas sul on oma lugu elava Jumala tööst?'}
+            </h4>
+            <p className="text-sm font-serif text-stone-700 leading-relaxed">
+              {lang === 'en'
+                ? 'Share how God has touched your life to encourage others and bear witness to the truth.'
+                : 'Kirjuta kirjastusele ja jaga oma tunnistust teiste inimeste julgustuseks ning tõe tunnistuseks.'}
+            </p>
+            <button
+              onClick={() => scrollTo('kontakt')}
+              className="px-6 py-2.5 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-semibold text-xs transition-colors cursor-pointer"
+            >
+              {lang === 'en' ? 'Send your testimony' : 'Saada oma tunnistus'}
+            </button>
+          </div>
+
         </div>
       </section>
 
-      {/* 5. Publisher & Books Section */}
-      <section id="kirjastus" className="py-14 sm:py-20 max-w-5xl mx-auto px-4 sm:px-6 space-y-10 z-10">
-        
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pb-6 border-b border-[#8ab897]/20">
-          <div>
-            <BrandLogo size="lg" />
-            <p className="text-sm text-[#385643] mt-2 max-w-xl">
-              {activeContent.brandTagline}
+      {/* Books & Publisher Section */}
+      <section id="kirjastus" className="py-16 sm:py-20 bg-[#FAF7F2] border-b border-[#E7E0D5]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-12">
+          
+          {/* Publisher Story */}
+          <div className="p-8 sm:p-10 rounded-3xl bg-white border border-[#E7E0D5] shadow-xs space-y-4 max-w-4xl mx-auto text-left">
+            <span className="text-xs font-bold text-[#14532D] uppercase tracking-widest font-sans">
+              {lang === 'en' ? 'Publishing Ministry' : 'Kirjastuse Sünnilugu & Missioon'}
+            </span>
+            <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#1C1917]">
+              {activeContent.publisherStoryTitle}
+            </h3>
+            <p className="text-base sm:text-lg font-serif text-stone-700 leading-relaxed">
+              {activeContent.publisherStoryText}
             </p>
           </div>
-          <button
-            onClick={() => scrollTo('toetus')}
-            className="px-5 py-2.5 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-xs transition-colors shrink-0 cursor-pointer"
-          >
-            <Heart className="w-4 h-4 text-emerald-200" />
-            <span>{t.support.badge}</span>
-          </button>
-        </div>
 
-        {/* Publisher Story */}
-        <div className="bg-[#f4f8f5] p-6 sm:p-8 rounded-3xl border border-[#8ab897]/30 space-y-3 shadow-2xs">
-          <span className="text-xs font-bold text-[#1a6838] uppercase tracking-wider flex items-center gap-1.5">
-            <BookOpen className="w-4 h-4" />
-            <span>{lang === 'en' ? 'Story & Vision' : 'Sünnilugu ja visioon'}</span>
-          </span>
-          <h3 className="text-xl sm:text-2xl font-bold font-display text-[#144225]">
-            {activeContent.publisherStoryTitle}
-          </h3>
-          <p className="text-sm sm:text-base text-[#2c4938] leading-relaxed font-serif">
-            {activeContent.publisherStoryText}
-          </p>
-        </div>
+          {/* Books Catalogue Grid */}
+          <div className="space-y-6">
+            <div className="text-center space-y-2">
+              <h3 className="text-3xl sm:text-4xl font-serif font-bold text-[#1C1917]">
+                {t.books.title}
+              </h3>
+              <p className="text-sm font-serif text-stone-600">{t.books.subtitle}</p>
+            </div>
 
-        {/* Books Cards & Ordering */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xl sm:text-2xl font-bold font-display text-[#144225]">
-              {t.books.title}
-            </h3>
-            <span className="text-xs text-[#385643] font-semibold">{t.books.subtitle}</span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {activeContent.books.map((book) => {
-              return (
-                <div key={book.id} className="bg-white p-6 sm:p-7 rounded-3xl border border-[#8ab897]/30 shadow-2xs flex flex-col justify-between space-y-4 relative group hover:border-[#1a6838]/60 transition-colors">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#8ab897] uppercase tracking-wider">{book.category}</span>
-                      <span className="text-[11px] font-black uppercase tracking-wider text-amber-900 bg-amber-100 border border-amber-300 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                        <Sparkles className="w-3 h-3 text-amber-700" />
-                        <span>{t.books.preOrder}</span>
-                      </span>
-                    </div>
-
-                    <h3 className="text-xl sm:text-2xl font-bold font-display text-[#144225]">«{book.title}»</h3>
-                    <p className="text-xs sm:text-sm text-[#2d4937] leading-relaxed font-serif">{book.description}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {activeContent.books.map((book) => {
+                const coverImg = getBookCoverImage(book.id);
+                return (
+                  <div key={book.id} className="bg-white rounded-3xl border border-[#E7E0D5] p-6 shadow-xs flex flex-col justify-between space-y-6">
                     
-                    {book.preOrderNote && (
-                      <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200 text-xs text-amber-950 font-medium">
-                        📌 {book.preOrderNote}
+                    <div className="space-y-4">
+                      {/* Book Cover Image */}
+                      <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-[#FAF7F2] border border-[#E2D7C8] shadow-sm relative">
+                        <img
+                          src={coverImg}
+                          alt={book.title}
+                          className="w-full h-full object-cover"
+                          referrerPolicy="no-referrer"
+                        />
                       </div>
-                    )}
 
-                    <div className="pt-2 space-y-1 text-xs text-[#3e5e4b]">
-                      {book.highlights.map((h, i) => (
-                        <div key={i} className="flex items-center gap-2">
-                          <span className="text-[#1a6838] font-bold">•</span>
-                          <span>{h}</span>
+                      <div className="space-y-1 text-left">
+                        <div className="flex items-center justify-between text-xs text-stone-500 font-sans">
+                          <span>{book.category}</span>
+                          <span className="font-bold text-[#9A3412]">{t.books.preOrder}</span>
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                        <h4 className="text-xl font-serif font-bold text-[#1C1917]">«{book.title}»</h4>
+                        <p className="text-xs text-stone-500 font-sans">{book.author}</p>
+                      </div>
 
-                  <div className="pt-4 border-t border-stone-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                    <span className="text-xs text-stone-500 font-medium">{book.author}</span>
-                    
+                      <p className="text-sm font-serif text-stone-700 leading-relaxed text-left">
+                        {book.description}
+                      </p>
+
+                      <div className="space-y-1 text-xs text-stone-600 font-serif text-left pt-2 border-t border-stone-100">
+                        {book.highlights.map((h, i) => (
+                          <div key={i} className="flex items-start gap-2">
+                            <span className="text-[#14532D] font-bold">•</span>
+                            <span>{h}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
                     <button
                       onClick={() => openPreOrderModal(book)}
-                      className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-900 text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 shadow-2xs transition-colors cursor-pointer"
+                      className="w-full py-3 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-semibold text-sm transition-colors cursor-pointer shadow-2xs"
                     >
-                      <Package className="w-3.5 h-3.5 text-stone-900" />
-                      <span>{t.books.preOrder}</span>
+                      {t.books.preOrder}
                     </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
 
-        {/* Trükised & PDF Vaatleja banner */}
-        <div className="p-6 sm:p-7 rounded-3xl bg-gradient-to-br from-[#eef6f1] via-white to-[#f4f8f5] border-2 border-[#1a6838]/25 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
-          <div className="flex items-start gap-4">
-            <div className="w-13 h-13 rounded-2xl bg-[#144225] text-amber-300 flex items-center justify-center shrink-0 shadow-sm">
-              <FileText className="w-6 h-6" />
+                  </div>
+                );
+              })}
             </div>
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#1a6838] bg-emerald-100 px-2.5 py-0.5 rounded-full">
-                  {t.publicationsBanner.badge}
-                </span>
-                <span className="text-xs text-stone-500 font-medium">{t.publicationsBanner.sub}</span>
-              </div>
-              <h3 className="text-xl sm:text-2xl font-bold font-display text-[#144225]">
+          </div>
+
+          {/* PDF Viewer Callout Strip */}
+          <div className="p-8 rounded-3xl bg-white border border-[#E7E0D5] shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="space-y-1 text-left">
+              <span className="text-xs font-bold text-[#14532D] uppercase tracking-widest font-sans">
+                {t.publicationsBanner.badge}
+              </span>
+              <h4 className="text-2xl font-serif font-bold text-[#1C1917]">
                 {t.publicationsBanner.title}
-              </h3>
-              <p className="text-xs sm:text-sm text-[#2d4937] leading-relaxed max-w-xl">
+              </h4>
+              <p className="text-sm font-serif text-stone-600 max-w-xl">
                 {t.publicationsBanner.desc}
               </p>
             </div>
-          </div>
 
-          <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto">
             <button
               onClick={() => setIsPublicationsOpen(true)}
-              className="flex-1 sm:flex-none px-5 py-3 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-xs transition-colors cursor-pointer"
+              className="px-6 py-3 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-semibold text-sm transition-colors cursor-pointer whitespace-nowrap shrink-0"
             >
-              <FileText className="w-4 h-4 text-emerald-300" />
-              <span>{t.publicationsBanner.openBtn}</span>
+              {t.publicationsBanner.openBtn}
             </button>
           </div>
-        </div>
 
+        </div>
       </section>
 
-      {/* 6. Support Section */}
-      <section id="toetus" className="py-14 sm:py-20 bg-amber-50/70 border-t border-amber-200/60 z-10">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-8">
+      {/* Support Section */}
+      <section id="toetus" className="py-16 sm:py-20 bg-[#F5F0E6] border-b border-[#E2D7C8]">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-10">
           
-          <div className="text-center space-y-2">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-200/60 text-amber-900 text-xs font-bold uppercase tracking-wider">
-              <Heart className="w-4 h-4 text-amber-700 fill-amber-700" />
-              <span>{activeContent.support.subtitle}</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold font-display text-stone-900">
+          <div className="text-center space-y-2 max-w-2xl mx-auto">
+            <span className="text-xs uppercase tracking-widest font-bold text-[#9A3412] font-sans">
+              {activeContent.support.subtitle}
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#1C1917]">
               {activeContent.support.title}
             </h2>
-            <p className="text-sm text-stone-700 max-w-xl mx-auto font-serif">
+            <p className="text-sm sm:text-base font-serif text-stone-700 leading-relaxed">
               {activeContent.support.description}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
             
-            {/* Bank details card */}
-            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-amber-200 shadow-sm space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-amber-100 text-amber-800 rounded-2xl">
-                  <Building2 className="w-6 h-6" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-base text-stone-900">{t.support.bankDetails}</h4>
-                  <p className="text-xs text-stone-500">{activeContent.support.explanation}</p>
-                </div>
-              </div>
+            {/* Bank details */}
+            <div className="bg-white p-8 rounded-3xl border border-[#E7E0D5] shadow-2xs space-y-4 text-left">
+              <h4 className="font-serif font-bold text-lg text-[#1C1917]">{t.support.bankDetails}</h4>
 
-              <div className="space-y-2 text-xs">
-                <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 flex items-center justify-between">
-                  <div>
-                    <span className="text-stone-500 block text-[10px] uppercase font-bold">{t.support.recipient}</span>
-                    <span className="font-bold text-stone-800 text-sm">{activeContent.support.recipientName}</span>
-                  </div>
+              <div className="space-y-3 text-xs font-sans">
+                <div className="p-3.5 bg-[#FAF7F2] rounded-xl border border-[#E7E0D5]">
+                  <span className="text-stone-500 block text-[10px] uppercase font-bold">{t.support.recipient}</span>
+                  <span className="font-bold text-stone-900 text-sm">{activeContent.support.recipientName}</span>
                 </div>
 
-                <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 flex items-center justify-between">
+                <div className="p-3.5 bg-[#FAF7F2] rounded-xl border border-[#E7E0D5] flex items-center justify-between">
                   <div>
                     <span className="text-stone-500 block text-[10px] uppercase font-bold">{t.support.account}</span>
                     <span className="font-mono font-bold text-stone-900 text-sm">{activeContent.support.iban}</span>
                   </div>
                   <button
                     onClick={handleCopyIban}
-                    className="p-2 rounded-lg bg-white border border-stone-300 text-stone-700 hover:bg-stone-100 flex items-center gap-1 font-semibold cursor-pointer"
+                    className="p-2 rounded-lg bg-white border border-stone-300 text-stone-700 hover:bg-stone-100 font-bold cursor-pointer"
                   >
-                    {copiedIban ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedIban ? t.support.copied : t.support.copyIban}</span>
+                    {copiedIban ? t.support.copied : t.support.copyIban}
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="p-3 bg-stone-50 rounded-xl border border-stone-200">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3.5 bg-[#FAF7F2] rounded-xl border border-[#E7E0D5]">
                     <span className="text-stone-500 block text-[10px] uppercase font-bold">{t.support.bank}</span>
                     <span className="font-semibold text-stone-800">{activeContent.support.bankName}</span>
                   </div>
-                  <div className="p-3 bg-stone-50 rounded-xl border border-stone-200">
+                  <div className="p-3.5 bg-[#FAF7F2] rounded-xl border border-[#E7E0D5]">
                     <span className="text-stone-500 block text-[10px] uppercase font-bold">{t.support.explanation}</span>
                     <span className="font-semibold text-stone-800">{activeContent.support.explanation}</span>
                   </div>
@@ -1249,26 +1115,19 @@ export default function App() {
             </div>
 
             {/* Support goals */}
-            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-amber-200 shadow-sm space-y-4">
-              <h4 className="font-bold text-base text-stone-900 flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-amber-600" />
-                <span>{lang === 'en' ? 'Where Your Support Goes:' : 'Kuhu sinu toetus läheb?'}</span>
+            <div className="bg-white p-8 rounded-3xl border border-[#E7E0D5] shadow-2xs space-y-4 text-left">
+              <h4 className="font-serif font-bold text-lg text-[#1C1917]">
+                {lang === 'en' ? 'Where Your Support Goes:' : 'Kuhu sinu toetus läheb?'}
               </h4>
 
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 {activeContent.support.supportGoals.map((goal, i) => (
-                  <div key={i} className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50/50 border border-amber-100 text-xs text-stone-800">
-                    <span className="w-5 h-5 rounded-full bg-amber-200 text-amber-900 flex items-center justify-center font-bold shrink-0 text-[10px]">{i + 1}</span>
+                  <div key={i} className="flex items-start gap-3 p-3.5 rounded-xl bg-[#FAF7F2] border border-[#E7E0D5] text-xs sm:text-sm font-serif text-stone-800">
+                    <span className="font-mono font-bold text-[#14532D] text-xs mt-0.5">0{i + 1}.</span>
                     <span>{goal}</span>
                   </div>
                 ))}
               </div>
-
-              <p className="text-[11px] text-stone-500 italic pt-2">
-                {lang === 'en' 
-                  ? 'Every donation, large or small, helps bring the Light of the Gospel to thousands.'
-                  : 'Iga toetus, olgu väike või suur, on suureks õnnistuseks ja aitab viia evangeeliumi valguse tuhandete inimesteni.'}
-              </p>
             </div>
 
           </div>
@@ -1276,32 +1135,32 @@ export default function App() {
         </div>
       </section>
 
-      {/* 7. Salvation Prayer & Lord's Prayer Section */}
-      <section id="paastepalve" className="py-14 sm:py-20 bg-white border-t border-[#8ab897]/20 z-10">
+      {/* Salvation & Lord's Prayer Section */}
+      <section id="paastepalve" className="py-16 sm:py-20 bg-white border-b border-[#E7E0D5]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-12">
           
           {/* Salvation Prayer */}
-          <div className="bg-gradient-to-br from-[#f4f8f5] via-white to-[#eef6f1] p-6 sm:p-10 rounded-3xl border-2 border-[#1a6838]/30 shadow-sm space-y-6">
+          <div className="bg-[#FAF7F2] p-8 sm:p-12 rounded-3xl border border-[#E2D7C8] shadow-xs space-y-6">
             <div className="text-center space-y-2">
-              <span className="text-xs uppercase tracking-widest text-[#1a6838] font-bold">
+              <span className="text-xs uppercase tracking-widest font-bold text-[#14532D] font-sans">
                 {activeContent.salvationPrayerSubtitle}
               </span>
-              <h2 className="text-2xl sm:text-4xl font-bold font-display text-[#144225]">
+              <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#1C1917]">
                 {activeContent.salvationPrayerTitle}
               </h2>
-              <p className="text-xs sm:text-sm text-[#385643] italic font-serif">
+              <p className="text-sm font-serif text-stone-600 italic">
                 {activeContent.salvationPrayerIntro}
               </p>
             </div>
 
-            <div className="p-6 sm:p-8 bg-white rounded-2xl border border-[#8ab897]/30 shadow-xs font-serif text-base sm:text-lg leading-relaxed text-[#144225] whitespace-pre-line space-y-4">
+            <div className="p-6 sm:p-8 bg-white rounded-2xl border border-[#E7E0D5] font-serif text-base sm:text-lg leading-relaxed text-[#1C1917] whitespace-pre-line text-left">
               {activeContent.salvationPrayerText}
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
               <button
                 onClick={toggleSpeech}
-                className="px-4 py-2.5 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-xs transition-colors cursor-pointer"
+                className="px-5 py-2.5 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white text-xs sm:text-sm font-semibold flex items-center gap-2 cursor-pointer shadow-2xs"
               >
                 {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                 <span>{isSpeaking ? (lang === 'en' ? 'Stop audio' : 'Peata heli') : (lang === 'en' ? 'Listen to prayer' : 'Kuula palvet')}</span>
@@ -1309,61 +1168,58 @@ export default function App() {
 
               <button
                 onClick={handleCopyPrayer}
-                className="px-4 py-2.5 rounded-xl bg-white hover:bg-stone-50 text-stone-700 border border-stone-300 text-xs sm:text-sm font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                className="px-5 py-2.5 rounded-xl bg-white hover:bg-stone-50 text-stone-700 border border-[#E7E0D5] text-xs sm:text-sm font-semibold cursor-pointer"
               >
-                {copiedPrayer ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                <span>{copiedPrayer ? t.salvation.copied : t.salvation.copyPrayer}</span>
+                {copiedPrayer ? t.salvation.copied : t.salvation.copyPrayer}
               </button>
             </div>
 
             {/* Next Steps */}
-            <div className="pt-4 border-t border-[#8ab897]/20 space-y-3">
-              <h4 className="font-bold text-sm text-[#144225]">
+            <div className="pt-6 border-t border-[#E2D7C8] space-y-3 text-left">
+              <h4 className="font-sans font-bold text-xs uppercase tracking-widest text-[#14532D]">
                 {t.salvation.nextStepsTitle}
               </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {activeContent.salvationPrayerNextSteps.map((s, idx) => (
-                  <div key={idx} className="p-3.5 rounded-xl bg-white border border-[#8ab897]/20 text-xs space-y-1">
-                    <span className="font-bold text-[#1a6838] block">{s.title}</span>
-                    <p className="text-stone-600 leading-relaxed">{s.desc}</p>
+                  <div key={idx} className="p-4 rounded-xl bg-white border border-[#E7E0D5] text-xs space-y-1">
+                    <span className="font-bold text-[#14532D] block font-sans">{s.title}</span>
+                    <p className="text-stone-600 font-serif leading-relaxed">{s.desc}</p>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Lord's Prayer (Meie Isa palve) */}
-          <div className="bg-[#fcfdfc] p-6 sm:p-8 rounded-3xl border border-[#8ab897]/40 shadow-xs space-y-5">
-            <div className="flex items-center justify-between border-b border-[#8ab897]/20 pb-3">
-              <div>
-                <span className="text-[11px] font-bold uppercase text-[#1a6838] tracking-wider">
+          {/* Lord's Prayer */}
+          <div className="bg-[#F5F0E6] p-8 sm:p-10 rounded-3xl border border-[#E2D7C8] space-y-6">
+            <div className="flex items-center justify-between border-b border-[#E2D7C8] pb-4">
+              <div className="text-left">
+                <span className="text-xs font-bold uppercase tracking-widest text-[#14532D] font-sans">
                   {t.lordPrayer.badge}
                 </span>
-                <h3 className="text-xl sm:text-2xl font-bold font-display text-[#144225]">
+                <h3 className="text-2xl font-serif font-bold text-[#1C1917]">
                   {activeContent.lordPrayer.title}
                 </h3>
               </div>
               <button
                 onClick={toggleSpeechLordPrayer}
-                className="p-2.5 rounded-xl bg-[#1a6838]/10 text-[#1a6838] hover:bg-[#1a6838]/20 transition-colors cursor-pointer"
-                title={lang === 'en' ? 'Listen to the Lord\'s Prayer' : 'Kuula Meie Isa palvet'}
+                className="p-3 rounded-xl bg-white text-[#14532D] hover:bg-stone-50 transition-colors cursor-pointer border border-[#E2D7C8]"
               >
                 {isSpeakingLordPrayer ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
               </button>
             </div>
 
-            <div className="p-5 sm:p-6 bg-white rounded-2xl border border-stone-200 font-serif text-base sm:text-lg leading-relaxed text-[#1e3427] whitespace-pre-line italic">
+            <div className="p-6 sm:p-8 bg-white rounded-2xl border border-[#E7E0D5] font-serif text-lg leading-relaxed text-[#1C1917] whitespace-pre-line italic text-left">
               {activeContent.lordPrayer.text}
             </div>
 
-            <div className="flex items-center justify-between text-xs text-stone-500">
+            <div className="flex items-center justify-between text-xs text-stone-500 font-sans">
               <span>{activeContent.lordPrayer.ref}</span>
               <button
                 onClick={handleCopyLordPrayer}
-                className="font-bold text-[#1a6838] hover:underline flex items-center gap-1 cursor-pointer"
+                className="font-bold text-[#14532D] hover:underline cursor-pointer"
               >
-                {copiedLordPrayer ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copiedLordPrayer ? t.salvation.copied : (lang === 'en' ? 'Copy prayer' : 'Kopeeri palve')}</span>
+                {copiedLordPrayer ? t.salvation.copied : (lang === 'en' ? 'Copy prayer' : 'Kopeeri palve')}
               </button>
             </div>
           </div>
@@ -1371,112 +1227,103 @@ export default function App() {
         </div>
       </section>
 
-      {/* 8. Contact Section */}
-      <section id="kontakt" className="py-14 sm:py-20 bg-[#f4f8f5] border-t border-[#8ab897]/20 z-10">
+      {/* Contact Section */}
+      <section id="kontakt" className="py-16 sm:py-20 bg-[#FAF7F2]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-10">
           
-          <div className="text-center space-y-2">
-            <span className="text-xs uppercase tracking-widest text-[#1a6838] font-bold">
+          <div className="text-center space-y-2 max-w-2xl mx-auto">
+            <span className="text-xs uppercase tracking-widest font-bold text-[#14532D] font-sans">
               {t.contact.badge}
             </span>
-            <h2 className="text-2xl sm:text-4xl font-bold font-display text-[#144225]">
+            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#1C1917]">
               {t.contact.title}
             </h2>
-            <p className="text-sm text-[#41624f]">
+            <p className="text-sm font-serif text-stone-600">
               {t.contact.subtitle}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
             
-            {/* Email Box */}
-            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#8ab897]/40 shadow-xs space-y-4">
+            <div className="bg-white p-8 rounded-3xl border border-[#E7E0D5] shadow-2xs space-y-4 text-left">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-[#1a6838]/10 text-[#1a6838] flex items-center justify-center">
-                  <Mail className="w-6 h-6" />
+                <div className="w-10 h-10 rounded-xl bg-[#14532D] text-white flex items-center justify-center">
+                  <Mail className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-lg text-[#144225]">{t.contact.emailTitle}</h4>
-                  <p className="text-xs sm:text-sm text-stone-500">{t.contact.emailSub}</p>
+                  <h4 className="font-serif font-bold text-lg text-[#1C1917]">{t.contact.emailTitle}</h4>
+                  <p className="text-xs text-stone-500 font-sans">{t.contact.emailSub}</p>
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#fcfdfc] border border-[#8ab897]/40 flex items-center justify-between">
-                <a href={`mailto:${activeContent.contactEmail}`} className="font-mono text-lg sm:text-xl font-bold text-[#1a6838] hover:underline">
+              <div className="p-4 rounded-xl bg-[#FAF7F2] border border-[#E7E0D5] flex items-center justify-between">
+                <a href={`mailto:${activeContent.contactEmail}`} className="font-mono text-base font-bold text-[#14532D] hover:underline">
                   {activeContent.contactEmail}
                 </a>
                 <button
                   onClick={handleCopyEmail}
-                  className="p-2.5 rounded-xl bg-white border border-[#8ab897]/40 text-[#1a6838] hover:bg-[#f4f8f5] text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-2xs"
+                  className="p-2 rounded-lg bg-white border border-[#E7E0D5] text-[#14532D] hover:bg-stone-50 text-xs font-bold cursor-pointer"
                 >
-                  {copiedEmail ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-[#1a6838]" />}
+                  {copiedEmail ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                 </button>
               </div>
 
-              <p className="text-sm text-stone-600 leading-relaxed">
+              <p className="text-xs font-serif text-stone-600 leading-relaxed">
                 {t.contact.responseTime}
               </p>
             </div>
 
-            {/* Quick Contact Form */}
-            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#8ab897]/40 shadow-xs">
+            <div className="bg-white p-8 rounded-3xl border border-[#E7E0D5] shadow-2xs text-left">
               {formSent ? (
                 <div className="text-center py-8 space-y-3">
-                  <div className="w-12 h-12 rounded-full bg-[#1a6838]/10 text-[#1a6838] flex items-center justify-center mx-auto">
-                    <Check className="w-6 h-6" />
-                  </div>
-                  <h4 className="font-bold text-lg text-[#144225]">{t.contact.formSuccess}</h4>
+                  <h4 className="font-serif font-bold text-xl text-[#1C1917]">{t.contact.formSuccess}</h4>
                   <button 
                     onClick={() => setFormSent(false)} 
-                    className="text-sm font-bold text-[#1a6838] underline pt-2 cursor-pointer"
+                    className="text-xs font-sans font-bold text-[#14532D] underline pt-2 cursor-pointer"
                   >
                     {t.contact.sendAnother}
                   </button>
                 </div>
               ) : (
-                <form 
-                  onSubmit={handleContactSubmit} 
-                  className="space-y-4"
-                >
+                <form onSubmit={handleContactSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-bold text-[#144225] mb-1.5">{t.contact.nameLabel}</label>
+                    <label className="block text-xs font-bold text-stone-700 font-sans mb-1">{t.contact.nameLabel}</label>
                     <input
                       type="text"
                       required
                       placeholder={t.contact.namePlaceholder}
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm sm:text-base focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#E7E0D5] text-sm focus:ring-2 focus:ring-[#14532D] focus:outline-none bg-[#FAF7F2]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-[#144225] mb-1.5">{t.contact.emailLabel}</label>
+                    <label className="block text-xs font-bold text-stone-700 font-sans mb-1">{t.contact.emailLabel}</label>
                     <input
                       type="email"
                       required
                       placeholder={t.contact.emailPlaceholder}
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm sm:text-base focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#E7E0D5] text-sm focus:ring-2 focus:ring-[#14532D] focus:outline-none bg-[#FAF7F2]"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-[#144225] mb-1.5">{t.contact.msgLabel}</label>
+                    <label className="block text-xs font-bold text-stone-700 font-sans mb-1">{t.contact.msgLabel}</label>
                     <textarea
                       rows={3}
                       required
                       placeholder={t.contact.msgPlaceholder}
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm sm:text-base focus:ring-2 focus:ring-[#1a6838] focus:outline-none"
+                      className="w-full px-4 py-2.5 rounded-xl border border-[#E7E0D5] text-sm focus:ring-2 focus:ring-[#14532D] focus:outline-none bg-[#FAF7F2]"
                     />
                   </div>
                   <button
                     type="submit"
-                    className="w-full py-3 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-colors shadow-xs cursor-pointer"
+                    className="w-full py-3 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-semibold text-sm transition-colors cursor-pointer shadow-2xs"
                   >
-                    <Send className="w-4 h-4" />
-                    <span>{t.contact.sendBtn}</span>
+                    {t.contact.sendBtn}
                   </button>
                 </form>
               )}
@@ -1487,36 +1334,27 @@ export default function App() {
         </div>
       </section>
 
-      {/* 9. Footer */}
-      <footer className="bg-white border-t border-[#8ab897]/20 py-10 z-10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-[#385643]">
-          <div className="flex items-center gap-3">
-            <BrandLogo size="sm" />
-            <span>© {new Date().getFullYear()} {activeContent.brandName}. {t.footer.rights}</span>
+      {/* Footer */}
+      <footer className="bg-white border-t border-[#E7E0D5] py-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-stone-600 font-sans">
+          <div className="text-left space-y-0.5">
+            <span className="font-bold text-[#14532D] text-sm block font-serif">
+              {activeContent.brandName}
+            </span>
+            <span>© {new Date().getFullYear()}. {t.footer.rights}</span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-5 sm:gap-6 font-semibold justify-center">
-            <button onClick={() => scrollTo("kusimused")} className="hover:text-[#1a6838] cursor-pointer">{t.nav.topics}</button>
-            <button onClick={() => scrollTo("puhas-kodu")} className="hover:text-[#1a6838] cursor-pointer">{t.nav.cleanHome}</button>
-            <button 
-              onClick={() => setIsPublicationsOpen(true)} 
-              className="hover:text-[#1a6838] font-bold text-[#144225] cursor-pointer flex items-center gap-1"
-            >
-              <FileText className="w-3.5 h-3.5 text-emerald-700" />
-              <span>{t.nav.publications}</span>
-            </button>
-            <button onClick={() => scrollTo("tunnistused")} className="hover:text-[#1a6838] cursor-pointer">{t.nav.testimonials}</button>
-            <button onClick={() => scrollTo("kirjastus")} className="hover:text-[#1a6838] cursor-pointer">{t.nav.books}</button>
-            <button onClick={() => scrollTo("toetus")} className="hover:text-[#1a6838] cursor-pointer">{t.nav.support}</button>
-            <button onClick={() => scrollTo("paastepalve")} className="hover:text-[#1a6838] cursor-pointer">{t.nav.prayer}</button>
-            <button onClick={() => scrollTo("kontakt")} className="hover:text-[#1a6838] cursor-pointer">{t.nav.contact}</button>
+          <div className="flex flex-wrap items-center gap-6 font-semibold justify-center">
+            <button onClick={() => scrollTo("teemad")} className="hover:text-[#14532D] cursor-pointer">{t.nav.topics}</button>
+            <button onClick={() => scrollTo("puhas-kodu")} className="hover:text-[#14532D] cursor-pointer">{t.nav.cleanHome}</button>
+            <button onClick={() => scrollTo("tunnistused")} className="hover:text-[#14532D] cursor-pointer">{t.nav.testimonials}</button>
+            <button onClick={() => scrollTo("kirjastus")} className="hover:text-[#14532D] cursor-pointer">{t.nav.books}</button>
+            <button onClick={() => scrollTo("toetus")} className="hover:text-[#14532D] cursor-pointer">{t.nav.support}</button>
             <button 
               onClick={openAdmin} 
-              className="hover:text-[#1a6838] flex items-center gap-1.5 bg-[#f4f8f5] px-3 py-1.5 rounded-full border border-[#8ab897]/40 text-[#1a6838] font-bold cursor-pointer transition-colors shadow-2xs"
-              title="Admin"
+              className="hover:text-[#14532D] cursor-pointer border border-[#E7E0D5] px-3 py-1 rounded-md bg-[#FAF7F2]"
             >
-              <Lock className="w-3.5 h-3.5 text-[#1a6838]" />
-              <span>{t.footer.adminLink}</span>
+              {t.footer.adminLink}
             </button>
           </div>
         </div>
@@ -1524,130 +1362,81 @@ export default function App() {
 
       {/* Pre-Order Modal */}
       {selectedBookForOrder && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl border border-amber-300 shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150 my-6">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl border border-[#E2D7C8] shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150 my-6 text-left">
             
-            <div className="px-6 py-4.5 text-white flex items-center justify-between bg-gradient-to-r from-amber-700 via-amber-800 to-amber-900 border-b border-amber-900">
-              <div className="flex items-center gap-2.5">
+            <div className="px-6 py-4 text-white flex items-center justify-between bg-[#14532D] border-b border-[#0F3D24]">
+              <div className="flex items-center gap-2">
                 <Package className="w-5 h-5 text-amber-300" />
-                <div>
-                  <h3 className="font-bold text-base leading-tight font-display">
-                    {t.orderModal.titlePreOrder}
-                  </h3>
-                  <p className="text-xs opacity-85">
-                    {lang === 'en' ? 'Reserve your copy before printing' : 'Garanteeri endale eksemplar enne trükist ilmumist'}
-                  </p>
-                </div>
+                <h3 className="font-serif font-bold text-lg">
+                  {t.orderModal.titlePreOrder}
+                </h3>
               </div>
               <button 
                 onClick={() => setSelectedBookForOrder(null)} 
-                className="p-1.5 rounded-xl hover:bg-white/10 text-white cursor-pointer transition-colors"
+                className="p-1 rounded-lg hover:bg-white/10 text-white cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-5 sm:p-6 space-y-4">
+            <div className="p-6 space-y-4">
               {orderSubmitted ? (
-                <div className="text-center py-6 sm:py-8 space-y-4">
-                  <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto shadow-sm bg-amber-100 text-amber-800">
-                    <Check className="w-8 h-8" />
+                <div className="text-center py-6 space-y-4">
+                  <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto bg-emerald-100 text-[#14532D]">
+                    <Check className="w-6 h-6" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-xl sm:text-2xl text-stone-900 font-display">
+                    <h4 className="font-serif font-bold text-2xl text-[#1C1917]">
                       {t.orderModal.successTitle}
                     </h4>
-                    <p className="text-xs text-stone-500 mt-1">
-                      {lang === 'en' ? 'Booking Reference:' : 'Broneeringu kood:'} <span className="font-mono font-bold text-stone-800">#{lastSubmittedId || "ORD-SAV"}</span>
+                    <p className="text-xs text-stone-500 mt-1 font-mono">
+                      #{lastSubmittedId || "ORD-SAV"}
                     </p>
                   </div>
 
-                  <div className="p-4 bg-amber-50/70 rounded-2xl border border-amber-200 text-left text-xs sm:text-sm space-y-1.5">
-                    <p className="font-semibold text-stone-900">{lang === 'en' ? 'Summary:' : 'Teie broneeringu kokkuvõte:'}</p>
-                    <p className="text-stone-700">• {lang === 'en' ? 'Book' : 'Teos'}: <strong>«{selectedBookForOrder.title}»</strong> ({orderQuantity} {lang === 'en' ? 'pcs' : 'tk'})</p>
-                    <p className="text-stone-700">• {lang === 'en' ? 'Name' : 'Tellija'}: {orderData.name}</p>
-                    <p className="text-stone-700">• {lang === 'en' ? 'Email' : 'E-post'}: {orderData.email}</p>
-                    {orderData.phone && (
-                      <p className="text-stone-700">• {lang === 'en' ? 'Phone' : 'Telefon'}: {orderData.phone}</p>
-                    )}
-                  </div>
-
-                  <p className="text-xs sm:text-sm text-stone-600 leading-relaxed max-w-sm mx-auto">
+                  <p className="text-sm font-serif text-stone-700 max-w-sm mx-auto">
                     {t.orderModal.successMsg}
                   </p>
 
-                  <div className="pt-2">
-                    <button
-                      onClick={() => setSelectedBookForOrder(null)}
-                      className="px-8 py-3 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white font-bold text-sm cursor-pointer shadow-xs transition-colors"
-                    >
-                      {t.orderModal.close}
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => setSelectedBookForOrder(null)}
+                    className="px-6 py-2.5 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-semibold text-sm cursor-pointer"
+                  >
+                    {t.orderModal.close}
+                  </button>
                 </div>
               ) : (
-                <form onSubmit={handleOrderSubmit} className="space-y-4 text-sm">
+                <form onSubmit={handleOrderSubmit} className="space-y-4 text-sm font-sans">
                   
-                  {/* Selected Book card */}
-                  <div className="p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-amber-50/70 border-amber-300/80">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-600 text-white">
-                          {t.books.preOrder}
-                        </span>
-                      </div>
-                      <h4 className="font-bold text-stone-900 text-base truncate">«{selectedBookForOrder.title}»</h4>
-                      <p className="text-stone-500 text-xs">{selectedBookForOrder.author} • {selectedBookForOrder.category}</p>
-                    </div>
-
-                    <div className="w-full sm:w-auto">
-                      <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-0.5">
-                        {lang === 'en' ? 'Select title:' : 'Vali teine teos:'}
-                      </label>
-                      <select 
-                        value={selectedBookForOrder.id}
-                        onChange={(e) => {
-                          const found = activeContent.books.find(b => b.id === e.target.value);
-                          if (found) {
-                            setSelectedBookForOrder(found);
-                          }
-                        }}
-                        className="w-full sm:w-44 text-xs font-medium bg-white border border-stone-300 rounded-lg px-2.5 py-1.5 focus:ring-1 focus:ring-[#1a6838] focus:outline-none"
-                      >
-                        {activeContent.books.map(b => (
-                          <option key={b.id} value={b.id}>
-                            {b.title}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                  <div className="p-4 rounded-2xl bg-[#FAF7F2] border border-[#E2D7C8] space-y-1">
+                    <span className="text-[11px] font-bold text-[#9A3412] uppercase tracking-wider block">{t.books.preOrder}</span>
+                    <h4 className="font-serif font-bold text-base text-[#1C1917]">«{selectedBookForOrder.title}»</h4>
+                    <p className="text-xs text-stone-500">{selectedBookForOrder.author}</p>
                   </div>
 
                   {/* Quantity */}
-                  <div className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-200">
-                    <div className="space-y-0.5">
-                      <label className="font-bold text-stone-800 text-xs sm:text-sm block">{t.orderModal.quantity}</label>
-                    </div>
+                  <div className="flex items-center justify-between p-3.5 bg-[#FAF7F2] rounded-xl border border-[#E7E0D5]">
+                    <label className="font-bold text-stone-800 text-xs">{t.orderModal.quantity}</label>
                     <div className="flex items-center gap-2">
                       <button
                         type="button"
                         onClick={() => setOrderQuantity(Math.max(1, orderQuantity - 1))}
-                        className="w-8 h-8 rounded-lg bg-white border border-stone-300 hover:bg-stone-100 font-bold flex items-center justify-center cursor-pointer text-base shadow-2xs"
+                        className="w-8 h-8 rounded-lg bg-white border border-stone-300 font-bold flex items-center justify-center cursor-pointer"
                       >
                         -
                       </button>
-                      <span className="font-bold text-base w-8 text-center text-stone-800">{orderQuantity}</span>
+                      <span className="font-bold text-sm w-6 text-center text-stone-800">{orderQuantity}</span>
                       <button
                         type="button"
                         onClick={() => setOrderQuantity(orderQuantity + 1)}
-                        className="w-8 h-8 rounded-lg bg-white border border-stone-300 hover:bg-stone-100 font-bold flex items-center justify-center cursor-pointer text-base shadow-2xs"
+                        className="w-8 h-8 rounded-lg bg-white border border-stone-300 font-bold flex items-center justify-center cursor-pointer"
                       >
                         +
                       </button>
                     </div>
                   </div>
 
-                  {/* Customer Information */}
                   <div>
                     <label className="block font-bold text-stone-700 text-xs mb-1">{t.orderModal.name}</label>
                     <input
@@ -1656,7 +1445,7 @@ export default function App() {
                       placeholder={lang === 'en' ? 'First and last name' : 'Ees- ja perekonnanimi'}
                       value={orderData.name}
                       onChange={(e) => setOrderData({ ...orderData, name: e.target.value })}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#E7E0D5] text-sm focus:ring-2 focus:ring-[#14532D] focus:outline-none bg-[#FAF7F2]"
                     />
                   </div>
 
@@ -1669,7 +1458,7 @@ export default function App() {
                         placeholder="you@email.com"
                         value={orderData.email}
                         onChange={(e) => setOrderData({ ...orderData, email: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-[#E7E0D5] text-sm focus:ring-2 focus:ring-[#14532D] focus:outline-none bg-[#FAF7F2]"
                       />
                     </div>
                     <div>
@@ -1680,7 +1469,7 @@ export default function App() {
                         placeholder="+372 ..."
                         value={orderData.phone}
                         onChange={(e) => setOrderData({ ...orderData, phone: e.target.value })}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-[#E7E0D5] text-sm focus:ring-2 focus:ring-[#14532D] focus:outline-none bg-[#FAF7F2]"
                       />
                     </div>
                   </div>
@@ -1694,16 +1483,15 @@ export default function App() {
                       placeholder={t.orderModal.notesPlaceholder}
                       value={orderData.notes}
                       onChange={(e) => setOrderData({ ...orderData, notes: e.target.value })}
-                      className="w-full px-3.5 py-2 rounded-xl border border-stone-300 text-xs sm:text-sm focus:ring-2 focus:ring-amber-500 focus:outline-none resize-none"
+                      className="w-full px-3.5 py-2 rounded-xl border border-[#E7E0D5] text-xs sm:text-sm focus:ring-2 focus:ring-[#14532D] focus:outline-none bg-[#FAF7F2] resize-none"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full py-3.5 rounded-xl text-stone-900 font-bold text-sm sm:text-base shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2 mt-2 bg-amber-500 hover:bg-amber-600"
+                    className="w-full py-3 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-semibold text-sm transition-colors cursor-pointer"
                   >
-                    <Package className="w-4 h-4 text-stone-900" />
-                    <span>{t.orderModal.submitPreOrder}</span>
+                    {t.orderModal.submitPreOrder}
                   </button>
                 </form>
               )}
@@ -1712,7 +1500,7 @@ export default function App() {
         </div>
       )}
 
-      {/* Publications Modal with Language Support */}
+      {/* Publications Modal */}
       <PublicationsModal
         isOpen={isPublicationsOpen}
         onClose={() => setIsPublicationsOpen(false)}
