@@ -39,6 +39,7 @@ import {
   UserCheck
 } from 'lucide-react';
 import { SiteContent, BookItem, OrderItem, ContactMessage, QuestionItem, PublicationItem } from './types';
+import { SITE_CONTENT_EN } from './translations';
 
 interface AdminDashboardProps {
   content: SiteContent;
@@ -86,6 +87,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onResetToDefault,
 }) => {
   const [activeTab, setActiveTab] = useState<'orders' | 'messages' | 'publications' | 'books' | 'content' | 'settings' | 'backup'>('orders');
+  const [editLang, setEditLang] = useState<'et' | 'en'>('et');
   const [orderFilter, setOrderFilter] = useState<'all' | 'preorder' | 'order' | 'uus' | 'kinnitatud' | 'postitatud'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [saveSuccessMsg, setSaveSuccessMsg] = useState(false);
@@ -1234,11 +1236,33 @@ ${p.text}
               </button>
             </div>
 
+            {/* Language Selector Tabs */}
+            <div className="flex items-center gap-2 p-1.5 bg-stone-100 rounded-2xl border border-stone-200 max-w-md">
+              <button
+                type="button"
+                onClick={() => setEditLang('et')}
+                className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  editLang === 'et' ? 'bg-[#14532D] text-white shadow-sm' : 'text-stone-600 hover:text-stone-900'
+                }`}
+              >
+                🇪🇪 Toimeta Eesti keelt
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditLang('en')}
+                className={`flex-1 py-2.5 px-4 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  editLang === 'en' ? 'bg-[#14532D] text-white shadow-sm' : 'text-stone-600 hover:text-stone-900'
+                }`}
+              >
+                🇬🇧 Toimeta Inglise keelt (EN)
+              </button>
+            </div>
+
             {/* Hero & Brand */}
             <div className="space-y-5 bg-[#FAF7F2] p-6 rounded-2xl border border-[#E2D7C8]">
               <h4 className="font-sans font-bold text-sm text-[#14532D] uppercase tracking-wider flex items-center gap-2">
                 <Edit3 className="w-4 h-4" />
-                <span>1. Päis, Pealkirjad & Kontakt</span>
+                <span>1. Päis, Pealkirjad & Kontakt {editLang === 'en' ? '(Inglise keeles)' : '(Eesti keeles)'}</span>
               </h4>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1246,13 +1270,20 @@ ${p.text}
                   <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Päise teema / hüüdlause</label>
                   <input
                     type="text"
-                    value={content.heroBadge}
-                    onChange={(e) => saveContent({ ...content, heroBadge: e.target.value })}
+                    value={editLang === 'en' ? (content.en?.heroBadge || '') : content.heroBadge}
+                    onChange={(e) => {
+                      if (editLang === 'en') {
+                        saveContent({ ...content, en: { ...(content.en || {}), heroBadge: e.target.value } });
+                      } else {
+                        saveContent({ ...content, heroBadge: e.target.value });
+                      }
+                    }}
+                    placeholder={editLang === 'en' ? 'E.g. Light or darkness?' : ''}
                     className="w-full px-4 py-3 rounded-xl border border-stone-300 text-sm sm:text-base font-bold text-stone-900 focus:ring-2 focus:ring-[#14532D] focus:outline-none bg-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Kirjastuse ametlik e-post</label>
+                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Kirjastuse ametlik e-post (Globaalne)</label>
                   <input
                     type="email"
                     value={content.contactEmail}
@@ -1266,8 +1297,15 @@ ${p.text}
                 <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Avalehe pealkirja tekst</label>
                 <input
                   type="text"
-                  value={content.heroTitle}
-                  onChange={(e) => saveContent({ ...content, heroTitle: e.target.value })}
+                  value={editLang === 'en' ? (content.en?.heroTitle || '') : content.heroTitle}
+                  onChange={(e) => {
+                    if (editLang === 'en') {
+                      saveContent({ ...content, en: { ...(content.en || {}), heroTitle: e.target.value } });
+                    } else {
+                      saveContent({ ...content, heroTitle: e.target.value });
+                    }
+                  }}
+                  placeholder={editLang === 'en' ? 'E.g. Light or' : ''}
                   className="w-full px-4 py-3 rounded-xl border border-stone-300 text-base sm:text-lg font-serif font-bold text-stone-900 focus:ring-2 focus:ring-[#14532D] focus:outline-none bg-white"
                 />
               </div>
@@ -1276,8 +1314,15 @@ ${p.text}
                 <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Autori sissejuhatav pöördumine</label>
                 <textarea
                   rows={4}
-                  value={content.heroDescription}
-                  onChange={(e) => saveContent({ ...content, heroDescription: e.target.value })}
+                  value={editLang === 'en' ? (content.en?.heroDescription || '') : content.heroDescription}
+                  onChange={(e) => {
+                    if (editLang === 'en') {
+                      saveContent({ ...content, en: { ...(content.en || {}), heroDescription: e.target.value } });
+                    } else {
+                      saveContent({ ...content, heroDescription: e.target.value });
+                    }
+                  }}
+                  placeholder={editLang === 'en' ? 'E.g. Our land is surrounded by spiritual deception...' : ''}
                   className="w-full p-4 rounded-xl border border-stone-300 text-base sm:text-lg font-serif leading-relaxed text-stone-900 focus:ring-2 focus:ring-[#14532D] focus:outline-none bg-white"
                 />
               </div>
@@ -1287,24 +1332,38 @@ ${p.text}
             <div className="space-y-6 pt-4 border-t border-[#E2D7C8]">
               <h4 className="font-sans font-bold text-sm text-[#14532D] uppercase tracking-wider flex items-center gap-2">
                 <BookOpen className="w-4 h-4" />
-                <span>2. Kolm Põhiküsimust (Autori täistekstid)</span>
+                <span>2. Kolm Põhiküsimust (Autori täistekstid - {editLang === 'en' ? 'Inglise keeles' : 'Eesti keeles'})</span>
               </h4>
               
               {content.centralQuestions.map((q, idx) => (
                 <div key={q.id} className="p-6 rounded-2xl bg-[#FAF7F2] border border-[#E2D7C8] space-y-4 shadow-2xs">
                   <div className="flex items-center justify-between border-b border-stone-200 pb-2">
                     <span className="font-mono font-bold text-sm text-[#9A3412]">Põhiküsimus 0{q.number}.</span>
-                    <span className="text-xs font-sans text-stone-500 font-semibold">Muuda pealkirja ja täisvastust</span>
+                    <span className="text-xs font-sans text-stone-500 font-semibold">Toimeta keeles: {editLang === 'en' ? 'Inglise' : 'Eesti'}</span>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Küsimuse pealkiri</label>
                     <input
                       type="text"
-                      value={q.question}
+                      value={editLang === 'en' ? (content.en?.centralQuestions?.[idx]?.question || '') : q.question}
                       onChange={(e) => {
-                        const updated = [...content.centralQuestions];
-                        updated[idx].question = e.target.value;
-                        saveContent({ ...content, centralQuestions: updated });
+                        if (editLang === 'en') {
+                          const updatedEn = { ...(content.en || {}) };
+                          const updatedQs = [...(updatedEn.centralQuestions || [])];
+                          if (updatedQs.length === 0) {
+                            SITE_CONTENT_EN.centralQuestions.forEach(eq => updatedQs.push({ ...eq }));
+                          }
+                          if (!updatedQs[idx]) {
+                            updatedQs[idx] = { ...(content.centralQuestions[idx] || {}) };
+                          }
+                          updatedQs[idx].question = e.target.value;
+                          updatedEn.centralQuestions = updatedQs;
+                          saveContent({ ...content, en: updatedEn });
+                        } else {
+                          const updated = [...content.centralQuestions];
+                          updated[idx].question = e.target.value;
+                          saveContent({ ...content, centralQuestions: updated });
+                        }
                       }}
                       className="w-full px-4 py-3 rounded-xl border border-stone-300 text-base sm:text-lg font-serif font-bold text-stone-900 bg-white"
                     />
@@ -1313,11 +1372,25 @@ ${p.text}
                     <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Autori täistekst (vastuse sisu)</label>
                     <textarea
                       rows={8}
-                      value={q.fullText}
+                      value={editLang === 'en' ? (content.en?.centralQuestions?.[idx]?.fullText || '') : q.fullText}
                       onChange={(e) => {
-                        const updated = [...content.centralQuestions];
-                        updated[idx].fullText = e.target.value;
-                        saveContent({ ...content, centralQuestions: updated });
+                        if (editLang === 'en') {
+                          const updatedEn = { ...(content.en || {}) };
+                          const updatedQs = [...(updatedEn.centralQuestions || [])];
+                          if (updatedQs.length === 0) {
+                            SITE_CONTENT_EN.centralQuestions.forEach(eq => updatedQs.push({ ...eq }));
+                          }
+                          if (!updatedQs[idx]) {
+                            updatedQs[idx] = { ...(content.centralQuestions[idx] || {}) };
+                          }
+                          updatedQs[idx].fullText = e.target.value;
+                          updatedEn.centralQuestions = updatedQs;
+                          saveContent({ ...content, en: updatedEn });
+                        } else {
+                          const updated = [...content.centralQuestions];
+                          updated[idx].fullText = e.target.value;
+                          saveContent({ ...content, centralQuestions: updated });
+                        }
                       }}
                       className="w-full p-4 rounded-xl border border-stone-300 text-base sm:text-lg font-serif leading-relaxed text-stone-900 bg-white"
                     />
@@ -1426,15 +1499,22 @@ ${p.text}
             <div className="space-y-5 pt-4 border-t border-[#E2D7C8] bg-[#FAF7F2] p-6 rounded-2xl border border-[#E2D7C8]">
               <h4 className="font-sans font-bold text-sm text-[#14532D] uppercase tracking-wider flex items-center gap-2">
                 <FileText className="w-4 h-4 text-[#14532D]" />
-                <span>4. Kirjastuse Missioon & Lugu</span>
+                <span>4. Kirjastuse Missioon & Lugu {editLang === 'en' ? '(Inglise keeles)' : '(Eesti keeles)'}</span>
               </h4>
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Kirjastuse missiooni pealkiri</label>
                   <input
                     type="text"
-                    value={content.publisherStoryTitle}
-                    onChange={(e) => saveContent({ ...content, publisherStoryTitle: e.target.value })}
+                    value={editLang === 'en' ? (content.en?.publisherStoryTitle || '') : content.publisherStoryTitle}
+                    onChange={(e) => {
+                      if (editLang === 'en') {
+                        saveContent({ ...content, en: { ...(content.en || {}), publisherStoryTitle: e.target.value } });
+                      } else {
+                        saveContent({ ...content, publisherStoryTitle: e.target.value });
+                      }
+                    }}
+                    placeholder={editLang === 'en' ? 'E.g. Let There Be Light Publishing History' : ''}
                     className="w-full px-4 py-3 rounded-xl border border-stone-300 text-base sm:text-lg font-serif font-bold text-stone-900 bg-white"
                   />
                 </div>
@@ -1442,8 +1522,15 @@ ${p.text}
                   <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Kirjastuse missiooni teksti sisu</label>
                   <textarea
                     rows={6}
-                    value={content.publisherStoryText}
-                    onChange={(e) => saveContent({ ...content, publisherStoryText: e.target.value })}
+                    value={editLang === 'en' ? (content.en?.publisherStoryText || '') : content.publisherStoryText}
+                    onChange={(e) => {
+                      if (editLang === 'en') {
+                        saveContent({ ...content, en: { ...(content.en || {}), publisherStoryText: e.target.value } });
+                      } else {
+                        saveContent({ ...content, publisherStoryText: e.target.value });
+                      }
+                    }}
+                    placeholder={editLang === 'en' ? 'E.g. Our mission is to publish pure spiritual books...' : ''}
                     className="w-full p-4 rounded-xl border border-stone-300 text-base sm:text-lg font-serif leading-relaxed text-stone-900 bg-white"
                   />
                 </div>
@@ -1454,7 +1541,7 @@ ${p.text}
             <div className="space-y-5 pt-4 border-t border-[#E2D7C8] bg-[#FAF7F2] p-6 rounded-2xl border border-[#E2D7C8]">
               <h4 className="font-sans font-bold text-sm text-[#14532D] uppercase tracking-wider flex items-center gap-2">
                 <Heart className="w-4 h-4 text-[#14532D]" />
-                <span>5. Toetuse pangaandmed & Tekstid</span>
+                <span>5. Toetuse pangaandmed & Tekstid {editLang === 'en' ? '(Inglise keeles)' : '(Eesti keeles)'}</span>
               </h4>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1462,8 +1549,17 @@ ${p.text}
                   <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Toetuse sektsiooni pealkiri</label>
                   <input
                     type="text"
-                    value={content.support.title}
-                    onChange={(e) => saveContent({ ...content, support: { ...content.support, title: e.target.value } })}
+                    value={editLang === 'en' ? (content.en?.support?.title || '') : content.support.title}
+                    onChange={(e) => {
+                      if (editLang === 'en') {
+                        const updatedEn = { ...(content.en || {}) };
+                        updatedEn.support = { ...(updatedEn.support || {}), title: e.target.value } as any;
+                        saveContent({ ...content, en: updatedEn });
+                      } else {
+                        saveContent({ ...content, support: { ...content.support, title: e.target.value } });
+                      }
+                    }}
+                    placeholder={editLang === 'en' ? 'E.g. Support our Ministry!' : ''}
                     className="w-full px-4 py-3 rounded-xl border border-stone-300 text-base sm:text-lg font-serif font-bold text-stone-900 bg-white"
                   />
                 </div>
@@ -1471,8 +1567,17 @@ ${p.text}
                   <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Alapealkiri / Teema</label>
                   <input
                     type="text"
-                    value={content.support.subtitle}
-                    onChange={(e) => saveContent({ ...content, support: { ...content.support, subtitle: e.target.value } })}
+                    value={editLang === 'en' ? (content.en?.support?.subtitle || '') : content.support.subtitle}
+                    onChange={(e) => {
+                      if (editLang === 'en') {
+                        const updatedEn = { ...(content.en || {}) };
+                        updatedEn.support = { ...(updatedEn.support || {}), subtitle: e.target.value } as any;
+                        saveContent({ ...content, en: updatedEn });
+                      } else {
+                        saveContent({ ...content, support: { ...content.support, subtitle: e.target.value } });
+                      }
+                    }}
+                    placeholder={editLang === 'en' ? 'E.g. Help us spread the light' : ''}
                     className="w-full px-4 py-3 rounded-xl border border-stone-300 text-sm sm:text-base font-bold text-stone-900 bg-white"
                   />
                 </div>
@@ -1482,15 +1587,24 @@ ${p.text}
                 <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Toetuse kirjelduse tekst</label>
                 <textarea
                   rows={4}
-                  value={content.support.description}
-                  onChange={(e) => saveContent({ ...content, support: { ...content.support, description: e.target.value } })}
+                  value={editLang === 'en' ? (content.en?.support?.description || '') : content.support.description}
+                  onChange={(e) => {
+                    if (editLang === 'en') {
+                      const updatedEn = { ...(content.en || {}) };
+                      updatedEn.support = { ...(updatedEn.support || {}), description: e.target.value } as any;
+                      saveContent({ ...content, en: updatedEn });
+                    } else {
+                      saveContent({ ...content, support: { ...content.support, description: e.target.value } });
+                    }
+                  }}
+                  placeholder={editLang === 'en' ? 'E.g. Your support helps us print warnings and books...' : ''}
                   className="w-full p-4 rounded-xl border border-stone-300 text-base sm:text-lg font-serif leading-relaxed text-stone-900 bg-white"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Saaja nimi (OÜ / Kirjastus)</label>
+                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Saaja nimi (OÜ / Kirjastus) (Globaalne)</label>
                   <input
                     type="text"
                     value={content.support.recipientName}
@@ -1499,7 +1613,7 @@ ${p.text}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Pangakonto (IBAN)</label>
+                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Pangakonto (IBAN) (Globaalne)</label>
                   <input
                     type="text"
                     value={content.support.iban}
@@ -1511,7 +1625,7 @@ ${p.text}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Pank / Pangad</label>
+                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Pank / Pangad (Globaalne)</label>
                   <input
                     type="text"
                     value={content.support.bankName}
@@ -1520,7 +1634,7 @@ ${p.text}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Selgitus (makse selgitus)</label>
+                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Selgitus (makse selgitus) (Globaalne)</label>
                   <input
                     type="text"
                     value={content.support.explanation}
@@ -1535,15 +1649,22 @@ ${p.text}
             <div className="space-y-5 pt-4 border-t border-[#E2D7C8] bg-[#FAF7F2] p-6 rounded-2xl border border-[#E2D7C8]">
               <h4 className="font-sans font-bold text-sm text-[#14532D] uppercase tracking-wider flex items-center gap-2">
                 <Flame className="w-4 h-4 text-[#14532D]" />
-                <span>6. Päästepalve & Meie Isa Palve</span>
+                <span>6. Päästepalve & Meie Isa Palve {editLang === 'en' ? '(Inglise keeles)' : '(Eesti keeles)'}</span>
               </h4>
               
               <div>
                 <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Päästepalve tekst</label>
                 <textarea
                   rows={8}
-                  value={content.salvationPrayerText}
-                  onChange={(e) => saveContent({ ...content, salvationPrayerText: e.target.value })}
+                  value={editLang === 'en' ? (content.en?.salvationPrayerText || '') : content.salvationPrayerText}
+                  onChange={(e) => {
+                    if (editLang === 'en') {
+                      saveContent({ ...content, en: { ...(content.en || {}), salvationPrayerText: e.target.value } });
+                    } else {
+                      saveContent({ ...content, salvationPrayerText: e.target.value });
+                    }
+                  }}
+                  placeholder={editLang === 'en' ? 'E.g. Dear Heavenly Father...' : ''}
                   className="w-full p-4 rounded-xl border border-stone-300 text-base sm:text-lg font-serif leading-relaxed text-stone-900 bg-white"
                 />
               </div>
@@ -1552,8 +1673,17 @@ ${p.text}
                 <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Meie Isa palve tekst</label>
                 <textarea
                   rows={6}
-                  value={content.lordPrayer.text}
-                  onChange={(e) => saveContent({ ...content, lordPrayer: { ...content.lordPrayer, text: e.target.value } })}
+                  value={editLang === 'en' ? (content.en?.lordPrayer?.text || '') : content.lordPrayer.text}
+                  onChange={(e) => {
+                    if (editLang === 'en') {
+                      const updatedEn = { ...(content.en || {}) };
+                      updatedEn.lordPrayer = { ...(updatedEn.lordPrayer || {}), text: e.target.value } as any;
+                      saveContent({ ...content, en: updatedEn });
+                    } else {
+                      saveContent({ ...content, lordPrayer: { ...content.lordPrayer, text: e.target.value } });
+                    }
+                  }}
+                  placeholder={editLang === 'en' ? 'E.g. Our Father who art in heaven...' : ''}
                   className="w-full p-4 rounded-xl border border-stone-300 text-base sm:text-lg font-serif leading-relaxed text-stone-900 bg-white"
                 />
               </div>

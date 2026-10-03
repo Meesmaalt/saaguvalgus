@@ -236,9 +236,10 @@ Te ei või juua Issanda karikast ja kurjade vaimude karikast, te ei või osa saa
   cleanlinessSubtitle: 'Vaimulik kaitse & vabanemine',
   cleanlinessDescription: 'Veel on oluline teada, et meie kodu peab olema puhas esemetest, mis võivad samuti avada ukse needustele meie elus. Selleks võib olla juhuslik suveniir mõnest esoteerika poest või mistahes ese, mida on kasutanud keegi, kes on tegelenud nõidusega. See on samuti ebajumalate kummardamine. Nõidusele viitavate või muul moel vale vaimsust kandvate esemete oma kodus omamine on Jumala silmis patt - see on koostöö pimedusega, saatanaga.',
   cleanlinessSteps: [
-    { title: '1. Tuvasta ja eemalda', desc: 'Puhasta oma kodune territoorium “saatanale kuuluvast kraamist” – esoteerilised suveniirid, nõidusesemed, ebajumalakujud.' },
-    { title: '2. Tunnista ja palu andestust', desc: 'Pöördu sellest patust ja palu Jeesuse Kristuse nimel andeks.' },
-    { title: '3. Palu Jumala kaitset', desc: 'Kutsu Jumala rahu ja Püha Vaim oma kotta, et sinagi ei saaks neetuks.' }
+    { title: 'Mõista jooga tegelikku olemust', desc: 'Mõista, et jooga asanad ja filosoofia on lahutamatult seotud idamaise religiooniga.' },
+    { title: 'Tuvasta ja eemalda', desc: 'Puhasta oma kodune territoorium “saatanale kuuluvast kraamist” – esoteerilised suveniirid, nõidusesemed, ebajumalakujud.' },
+    { title: 'Tunnista ja palu andestust', desc: 'Pöördu sellest patust ja palu Jeesuse Kristuse nimel andeks.' },
+    { title: 'Palu Jumala kaitset', desc: 'Kutsu Jumala rahu ja Püha Vaim oma kotta, et sinagi ei saaks neetuks.' }
   ],
 
   // Real life testimonials
@@ -322,8 +323,8 @@ Te ei või juua Issanda karikast ja kurjade vaimude karikast, te ei või osa saa
     subtitle: 'Aita levitada Valgust üle kogu Eestimaa',
     description: 'Kirjastus Saagu Valgus annab välja evangeelseid materjale ja elumuutvaid raamatuid. Sinu toetus aitab trükkida uusi infomaterjale, postitada raamatuid ning viia tõe sõnumit nendeni, kes seda kõige enam vajavad.',
     recipientName: 'Saagu Valgus OÜ',
-    iban: 'EE123456789012345678',
-    bankName: 'Swedbank / LHV Pank',
+    iban: 'EE077700771012144050',
+    bankName: 'LHV Pank',
     swift: 'HABALV22',
     reference: 'Annetus kirjastustööks',
     explanation: 'Kirjastuse toetus / Kirjastustöö ja trükised',

@@ -225,9 +225,10 @@ The good news is that we are still in the season of grace! You can return to you
   cleanlinessSubtitle: 'Spiritual protection & freedom',
   cleanlinessDescription: 'Our living spaces must be cleansed of objects that open doors to curses or spiritual oppression. Esoteric souvenirs, witchcraft items, or objects used in divination are an abomination before God. Cleansing your home brings God\'s peace and protection.',
   cleanlinessSteps: [
-    { title: '1. Identify and remove', desc: 'Cleanse your home of things belonging to darkness—esoteric souvenirs, crystals, occult tools, and statues of false gods.' },
-    { title: '2. Repent and ask forgiveness', desc: 'Turn away from involvement with the occult and ask forgiveness in the name of Jesus Christ.' },
-    { title: '3. Pray for God\'s blessing', desc: 'Invite the peace of God and the Holy Spirit into your home to seal and protect your family.' }
+    { title: 'Understand the nature of yoga', desc: 'Understand that yoga postures and philosophies are inextricably linked to Eastern religion.' },
+    { title: 'Identify and remove', desc: 'Cleanse your home of things belonging to darkness—esoteric souvenirs, crystals, occult tools, and statues of false gods.' },
+    { title: 'Repent and ask forgiveness', desc: 'Turn away from involvement with the occult and ask forgiveness in the name of Jesus Christ.' },
+    { title: 'Pray for God\'s blessing', desc: 'Invite the peace of God and the Holy Spirit into your home to seal and protect your family.' }
   ],
 
   testimonials: [
@@ -417,10 +418,10 @@ export const UI_TRANSLATIONS = {
       featured: 'Soovitatud'
     },
     publicationsBanner: {
-      badge: 'PDF & A4 Voldikud',
-      sub: 'Lugemiseks ja printimiseks',
-      title: 'Trükised & digitaalne PDF vaatleja',
-      desc: 'Tutvu kirjastuse ametlike trükistega, loe mugavalt ekraanilt ja prindi tasuta välja kvaliteetsed materjalid.',
+      badge: '',
+      sub: 'Laadi alla ja prindi tasuta',
+      title: 'Trükised & Materjalid',
+      desc: 'Nõiduse, new age ehk uusvaimsuse ja jooga eest hoiatava trükise (A4 formaat, kahepoolne) PDF failid soovi korral allalaadimiseks ja/või väljaprintimiseks',
       openBtn: 'Ava Trükised'
     },
     support: {
@@ -564,10 +565,10 @@ export const UI_TRANSLATIONS = {
       featured: 'Featured'
     },
     publicationsBanner: {
-      badge: 'PDF & A4 Leaflets',
-      sub: 'For reading and printing',
-      title: 'Publications & Digital PDF Viewer',
-      desc: 'Explore official publications, read comfortably on screen, and print high-quality materials freely.',
+      badge: '',
+      sub: 'Download and print for free',
+      title: 'Tracts & Materials',
+      desc: 'PDF files of a double-sided A4 warning tract cautioning against witchcraft, New Age spirituality, and yoga, available for download and/or printing upon request.',
       openBtn: 'Open Publications'
     },
     support: {

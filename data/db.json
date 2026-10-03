@@ -208,15 +208,19 @@
     "cleanlinessDescription": "Veel on oluline teada, et meie kodu peab olema puhas esemetest, mis võivad samuti avada ukse needustele meie elus. Selleks võib olla juhuslik suveniir mõnest esoteerika poest või mistahes ese, mida on kasutanud keegi, kes on tegelenud nõidusega. See on samuti ebajumalate kummardamine. Nõidusele viitavate või muul moel vale vaimsust kandvate esemete oma kodus omamine on Jumala silmis patt - see on koostöö pimedusega, saatanaga.",
     "cleanlinessSteps": [
       {
-        "title": "1. Tuvasta ja eemalda",
+        "title": "Mõista jooga tegelikku olemust",
+        "desc": "Mõista, et jooga asanad ja filosoofia on lahutamatult seotud idamaise religiooniga."
+      },
+      {
+        "title": "Tuvasta ja eemalda",
         "desc": "Puhasta oma kodune territoorium “saatanale kuuluvast kraamist” – esoteerilised suveniirid, nõidusesemed, ebajumalakujud."
       },
       {
-        "title": "2. Tunnista ja palu andestust",
+        "title": "Tunnista ja palu andestust",
         "desc": "Pöördu sellest patust ja palu Jeesuse Kristuse nimel andeks."
       },
       {
-        "title": "3. Palu Jumala kaitset",
+        "title": "Palu Jumala kaitset",
         "desc": "Kutsu Jumala rahu ja Püha Vaim oma kotta, et sinagi ei saaks neetuks."
       }
     ],

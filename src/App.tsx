@@ -133,7 +133,122 @@ export default function App() {
     return INITIAL_SITE_CONTENT;
   });
 
-  const activeContent: SiteContent = lang === 'en' ? SITE_CONTENT_EN : content;
+  const activeContent: SiteContent = React.useMemo(() => {
+    if (lang === 'et') return content;
+    
+    // Create a copy of content to preserve all cover images, configurations, and media
+    const active = JSON.parse(JSON.stringify(content)) as SiteContent;
+    const enFallback = SITE_CONTENT_EN;
+    const enOverrides = content.en || {};
+    
+    active.brandName = enOverrides.brandName || enFallback.brandName || active.brandName;
+    active.brandTagline = enOverrides.brandTagline || enFallback.brandTagline || active.brandTagline;
+    active.heroBadge = enOverrides.heroBadge || enFallback.heroBadge || active.heroBadge;
+    active.heroTitle = enOverrides.heroTitle || enFallback.heroTitle || active.heroTitle;
+    active.heroHighlight = enOverrides.heroHighlight || enFallback.heroHighlight || active.heroHighlight;
+    active.heroDescription = enOverrides.heroDescription || enFallback.heroDescription || active.heroDescription;
+    
+    if (active.primaryVerse) {
+      const enVerse = enOverrides.primaryVerse || enFallback.primaryVerse || {};
+      active.primaryVerse = {
+        ...active.primaryVerse,
+        ref: enVerse.ref || active.primaryVerse.ref,
+        text: enVerse.text || active.primaryVerse.text,
+        theme: enVerse.theme || active.primaryVerse.theme
+      };
+    }
+    
+    if (Array.isArray(active.coreVerses)) {
+      active.coreVerses = active.coreVerses.map((v, i) => {
+        const enVerse = enOverrides.coreVerses?.[i] || enFallback.coreVerses?.[i] || {};
+        return {
+          ...v,
+          ref: enVerse.ref || v.ref,
+          text: enVerse.text || v.text,
+          theme: enVerse.theme || v.theme
+        };
+      });
+    }
+    
+    if (Array.isArray(active.centralQuestions)) {
+      active.centralQuestions = active.centralQuestions.map((q, i) => {
+        const enQ = enOverrides.centralQuestions?.[i] || enFallback.centralQuestions?.find((eq: any) => eq.id === q.id) || enFallback.centralQuestions?.[i] || {};
+        return {
+          ...q,
+          question: enQ.question || q.question,
+          fullText: enQ.fullText || q.fullText,
+          practicalSteps: enQ.practicalSteps || q.practicalSteps,
+          summary: enQ.summary || q.summary,
+          tractQuote: enQ.tractQuote || q.tractQuote,
+          biblicalAnswer: enQ.biblicalAnswer || q.biblicalAnswer
+        };
+      });
+    }
+    
+    active.cleanlinessTitle = enOverrides.cleanlinessTitle || enFallback.cleanlinessTitle || active.cleanlinessTitle;
+    active.cleanlinessSubtitle = enOverrides.cleanlinessSubtitle || enFallback.cleanlinessSubtitle || active.cleanlinessSubtitle;
+    active.cleanlinessDescription = enOverrides.cleanlinessDescription || enFallback.cleanlinessDescription || active.cleanlinessDescription;
+    if (Array.isArray(active.cleanlinessSteps)) {
+      active.cleanlinessSteps = active.cleanlinessSteps.map((s, i) => {
+        const enStep = enOverrides.cleanlinessSteps?.[i] || enFallback.cleanlinessSteps?.[i] || {};
+        return {
+          ...s,
+          title: enStep.title || s.title,
+          desc: enStep.desc || s.desc
+        };
+      });
+    }
+    
+    active.publisherStoryTitle = enOverrides.publisherStoryTitle || enFallback.publisherStoryTitle || active.publisherStoryTitle;
+    active.publisherStoryText = enOverrides.publisherStoryText || enFallback.publisherStoryText || active.publisherStoryText;
+    
+    if (Array.isArray(active.books)) {
+      active.books = active.books.map((b, i) => {
+        const enBook = enOverrides.books?.[i] || enFallback.books?.find((eb: any) => eb.id === b.id) || enFallback.books?.[i] || {};
+        return {
+          ...b,
+          title: enBook.title || b.title,
+          category: enBook.category || b.category,
+          description: enBook.description || b.description,
+          highlights: enBook.highlights || b.highlights,
+          preOrderNote: enBook.preOrderNote || b.preOrderNote,
+          releaseDate: enBook.releaseDate || b.releaseDate
+        };
+      });
+    }
+    
+    if (active.support) {
+      const enSupport = enOverrides.support || enFallback.support || {};
+      active.support = {
+        ...active.support,
+        title: enSupport.title || active.support.title,
+        subtitle: enSupport.subtitle || active.support.subtitle,
+        description: enSupport.description || active.support.description,
+        reference: enSupport.reference || active.support.reference,
+        explanation: enSupport.explanation || active.support.explanation,
+        supportGoals: enSupport.supportGoals || active.support.supportGoals
+      };
+    }
+    
+    active.salvationPrayerTitle = enOverrides.salvationPrayerTitle || enFallback.salvationPrayerTitle || active.salvationPrayerTitle;
+    active.salvationPrayerSubtitle = enOverrides.salvationPrayerSubtitle || enFallback.salvationPrayerSubtitle || active.salvationPrayerSubtitle;
+    active.salvationPrayerIntro = enOverrides.salvationPrayerIntro || enFallback.salvationPrayerIntro || active.salvationPrayerIntro;
+    active.salvationPrayerText = enOverrides.salvationPrayerText || enFallback.salvationPrayerText || active.salvationPrayerText;
+    
+    if (active.lordPrayer) {
+      const enPrayer = enOverrides.lordPrayer || enFallback.lordPrayer || {};
+      active.lordPrayer = {
+        ...active.lordPrayer,
+        title: enPrayer.title || active.lordPrayer.title,
+        subtitle: enPrayer.subtitle || active.lordPrayer.subtitle,
+        intro: enPrayer.intro || active.lordPrayer.intro,
+        text: enPrayer.text || active.lordPrayer.text,
+        ref: enPrayer.ref || active.lordPrayer.ref
+      };
+    }
+    
+    return active;
+  }, [content, lang]);
 
   const [orders, setOrders] = useState<OrderItem[]>(INITIAL_ORDERS);
   const [messages, setMessages] = useState<ContactMessage[]>(INITIAL_MESSAGES);
@@ -777,7 +892,7 @@ export default function App() {
       <section id="puhas-kodu" className="py-16 sm:py-20 bg-[#FAF7F2] border-b border-[#E7E0D5] paper-grain">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-10">
           
-          <div className="text-center space-y-2 max-w-3xl mx-auto">
+          <div className="text-center space-y-4 max-w-3xl mx-auto">
             <span className="text-xs uppercase tracking-widest font-bold text-[#9A3412] font-sans">
               {activeContent.cleanlinessSubtitle}
             </span>
@@ -787,16 +902,36 @@ export default function App() {
             <p className="text-sm sm:text-base font-serif text-stone-700 leading-relaxed">
               {activeContent.cleanlinessDescription}
             </p>
+
+            {/* 5 Mos 7:25-26 Scripture Quote */}
+            <div className="p-6 sm:p-8 rounded-3xl bg-[#F5F0E6] border border-[#E2D7C8] border-l-4 border-l-[#14532D] text-[#14532D] text-left max-w-2xl mx-auto shadow-2xs space-y-3">
+              <p className="text-base sm:text-lg font-serif font-semibold italic leading-relaxed text-[#14532D]">
+                «Nende jumalakujud põletage tules; ära himusta hõbedat ja kulda nende pealt ja ära võta seda enesele, et sind sellega ei võrgutataks, sest see on jäledus Issandale, su Jumalale! 26 Ära vii niisugust jäledust oma kotta, et sinagi ei saaks neetuks nagu see; sa pead seda ülimalt põlgama ja jälestama, sest see on neetud asi!»
+              </p>
+              <span className="text-xs font-bold uppercase tracking-wider text-[#14532D] font-sans block text-right">
+                📖 {lang === 'en' ? 'Deuteronomy 7:25-26' : '5 Mos 7:25-26'}
+              </span>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Practical steps title */}
+          <div className="text-center pt-4">
+            <span className="text-xs uppercase tracking-widest font-extrabold text-[#9A3412] font-sans block mb-1">
+              {lang === 'en' ? 'What to do?' : 'Mida teha?'}
+            </span>
+            <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#1C1917]">
+              {lang === 'en' ? 'Practical Steps' : 'Praktilised sammud:'}
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {activeContent.cleanlinessSteps.map((step, idx) => (
-              <div key={idx} className="p-6 rounded-2xl bg-white border border-[#E7E0D5] shadow-2xs space-y-3 flex flex-col justify-between text-left">
+              <div key={idx} className="p-6 rounded-2xl bg-white border border-[#E7E0D5] hover:border-[#14532D]/30 shadow-2xs hover:shadow-xs transition-all duration-200 space-y-3 flex flex-col justify-between text-left">
                 <div className="space-y-2">
                   <span className="font-mono text-xs font-bold text-[#9A3412] uppercase tracking-wider block">
                     {lang === 'en' ? `Step 0${idx + 1}` : `Samm 0${idx + 1}`}
                   </span>
-                  <h3 className="text-lg font-serif font-bold text-[#1C1917]">{step.title}</h3>
+                  <h3 className="text-lg font-serif font-bold text-[#1C1917] leading-snug">{step.title}</h3>
                   <p className="text-sm font-serif text-stone-600 leading-relaxed">{step.desc}</p>
                 </div>
               </div>
@@ -977,8 +1112,8 @@ export default function App() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-10">
           
           <div className="text-center space-y-3 max-w-2xl mx-auto">
-            <p className="text-lg sm:text-xl font-serif font-bold text-[#14532D] leading-relaxed italic border-y border-[#E2D7C8] py-3 bg-white/60 rounded-2xl shadow-2xs">
-              «Kui see lehekülg on olnud Sulle õnnistuseks, saad selle toimimist toetada siin:»
+            <p className="text-lg sm:text-xl font-serif font-bold text-[#14532D] leading-relaxed border-y border-[#E2D7C8] py-3 bg-white/60 rounded-2xl shadow-2xs">
+              Kui see lehekülg on olnud Sulle õnnistuseks, saad selle toimimist toetada siin:
             </p>
 
             <span className="text-xs uppercase tracking-widest font-bold text-[#9A3412] font-sans block pt-2">

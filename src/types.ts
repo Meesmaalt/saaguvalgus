@@ -135,4 +135,5 @@ export interface SiteContent {
   salvationPrayerText: string;
   salvationPrayerNextSteps: { title: string; desc: string }[];
   lordPrayer: LordPrayerInfo;
+  en?: Partial<SiteContent>;
 }

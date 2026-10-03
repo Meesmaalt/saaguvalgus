@@ -101,7 +101,7 @@ export const api = {
   // --- Publications & PDFs ---
   async fetchPublications(): Promise<PublicationItem[]> {
     const res = await safeJsonFetch(`${API_BASE}/publications`);
-    if (res.ok && Array.isArray(res.data) && res.data.length > 0) {
+    if (res.ok && Array.isArray(res.data)) {
       try {
         localStorage.setItem(STORAGE_PUBLICATIONS_KEY, JSON.stringify(res.data));
       } catch (e) {}
