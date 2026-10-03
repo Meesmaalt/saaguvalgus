@@ -938,27 +938,6 @@ export default function App() {
                     {renderAuthorParagraphs(current.fullText)}
                   </div>
 
-                  {/* Scripture Verses */}
-                  {current.bibleVerses && current.bibleVerses.length > 0 && (
-                    <div className="space-y-3 pt-4 border-t border-[#E2D7C8]">
-                      <h5 className="font-sans font-bold text-xs uppercase tracking-widest text-[#14532D]">
-                        {t.questions.biblicalVerses}
-                      </h5>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {current.bibleVerses.map((verse, idx) => (
-                          <div key={idx} className="p-4 rounded-xl bg-[#FAF7F2] border border-[#E7E0D5] shadow-2xs space-y-1">
-                            <span className="text-xs font-bold text-[#14532D] font-sans block">
-                              📖 {verse.ref}
-                            </span>
-                            <p className="text-sm font-serif italic text-stone-800">
-                              «{verse.text}»
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
                   {/* Practical Steps */}
                   {current.practicalSteps && (
                     <div className="p-6 rounded-2xl bg-[#F5F0E6] border border-[#E2D7C8] space-y-3">
