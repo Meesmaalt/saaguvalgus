@@ -349,15 +349,29 @@ export default function App() {
         ref: enPrayer.ref || active.lordPrayer.ref
       };
     }
+
+    if (Array.isArray(active.testimonials)) {
+      active.testimonials = active.testimonials.map((t, i) => {
+        const enT = enOverrides.testimonials?.[i] || enFallback.testimonials?.find((et: any) => et.id === t.id) || enFallback.testimonials?.[i] || {};
+        return {
+          ...t,
+          title: enT.title || t.title,
+          person: enT.person || t.person,
+          summary: enT.summary || t.summary,
+          fullStory: enT.fullStory || t.fullStory,
+          facebookPageTitle: enT.facebookPageTitle || t.facebookPageTitle
+        };
+      });
+    }
     }
     
-    // Always strictly filter out sample/placeholder testimonials and ensure Kairi's latest photo
+    // Always strictly filter out sample/placeholder testimonials and ensure valid photo
     if (Array.isArray(active.testimonials)) {
       active.testimonials = active.testimonials
         .filter((t) => t.id !== 'vabanemine-esoteerikast' && t.id !== 'ime-ja-tervenemine')
         .map((t) => ({
           ...t,
-          image: kairiOjaPhoto
+          image: t.image && !t.image.includes('kairi_oja_foto_1791058337611') ? t.image : kairiOjaPhoto
         }));
     }
     

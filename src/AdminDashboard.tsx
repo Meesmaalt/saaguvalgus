@@ -1723,6 +1723,257 @@ ${p.text}
               </div>
             </div>
 
+            {/* 7. Testimonials & Author Photo Editor */}
+            {(() => {
+              const testimony = (content.testimonials && content.testimonials[0]) || {
+                id: 'kairi-oja-tunnistus',
+                title: 'Kairi tunnistus – Vabanemine 5 aastat kestnud karmist vaimsest sidumisest',
+                person: 'Kairi Oja',
+                type: 'vabanemine',
+                date: '08.03.2025',
+                image: '',
+                facebookUrl: 'https://www.facebook.com/saaguvalgus',
+                facebookPageTitle: 'Saagu Valgus - kas Jumal on reaalne?',
+                summary: '',
+                fullStory: ''
+              };
+
+              const enTestimony = content.en?.testimonials?.[0] || {
+                title: '',
+                person: 'Kairi Oja',
+                summary: '',
+                fullStory: '',
+                facebookPageTitle: ''
+              };
+
+              const updateTestimony = (patch: Partial<typeof testimony>) => {
+                const updatedList = content.testimonials && content.testimonials.length > 0
+                  ? [...content.testimonials]
+                  : [testimony];
+                updatedList[0] = { ...updatedList[0], ...patch };
+                saveContent({ ...content, testimonials: updatedList });
+              };
+
+              const updateEnTestimony = (patch: Partial<typeof enTestimony>) => {
+                const updatedEn = { ...(content.en || {}) };
+                const updatedEnList = Array.isArray(updatedEn.testimonials) && updatedEn.testimonials.length > 0
+                  ? [...updatedEn.testimonials]
+                  : [enTestimony];
+                updatedEnList[0] = { ...updatedEnList[0], ...patch };
+                updatedEn.testimonials = updatedEnList as any;
+                saveContent({ ...content, en: updatedEn });
+              };
+
+              return (
+                <div className="space-y-6 pt-4 border-t border-[#E2D7C8] bg-[#FAF7F2] p-6 sm:p-8 rounded-2xl border border-[#E2D7C8] text-left">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E2D7C8] pb-4">
+                    <div>
+                      <h4 className="font-sans font-bold text-base text-[#14532D] uppercase tracking-wider flex items-center gap-2">
+                        <Heart className="w-5 h-5 text-[#14532D]" />
+                        <span>7. Kairi Tunnistus, Ikoon / Foto & Sisu {editLang === 'en' ? '(Inglise keeles)' : '(Eesti keeles)'}</span>
+                      </h4>
+                      <p className="text-xs text-stone-600 font-sans mt-1">
+                        Siin saad vahetada Kairi portreefotot/ikooni, muuta tunnistuse sisu, pealkirja, kuupäeva ning Facebooki linki.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Photo / Icon management (Global) */}
+                  <div className="p-5 rounded-2xl bg-white border border-[#E2D7C8] space-y-4">
+                    <span className="text-xs font-bold text-[#14532D] font-sans uppercase tracking-wider block">
+                      📷 Kairi Portreefoto / Ikooni Haldus (Globaalne)
+                    </span>
+
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+                      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-stone-100 border-2 border-[#14532D]/30 shadow-md shrink-0 relative flex items-center justify-center">
+                        {testimony.image ? (
+                          <img 
+                            src={testimony.image} 
+                            alt={testimony.person} 
+                            className="w-full h-full object-cover" 
+                          />
+                        ) : (
+                          <div className="p-2 text-center text-[10px] text-stone-500 font-sans">
+                            Vaikimisi foto
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="space-y-3 flex-1 w-full font-sans">
+                        <div>
+                          <label className="block text-xs font-bold text-stone-800 mb-1">
+                            Laadi üles uus foto failist (JPG, PNG, WebP):
+                          </label>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  updateTestimony({ image: reader.result as string });
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                            className="block w-full text-xs text-stone-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#14532D] file:text-white hover:file:bg-[#0F3D24] cursor-pointer"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-semibold text-stone-600 mb-1">
+                            Või sisesta pildi otselink / failitee:
+                          </label>
+                          <input
+                            type="text"
+                            value={testimony.image || ''}
+                            onChange={(e) => updateTestimony({ image: e.target.value })}
+                            placeholder="/src/assets/images/kairi_oja_portrait_1791059785550.jpg"
+                            className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-mono text-stone-800 bg-white"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Author & Meta (Grid 3 cols) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Autori / Isiku nimi</label>
+                      <input
+                        type="text"
+                        value={editLang === 'en' ? (enTestimony.person || '') : testimony.person}
+                        onChange={(e) => {
+                          if (editLang === 'en') {
+                            updateEnTestimony({ person: e.target.value });
+                          } else {
+                            updateTestimony({ person: e.target.value });
+                          }
+                        }}
+                        placeholder="Kairi Oja"
+                        className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm font-bold text-stone-900 bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Kuupäev (Globaalne)</label>
+                      <input
+                        type="text"
+                        value={testimony.date || ''}
+                        onChange={(e) => updateTestimony({ date: e.target.value })}
+                        placeholder="08.03.2025"
+                        className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm font-mono font-bold text-stone-900 bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Tunnistuse kategooria</label>
+                      <select
+                        value={testimony.type || 'vabanemine'}
+                        onChange={(e) => updateTestimony({ type: e.target.value as any })}
+                        className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm font-bold text-stone-900 bg-white"
+                      >
+                        <option value="vabanemine">Vabanemislugu (Deliverance)</option>
+                        <option value="tervenemine">Tervenemine (Healing)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Facebook Integration */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Facebooki lehe veebiaadress (Globaalne)</label>
+                      <input
+                        type="text"
+                        value={testimony.facebookUrl || ''}
+                        onChange={(e) => updateTestimony({ facebookUrl: e.target.value })}
+                        placeholder="https://www.facebook.com/saaguvalgus"
+                        className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-xs font-mono text-[#14532D] bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Facebooki nupu tekst</label>
+                      <input
+                        type="text"
+                        value={editLang === 'en' ? (enTestimony.facebookPageTitle || '') : (testimony.facebookPageTitle || '')}
+                        onChange={(e) => {
+                          if (editLang === 'en') {
+                            updateEnTestimony({ facebookPageTitle: e.target.value });
+                          } else {
+                            updateTestimony({ facebookPageTitle: e.target.value });
+                          }
+                        }}
+                        placeholder="Saagu Valgus - kas Jumal on reaalne?"
+                        className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-sm font-bold text-stone-900 bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Title & Summary */}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Tunnistuse pealkiri</label>
+                      <input
+                        type="text"
+                        value={editLang === 'en' ? (enTestimony.title || '') : testimony.title}
+                        onChange={(e) => {
+                          if (editLang === 'en') {
+                            updateEnTestimony({ title: e.target.value });
+                          } else {
+                            updateTestimony({ title: e.target.value });
+                          }
+                        }}
+                        placeholder="Kairi tunnistus – Vabanemine 5 aastat kestnud karmist vaimsest sidumisest"
+                        className="w-full px-4 py-3 rounded-xl border border-stone-300 text-base sm:text-lg font-serif font-bold text-stone-900 bg-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Tunnistuse kokkuvõte / tutvustav tsitaat</label>
+                      <textarea
+                        rows={3}
+                        value={editLang === 'en' ? (enTestimony.summary || '') : testimony.summary}
+                        onChange={(e) => {
+                          if (editLang === 'en') {
+                            updateEnTestimony({ summary: e.target.value });
+                          } else {
+                            updateTestimony({ summary: e.target.value });
+                          }
+                        }}
+                        placeholder="Elame vaimses maailmas, mis domineerib selle reaalsuse üle..."
+                        className="w-full p-4 rounded-xl border border-stone-300 text-base font-serif italic text-stone-800 bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Full Story Content */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-xs font-bold text-stone-800 font-sans">
+                        Täismahus tunnistuse tekst (avaneb lehel nupuga)
+                      </label>
+                      <span className="text-[11px] text-stone-500 font-sans">
+                        Lõigud eralda tühja reaga. Piiblitsitaadid ja alapealkirjad vormindatakse automaatselt.
+                      </span>
+                    </div>
+                    <textarea
+                      rows={18}
+                      value={editLang === 'en' ? (enTestimony.fullStory || '') : testimony.fullStory}
+                      onChange={(e) => {
+                        if (editLang === 'en') {
+                          updateEnTestimony({ fullStory: e.target.value });
+                        } else {
+                          updateTestimony({ fullStory: e.target.value });
+                        }
+                      }}
+                      placeholder="Sisesta siia täispikk tunnistus..."
+                      className="w-full p-4 sm:p-6 rounded-xl border border-stone-300 text-base font-serif leading-relaxed text-stone-900 bg-white"
+                    />
+                  </div>
+
+                </div>
+              );
+            })()}
+
           </div>
         )}
 
