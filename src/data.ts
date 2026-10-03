@@ -245,24 +245,137 @@ Te ei või juua Issanda karikast ja kurjade vaimude karikast, te ei või osa saa
   // Real life testimonials
   testimonials: [
     {
-      id: 'vabanemine-esoteerikast',
-      title: 'Vabanemine esoteerika ja okultismi köidikutest',
-      person: 'Tõestisündinud vabanemislugu',
+      id: 'kairi-oja-tunnistus',
+      title: 'Kairi tunnistus – Vabanemine 5 aastat kestnud karmist vaimsest sidumisest',
+      person: 'Kairi Oja',
       type: 'vabanemine',
-      summary: 'Aastatepikkune ekslemine esoteerikas ja okultismis tõi lõpuks meeleheite. Kuidas Jeesuse poole hüüdmine tõi täieliku vabaduse ja hingerahu.',
-      fullStory: 'Kui mulle ulatati Uus Testament ja sain teada, et Jeesus Kristus on surnud minu pattude eest, hüüdsin Tema nime. Sellest hetkest langesid aastatepikkused hirmud ja minu südamesse tuli tõeline rahu.',
-      youtubeId: '',
-      youtubeUrl: ''
-    },
-    {
-      id: 'ime-ja-tervenemine',
-      title: 'Tervenemine ja meeleheite lõpp',
-      person: 'Isiklik tunnistus',
-      type: 'tervenemine',
-      summary: 'Arstide lootusetu diagnoos asendus tervenemisega pärast eestpalvet ja elava Jumala poole pöördumist.',
-      fullStory: 'Jumal vastab palvetele ka täna. Pöördudes elava Jumala poole kogesin Tema tervendavat armastust ja täielikku muutust oma elus.',
-      youtubeId: '',
-      youtubeUrl: ''
+      date: '08.03.2025',
+      image: '/src/assets/images/kairi_oja_portrait_1791059785550.jpg',
+      facebookUrl: 'https://www.facebook.com/saaguvalgus',
+      facebookPageTitle: 'Saagu Valgus - kas Jumal on reaalne?',
+      summary: 'Elame vaimses maailmas, mis domineerib selle reaalsuse üle, mida meie siin maailmas reaalsuseks oleme harjunud pidama. Jeesus Kristus tegi mind 08.03.2025 vabaks viis pikka aastat kestnud karmist vaimsest sidumisest, piinast, vangistusest ja pimedusest.',
+      fullStory: `Elame vaimses maailmas, mis domineerib selle reaalsuse üle, mida meie siin maailmas reaalsuseks oleme harjunud pidama.
+Jeesus Kristus tegi mind 08.03.25, veidi üle aasta tagasi vabaks viis väga pikka aastat (2020-2025) kestnud karmist vaimsest sidumisest - piinast, vangistusest ja rõhumisest.
+Kiitus ja tänu Issandale selle eest!
+
+Mis on üldse vaimne sidumine?
+See on olukord, mil saatan saab inimese üle MEELEVALLA oma kurjade vaimude läbi, keda ta kasutab.
+Ma ei saanud need viis aastat tegeleda oma pojaga, kes oli sidumise alguses 13-aastane. Ma ei saanud teha tööd ega üldse mitte midagi peale voodi äärel istumise või lamamise. Piin oli tohutu.
+Toonitan, et see olukord polnud vähmalgi määral seotud ei depressiooni ega muu taolisega.
+Kõik see algas minuga sisuliselt üleöö, olin kogu varasema elu olnud aktiivne ja energiline. Kõik, mis minuga aset leidis, oli selgelt deemonlik.
+
+Piibel ütleb meile, et kui me ei käi selles elus koos Jumalaga ega ela Tema Seaduste ehk Jumala Sõna järgi, saavad meile õnnistuste asemel osaks NEEDUSED.
+Ja just nii juhtus ka minuga.
+Oigasin sageli piinast, ei maganud peaaegu üldse ja nägin unes košmaare. Ma ei saanud kõik need viis aastat EI NUTTA EGA NAERDA.
+Käisin haruharva kodu uksest väljas. Mu ema (täna 83a) tegi kõike, st kandis hoolt nii minu kui mu poja (täna 19a) eest kogu selle aja.
+
+Miks see kõik mind tabas?
+Olin neliteist pikka aastat n-ö nimekristlane. See tähendab, et olin küll uskunud Jumalat ja saanud ka ristitud aastal 2008 Tallinna Metodisti koguduses, kuulunud sellesse kogudusse ja käinud pühapäeviti ka kirikus, kuid ma EI TUNDNUD Jumalat.
+Mul puudus Temaga igasugune isiklik suhe, sest ma ei lugenud nende 14 aasta vältel KORDAGI ise Jumala Sõna ja minus polnud seega Tõde ehk Jeesust.
+Mu meeled ei uuenenud ning ma ei osanud aimatagi, mis on uuestisünd. Või kes on tegelikult Jumal, kes on Jeesus, mida tähendab Teda tunda, kes on Püha Vaim, mis tunne on kogeda Jumala üleloomulikku rahu...
+Nüüd ma tean, mis tunne see on, ja see tunne on kirjeldamatult hea, ma ei vahetaks seda iial enam millegi vastu!
+
+Aga tagasi minu loo juurde..
+Peale ristimist aastal 2008 käisin koguduses esimesed paar aastat küll hoolega, kuid kuna Tõde polnud minus, astus mu jalg üle koguduse lävepaku edasiste aastate vältel üsna kaootiliselt, kuni "vajusin" ajapikku täiesti "maailma tagasi".
+Olin oma maja ehitanud kalju asemel liivale!
+“Ja igaüks, kes neid mu sõnu kuuleb, ent nende järgi ei tee, sarnaneb rumala mehega, kes ehitas oma maja liivale. Ja sadas paduvihma ja tulid veevood ja puhusid tuuled ning sööstsid vastu seda maja ja see varises ja selle kokkuvarisemine oli ränk.” (Mt 7:26-27, Piibel)
+
+Nüüd, mil ma kõnnin siin elus päriselt koos Jeesusega tean ma, mida see kirjakoht tegelikkuses tähendab.
+Olin enne sidumise algust kümmekond aastat olnud vabakutseline ajakirjanik ja kirjutanud ka mõned raamatud.
+Kuna ma Jumalat ei tundnud ja Tõde polnud minus, siis valitses PATT (sh uhkus, ülbus, auahnus, jumalakartmatus, hoorus, omaõigus, nõidus) mu elus.
+Piibel räägib, et patt saab valitseda koguni kuningana inimese elus.
+“Ärgu siis valitsegu patt kuningana teie surelikus ihus, nii et te tema himudele oleksite kuulekad.” (Rm 6:12, Piibel)
+
+Kuid patt lahutab inimese Jumalast ja annab saatanale meelevalla meie üle, ja kui siis meil on lisaks veel avatud mõningad vaimse maailma UKSED, saabki saatan oma kurjade vaimude läbi meid rünnata ja ka vangistada.
+Eriti ohtlik on see siis, kui oleme juba vaimse maailma kontekstis lepingus Jeesusega, ent ikka teeme edasi lubamatuid asju.
+Kogesin viis aastat TÄIELIKKU ERALDATUST Jumalast, sh ka maailmast, inimestest.
+Tänaval käies tundus, nagu ma oleksin puuris ja sõna otseses, füüsilises mõttes kannaksin seda puuri ise veel kaasas ka. Piin oli tõesti kirjeldamatu!
+
+Mulle tehti loendamatuid vabastuspalveid, minu eest palvetasid väga paljud kristlased nii Eestis kui väljaspool Eestit. Otsisin abi kõikjalt sisuliselt 24h.
+Otsisin lakkamatult abi, kuid seda ei tulnud, sest kõik see, mis andis saatanale n-ö legaalse õiguse minu üle oli nii minu enese kui ka kõigi teiste eest varjatud.
+Palju kordi plaanisid mitmed õed-vennad mu kodu üle vaatama tulla, ent iga kord leidis saatan võimaluse need plaanid nurjata.
+Hüüdsin sageli tundide kaupa lihtsalt Jeesust appi, palju päevi ja kuid veetsin oma voodi ees põlvili Jumalat paludes.
+
+Sain viimaks vabaks läbi Kanada jumalameeste 08.03.2025, kellele Jumala Vaim ilmutas viimaks mu sidumise põhjuseid.
+Neid oli mitu.
+
+Esiteks olin kirjutanud aastal 2017 lasteraamatu "Onu Internet ja nutikaigas".
+Pealtnäha oli tegu õpetliku looga, kus heatahtlik mehike Onu Internet lapsi õpetamiseks oma pessa võlus ehk nõidus. Kuid nõidus on midagi, mida Jumal VIHKAB.
+Kuna tahtsin toona maailmas, tegelikult täielikus pimeduses elades mõjuda oma noortele lugejatele "ägeda ja lahedana", siis olin kirjutanud raamatu teksti sisse eriti jumalakartmatud fraasid nagu "Mis siin nii põrgulikult naljakat on?", "Oh my God!" (otseselt kümne käsu vastu eksimine) ning "Onu Internet, kas sa tõepoolest nõiud meid siia oma pessa?".
+Kuid justnimelt põrgulikuks mu elu kujuneski järgmiseks viieks aastaks, sest olin selle raamatu läbi iseend oma suu sõnadega neednud, lisaks sidunud end täiesti legaalselt ja otseselt nõidusega.
+See raamat oli mu sidumise vundament, sisuliselt leping saatanaga.
+
+“Väljaspool on koerad ja nõiad ja hoorajad ja mõrtsukad ja ebajumalateenijad ning kõik, kes valet armastavad ja teevad.” (Ilmutuse raamat 22:15, Piibel)
+“Sa ei tohi nõnda teha Issandale, oma Jumalale, sest kõike, mis Issandale on jäledus, mida ta vihkab, on nemad teinud oma jumalatele; nad on isegi oma poegi ja tütreid põletanud tules oma jumalatele!” (5Ms 12:31, Piibel)
+
+Too lasteraamat oli mingil kombel aastaks 2018 saavutanud teatava populaarsuse algklassiõpetajate seas ning see oli valitud koguni mitmes koolis kohustusliku kirjanduse hulka.
+Maailma-inimesena olin toona oma "töö" tulemuste üle väga uhke.
+Vabanedes otseselt saatana mõju alt tegin läbi korraliku meeleparanduse protsessi, öeldes avalikult lahti tolle raamatu autori staatusest. 
+Paari-kolme nädala vältel saatsin sel teemal e-posti teel kirjad nii raamatukauplustesse kui raamatukogudesse, teavitamaks neid, et minust on saanud nüüd kristlane, et see raamat pajatab sisuliselt nõidusest ning et see on midagi, mida Jumal vihkab ning millega mina enam samastuda ei soovi.
+Andsin sellest teada ka sotsiaalmeedias.
+
+Pea samavõrd suure kaaluga oli asjaolu, et lugesin aastaid new age ehk uue vaimsuse teemalisi artikleid ja võtsin selle kui elufilosoofia oma südamesse vastu, st reaalselt elasin selle järgi.
+Kuid new age on täielik saatana pettus, "lõks".
+Psühholoogiaalane haridus ja minu mõtetes loodud seos positiivse mõtlemisega oli minu puhul samuti väga hea eeldus new age "konksu" alla neelamiseks.
+Ajapikku olin hakanud enda üle ütlema igasugu asju - "olen edukas, saan kõigega hakkama" jne. See oli sisuliselt loits.
+Ka suhtlesin mitu aastat taro kaartidega ennustajaga kirjalikul teel. Kuna new age oli mu südant juba paadutanud, mõtlesin nõiaga suhtluse enesele legaalseks - otsustasin mõelda, et tegu on n-ö "kõrge tundlikkusega" inimesega. Et "osad inimesed lihtsalt ongi tundlikumad kui teised".
+Tasub märkida, et rahalised tehingud nõiduse esindajatega seovad meid vägagi konkreetselt saatanaga, me astume temaga sel kombel otseselt lepingusse.
+
+Kõigele lisaks olid mul kodus mitmed neetud esemed, sh surnumärkidega ja saatana pildiga suveniirmõõk, mis oli ostetud aastal 2017 Stockholmi Vikingite teema suveniirpoest. 
+Need märgid sellel mõõgal olid tibatillukesed ja vaevumärgatavad, seetõttu polnud neid seda suveniiri ostes sugugi näha.
+Veel oli mu kodus ülikooliajast pärit filosoofiaõpik nimega "Eetika", mis muuhulgas deklareeris, et "olendit nimega Jumal ei saa olla olemas" ja veel mitmeid asju, ning muidugi ka juba mainitud "Onu Internet ja nutikaigas" lasteraamat.
+
+Aga Jumala Sõna ütleb meile selgelt:
+“Nende jumalakujud põletage tules; ära himusta hõbedat ja kulda nende pealt ja ära võta seda enesele, et sind sellega ei võrgutataks, sest see on jäledus Issandale, su Jumalale! Ära vii niisugust jäledust oma kotta, et sinagi ei saaks neetuks nagu see; sa pead seda ülimalt põlgama ja jälestama, sest see on neetud asi!” (5 Mos 7:25-26, Piibel)
+
+Olles märtsis 2020 väga keerulises olukorras, ütlesin ma nimelt häälega välja: "Enam hullemaks minna ei saa".
+Paari päeva pärast algaski sidumine.
+Mäletan selgelt, et see oli koroona ja "lockdown"-i aeg, väljas oli kaunis varakevad. 
+Lootsin kangesti, et suveks saan vabaks, pöördudes koheselt oma toonase koguduse pastorite poole. Kuid ei olnud tookord palvetest abi.
+Meie sõnad saavad olla kas õnnistuseks või needuseks. Julgustan kõiki lugema Derek Prince raamatut "Õnnistus või needus - vali ise".
+“Surm ja elu on keele võimuses, ja kes seda armastab, saab süüa selle vilja.” (Õp 18:21, Piibel)
+
+Tahan aga panna teile kõigile südamele, et nii Taevas kui Põrgu on ülimalt reaalsed. 
+Saatan ehk kurat on Jumala Sõna alusel koguni selle maailma vürst, kelle ainus missioon siin maailmas on varastada, tappa ja hävitada.
+Mina sain need viis aastat kogeda põrgut kõigest maa peal, kuid reaalne põrgu on ilma kahtlusteta kirjeldamatult ja kordades kohutavam!
+Muide, palju on neid, kellele on Jeesus põrgut näidanud, näiteks kliinilise surma ajal. 
+Neist kogemustest on kirjutatud palju raamatuid, nagu näiteks David Pawsoni "Teekond põrgusse" ja Mary Kathryn Baxteri "Jumalik ilmutus põrgust. Aeg on lõppemas."
+Jumal andis Mary K. Baxterile neljakümne päeva jooksul nägemusi põrgust ning tegi talle ülesandeks öelda inimestele, et nad valiksid ELU.
+Raamat räägib põrgu olemusest ning olendeist kõrvutatult taeva auhiilgusega ning meenutab igaühele vajadust elada läbi vaimulik uussünd.
+
+HOIATUSED:
+• Inimesed, ärge mängige patuga! Ärge astuge saatanaga "ühte paati"!
+• Ärge istuge pilkajate killas! (Psalm 1:1, Piibel).
+• Kartke Jumalat - Ta ei lase ennast pilgata!
+“Ärge eksige: Jumal ei lase ennast pilgata, sest mida inimene iganes külvab, seda ta ka lõikab.” (Gl 6:7, Piibel)
+• Ärge lubage oma koju/oma territooriumile neetud/nõiduslikke esemeid!
+“Ära vii niisugust jäledust oma kotta, et sinagi ei saaks neetuks nagu see; sa pead seda ülimalt põlgama ja jälestama, sest see on neetud asi!” (5 Mos 7:26, Piibel)
+• New age ehk uusvaimsuse põhimotiiv on eksitada inimest ning takistada teda jõudmast tõelise, elava Jumalani! Hoiduge sellest!
+• Ka tuleks jälgida, millist muusikat me kuulame, sest ka sellel on mõju meie meele üle ning ka sedakaudu saame end avada pimeduse jõududele.
+• Samuti soovitan hoiduda joogast - seda tehes avate samuti vabatahtlikult "uksed" vaimsesse maailma ja lubate pimedusel tungida teie ellu. Jooga pole kaugeltki mitte "pelgalt venitusharjutused"!
+Tasub teadvustamist, et isegi kui vahetult peale joogatundi ei kogeta midagi erilist, siis ei tähenda see, et see meid vaimselt ei mõjutaks.
+“Jah, Jumala viha ilmub taevast inimeste igasuguse jumalakartmatuse ja ülekohtu vastu, nende vastu, kes tõde hoiavad ülekohtu kammitsais.” (Rm 1:18, Piibel)
+
+Aga HEA UUDIS ON, et Jumal armastab meid ja ootab meid tagasi enda juurde, olles andnud meie patu eest lunaks oma ainusündinud Poja.
+“Kui me oma patud tunnistame, on tema ustav ja õige, nõnda et ta annab andeks meie patud ja puhastab meid kogu ülekohtust.” (1 Joh 1:9, Piibel)
+“Ma ütlen teile, nõnda on taevas ühe meeltparandanud patuse pärast rohkem rõõmu kui üheksakümne üheksa õige pärast, kellele ei ole vaja meeleparandust.” (Lk 15:7, Piibel)
+“Tulge minu juurde kõik, kes olete vaevatud ja koormatud, ja mina annan teile hingamise!” (Mt 11:28, Piibel)
+“Kiida, mu hing, Issandat, ja ära unusta ainsatki tema heategu!” (Ps 103:2, Piibel)
+
+Issanda abiga olen langetanud ka kaalu 50 kg 12 kuuga, muutes radikaalselt toitumist ja liikudes taas regulaarselt väljas, sest viie aasta vältel oli pea olematust liikumisest tekkinud meeletu ülekaal (134,5 kg) ning lümfodeem (tursed jalgadel), kogesin sagedasti valu jalgades ning liikuda oli raske.
+Jeesus on ühe aastaga tervendanud mind kõigest sellest, andes ka suure tahtejõu teha taas trenni ja jälgida oma toitumist. 
+Enne seda sidumist olin olnud üsna liikuv ning jalgratas oli mu pea igapäevane liikumisvahend, armastasin ka rattamatkamist. 
+Tänu Jumalale saan tänavu kevadest taas sõita ka rattaga.
+
+Hommikul ärgates tänan nüüd esimese asjana Jeesust, et Ta on mind välja tõmmanud maapealsest põrgust ja "õuduste august ja paksust porist", nagu ütleb Piibel.
+Tänan Teda uue päeva eest, Elu eest, kodu ja pere eest, toidu eest, kõige eest. Räägin Temaga kõigest ja jagan Temaga kõike.
+
+Jään igavesti tänulikuks kõigile, kes mu eest ustavalt palvetasid ja olid need aastad mu kõrval.
+Kuid kõige rohkem pean ma tänama oma ema, kes oli mulle toeks kõigi nende viie aasta vältel!
+
+Issand valitseb!
+Jumala rahu soovides
+Kairi`
     }
   ],
 
@@ -283,7 +396,9 @@ Te ei või juua Issanda karikast ja kurjade vaimude karikast, te ei või osa saa
         'Kuidas Jumal on laste palvetele vastanud ja milliseid imesid teinud'
       ],
       isFeatured: true,
-      isPreOrder: false
+      isPreOrder: true,
+      preOrderNote: 'Valmimisel',
+      releaseDate: 'Valmimisel'
     },
     {
       id: 'ma-olin-saatana-vang',
@@ -297,7 +412,9 @@ Te ei või juua Issanda karikast ja kurjade vaimude karikast, te ei või osa saa
         'Teejuht täieliku vabanemise, andestuse ja uue alguseni'
       ],
       isFeatured: true,
-      isPreOrder: false
+      isPreOrder: true,
+      preOrderNote: 'Valmimisel',
+      releaseDate: 'Valmimisel'
     },
     {
       id: 'saagu-valgus-raamat',
@@ -312,8 +429,8 @@ Te ei või juua Issanda karikast ja kurjade vaimude karikast, te ei või osa saa
       ],
       isFeatured: true,
       isPreOrder: true,
-      preOrderNote: 'Uus trükk ilmumas! Ettetellijatele broneeritud esitrükk ja kingituseks evangeelne järjehoidja.',
-      releaseDate: 'Ilmumas peagi'
+      preOrderNote: 'Valmimisel',
+      releaseDate: 'Valmimisel'
     }
   ],
 
@@ -321,16 +438,19 @@ Te ei või juua Issanda karikast ja kurjade vaimude karikast, te ei või osa saa
   support: {
     title: 'Tule toetajaks!',
     subtitle: 'Aita levitada Valgust üle kogu Eestimaa',
-    description: 'Kirjastus Saagu Valgus annab välja evangeelseid materjale ja elumuutvaid raamatuid. Sinu toetus aitab trükkida uusi infomaterjale, postitada raamatuid ning viia tõe sõnumit nendeni, kes seda kõige enam vajavad.',
-    recipientName: 'Saagu Valgus OÜ',
-    iban: 'EE077700771012144050',
+    description: 'Kirjastus Saagu Valgus annab välja evangeelseid materjale ja elumuutvaid tunnistusi. Sinu toetus aitab trükkida uusi infomaterjale, postitada kirjandust ning viia tõe sõnumit nendeni, kes seda kõige enam vajavad.',
+    recipientName: 'Kairi Oja',
+    iban: 'EE537700771000431636',
     bankName: 'LHV Pank',
-    swift: 'HABALV22',
-    reference: 'Annetus kirjastustööks',
-    explanation: 'Kirjastuse toetus / Kirjastustöö ja trükised',
+    swift: 'LHVBEE22',
+    reference: 'Annetus / Vaimuliku töö toetus',
+    explanation: 'Lehe ja vaimuliku töö toetus',
+    paypalEmail: 'Kairioja777@proton.me',
+    paypalNote: 'If this website has been a blessing to You, You can donate here:',
+    bookSalesNote: 'Raamatute müük ja trükiste tellimine toimub Saagu Valgus OÜ kaudu.',
     supportGoals: [
-      'Evangeelsete materjalide trükkimine ja levitamine üle Eesti',
-      'Uute vaimulike raamatute ja tunnistuste kirjastamine',
+      'Evangeelsete materjalide ja voldikute trükkimine ning levitamine üle Eesti',
+      'Uute vaimulike raamatute ja tunnistuste väljaandmine',
       'Vaimuliku toe ja infomaterjalide kättesaadavaks tegemine otsijatele'
     ]
   },

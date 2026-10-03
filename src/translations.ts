@@ -233,6 +233,37 @@ The good news is that we are still in the season of grace! You can return to you
 
   testimonials: [
     {
+      id: 'kairi-oja-tunnistus',
+      title: 'Kairi\'s Testimony – Deliverance from 5 Years of Heavy Spiritual Bondage',
+      person: 'Kairi Oja',
+      type: 'vabanemine',
+      date: '08.03.2025',
+      image: '/src/assets/images/kairi_oja_portrait_1791059785550.jpg',
+      facebookUrl: 'https://www.facebook.com/saaguvalgus',
+      facebookPageTitle: 'Saagu Valgus - Is God Real?',
+      summary: 'We live in a spiritual world that dominates visible reality. On March 8, 2025, Jesus Christ set me completely free from five long years (2020–2025) of severe spiritual bondage, torment, and oppression. All praise and glory to the Lord!',
+      fullStory: `We live in a spiritual world that dominates the reality we are accustomed to seeing. On March 8, 2025, Jesus Christ set me completely free from five long years (2020–2025) of severe spiritual bondage, torment, and oppression. All glory to the Lord!
+
+What is spiritual bondage?
+It is a condition where Satan gains dominion over a person through evil spirits. For five years, I could not care for my son (who was 13 when it began), I could not work, and could do nothing but sit or lie on the edge of the bed in agony. This was not depression; it was purely demonic oppression.
+
+For 14 years, I had been merely a nominal Christian—baptized in 2008, yet without a personal relationship with Jesus, never reading God's Word. Sin, pride, New Age philosophies, visiting fortune tellers, and keeping cursed items in my home opened legal doors for the enemy. In 2017, I had authored a children's book featuring witchcraft and ungodly language, unwittingly entering a covenant with darkness.
+
+I tried finding help 24/7 across Estonia and abroad, but true breakthrough came on March 8, 2025, when Canadian ministers through the Holy Spirit uncovered the hidden roots of the bondage. I underwent deep repentance, publicly renounced the ungodly book, cleansed my home of all occult items, and embraced Jesus Christ as my Lord and Savior.
+
+Since then, Jesus has restored my soul, healed my body, enabled me to lose 50 kg within 12 months, restored my ability to ride my bicycle, and filled me with supernatural peace.
+
+WARNINGS:
+• Do not play with sin or enter into agreement with Satan!
+• Fear the Lord: "Do not be deceived, God is not mocked; for whatever a man sows, that he will also reap." (Galatians 6:7)
+• Cleanse your home of all cursed and occult objects! (Deuteronomy 7:26)
+• Avoid New Age philosophies and yoga, which open doors to dark spiritual forces.
+
+THE GOOD NEWS:
+God loves you and offers salvation through His Son Jesus Christ!
+"If we confess our sins, He is faithful and just to forgive us our sins and to cleanse us from all unrighteousness." (1 John 1:9)`
+    },
+    {
       id: 'vabanemine-esoteerikast',
       title: 'Deliverance from the Bonds of Esotericism and Occultism',
       person: 'True Story of Deliverance',
@@ -270,7 +301,9 @@ The good news is that we are still in the season of grace! You can return to you
         'Warm, beautifully illustrated book for the whole family'
       ],
       isFeatured: true,
-      isPreOrder: false
+      isPreOrder: true,
+      preOrderNote: 'In Preparation',
+      releaseDate: 'In Preparation'
     },
     {
       id: 'ma-olin-saatana-vang',
@@ -284,7 +317,9 @@ The good news is that we are still in the season of grace! You can return to you
         'A practical guide to forgiveness, deliverance, and a brand new life'
       ],
       isFeatured: true,
-      isPreOrder: false
+      isPreOrder: true,
+      preOrderNote: 'In Preparation',
+      releaseDate: 'In Preparation'
     },
     {
       id: 'saagu-valgus-raamat',
@@ -299,21 +334,24 @@ The good news is that we are still in the season of grace! You can return to you
       ],
       isFeatured: true,
       isPreOrder: true,
-      preOrderNote: 'New print edition coming soon! Pre-order now to reserve your copy.',
-      releaseDate: 'Coming soon'
+      preOrderNote: 'In Preparation',
+      releaseDate: 'In Preparation'
     }
   ],
 
   support: {
-    title: 'Support the Publishing Ministry!',
+    title: 'Support the Ministry!',
     subtitle: 'Help spread the Light across the land',
-    description: 'Let There Be Light Publishing produces evangelistic tracts and life-changing books. Your support helps print new materials, mail literature, and bring the message of truth to those in urgent need.',
-    recipientName: 'Kirjastus Saagu Valgus MTÜ',
-    iban: 'EE123456789012345678',
-    bankName: 'Swedbank / LHV Bank',
-    swift: 'HABALV22',
-    reference: 'Publishing ministry donation',
-    explanation: 'Support for Christian literature and evangelistic tracts',
+    description: 'Let There Be Light Publishing produces evangelistic tracts and life-changing literature. Your support helps print new materials, mail literature, and bring truth to those in urgent need.',
+    recipientName: 'Kairi Oja',
+    iban: 'EE537700771000431636',
+    bankName: 'LHV Bank',
+    swift: 'LHVBEE22',
+    reference: 'Ministry donation',
+    explanation: 'Ministry and website support',
+    paypalEmail: 'Kairioja777@proton.me',
+    paypalNote: 'If this website has been a blessing to You, You can donate here:',
+    bookSalesNote: 'Book purchases and publications distribution are invoiced through Saagu Valgus OÜ.',
     supportGoals: [
       'Printing and distributing evangelistic tracts across the country',
       'Publishing new Christian books and true testimonies',

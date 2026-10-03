@@ -14,7 +14,11 @@ import {
   Heart,
   Send,
   ShieldCheck,
-  CreditCard
+  CreditCard,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  DollarSign
 } from 'lucide-react';
 import { INITIAL_SITE_CONTENT, INITIAL_PUBLICATIONS } from './data';
 import { SiteContent, BookItem, OrderItem, ContactMessage, PublicationItem } from './types';
@@ -29,8 +33,9 @@ import lapsJaJumalCover from './assets/images/book_laps_ja_jumal_1790963503364.j
 import saatanaVangCover from './assets/images/book_saatana_vang_1790963515414.jpg';
 import saaguValgusCover from './assets/images/book_saagu_valgus_1790963525251.jpg';
 import heroPublisherImage from './assets/images/publisher_hero_image_1790963536689.jpg';
+import kairiOjaPhoto from './assets/images/kairi_oja_portrait_1791059785550.jpg';
 
-const STORAGE_KEY = 'saaguvalgus_site_content_v6';
+const STORAGE_KEY = 'saaguvalgus_site_content_v9';
 const ADMIN_SESSION_KEY = 'saaguvalgus_admin_session_v1';
 const LANG_STORAGE_KEY = 'saaguvalgus_lang';
 
@@ -104,6 +109,104 @@ const renderAuthorParagraphs = (fullText: string) => {
   );
 };
 
+// Helper for rendering testimony story with formatting and large font
+const renderTestimonyParagraphs = (fullStory: string, isExpanded: boolean) => {
+  if (!fullStory) return null;
+  const rawParagraphs = fullStory.split(/\n\s*\n/);
+  const visibleParagraphs = isExpanded ? rawParagraphs : rawParagraphs.slice(0, 3);
+
+  return (
+    <div className="space-y-6 font-serif text-lg sm:text-xl leading-relaxed text-[#292524]">
+      {visibleParagraphs.map((p, idx) => {
+        const trimmed = p.trim();
+        
+        // Check for subheadings
+        const isSubheading = 
+          trimmed.startsWith('Mis on üldse vaimne sidumine?') ||
+          trimmed.startsWith('Miks see kõik mind tabas?') ||
+          trimmed.startsWith('Aga tagasi minu loo juurde') ||
+          trimmed.startsWith('HOIATUSED:') ||
+          trimmed.startsWith('Aga HEA UUDIS ON') ||
+          trimmed.startsWith('Sain viimaks vabaks');
+
+        if (isSubheading) {
+          return (
+            <h4 key={idx} className="font-serif font-bold text-xl sm:text-2xl text-[#14532D] pt-4 pb-1 border-b border-[#E2D7C8]">
+              {trimmed}
+            </h4>
+          );
+        }
+
+        // Check if paragraph contains bullet list (e.g. HOIATUSED: • ...)
+        if (trimmed.includes('• ')) {
+          const lines = trimmed.split('\n');
+          return (
+            <div key={idx} className="space-y-3 pl-2 sm:pl-4 border-l-2 border-[#14532D]/30 py-1">
+              {lines.map((line, lIdx) => {
+                const lineTrim = line.trim();
+                if (lineTrim.startsWith('•')) {
+                  return (
+                    <div key={lIdx} className="flex items-start gap-3">
+                      <span className="text-[#14532D] font-bold text-lg mt-0.5">•</span>
+                      <span className="text-stone-800 text-lg sm:text-xl font-serif leading-relaxed">
+                        {renderFormattedText(lineTrim.replace(/^•\s*/, ''))}
+                      </span>
+                    </div>
+                  );
+                }
+                const isBibleInBullet = lineTrim.startsWith('“') || lineTrim.includes('Piibel');
+                return (
+                  <p 
+                    key={lIdx}
+                    className={isBibleInBullet ? 'p-4 rounded-xl bg-[#F5F0E6] border-l-4 border-[#14532D] text-[#14532D] font-serif font-semibold italic text-base sm:text-lg leading-relaxed shadow-2xs my-2' : 'text-stone-800 text-lg sm:text-xl font-serif leading-relaxed'}
+                  >
+                    {renderFormattedText(lineTrim)}
+                  </p>
+                );
+              })}
+            </div>
+          );
+        }
+
+        // Check for Scripture Quotes
+        const isBibleQuote = 
+          trimmed.startsWith('“') || 
+          trimmed.startsWith('«') || 
+          (trimmed.startsWith('"') && trimmed.includes('Piibel')) ||
+          trimmed.includes('(5 Mos 7:25-26') ||
+          trimmed.includes('(5Mos 12:31') ||
+          trimmed.includes('(Ilmutuse raamat 22:15') ||
+          trimmed.includes('(Rm 6:12') ||
+          trimmed.includes('(Gl 6:7') ||
+          trimmed.includes('(1 Joh 1:9') ||
+          trimmed.includes('(Lk 15:7') ||
+          trimmed.includes('(Mt 11:28') ||
+          trimmed.includes('(Ps 103:2') ||
+          trimmed.includes('(Õp 18:21') ||
+          trimmed.includes('(Mt 7:26-27') ||
+          trimmed.includes('Piibel)');
+
+        if (isBibleQuote) {
+          return (
+            <div 
+              key={idx} 
+              className="p-5 sm:p-7 rounded-2xl bg-[#F5F0E6] border border-[#E2D7C8] border-l-4 border-l-[#14532D] text-[#14532D] font-serif font-semibold italic text-lg sm:text-xl leading-relaxed shadow-2xs my-4"
+            >
+              {renderFormattedText(trimmed)}
+            </div>
+          );
+        }
+
+        return (
+          <p key={idx} className="text-stone-800 text-lg sm:text-xl font-serif leading-relaxed">
+            {renderFormattedText(trimmed)}
+          </p>
+        );
+      })}
+    </div>
+  );
+};
+
 // Map book object to its respective cover image
 const getBookCoverImage = (book: BookItem) => {
   if (book.coverImage && book.coverImage.trim()) return book.coverImage;
@@ -134,12 +237,12 @@ export default function App() {
   });
 
   const activeContent: SiteContent = React.useMemo(() => {
-    if (lang === 'et') return content;
-    
     // Create a copy of content to preserve all cover images, configurations, and media
     const active = JSON.parse(JSON.stringify(content)) as SiteContent;
-    const enFallback = SITE_CONTENT_EN;
-    const enOverrides = content.en || {};
+    
+    if (lang === 'en') {
+      const enFallback = SITE_CONTENT_EN;
+      const enOverrides = content.en || {};
     
     active.brandName = enOverrides.brandName || enFallback.brandName || active.brandName;
     active.brandTagline = enOverrides.brandTagline || enFallback.brandTagline || active.brandTagline;
@@ -246,6 +349,17 @@ export default function App() {
         ref: enPrayer.ref || active.lordPrayer.ref
       };
     }
+    }
+    
+    // Always strictly filter out sample/placeholder testimonials and ensure Kairi's latest photo
+    if (Array.isArray(active.testimonials)) {
+      active.testimonials = active.testimonials
+        .filter((t) => t.id !== 'vabanemine-esoteerikast' && t.id !== 'ime-ja-tervenemine')
+        .map((t) => ({
+          ...t,
+          image: kairiOjaPhoto
+        }));
+    }
     
     return active;
   }, [content, lang]);
@@ -271,6 +385,8 @@ export default function App() {
   const [copiedPrayer, setCopiedPrayer] = useState(false);
   const [copiedLordPrayer, setCopiedLordPrayer] = useState(false);
   const [copiedIban, setCopiedIban] = useState(false);
+  const [copiedPaypal, setCopiedPaypal] = useState(false);
+  const [isTestimonyExpanded, setIsTestimonyExpanded] = useState<boolean>(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isSpeakingLordPrayer, setIsSpeakingLordPrayer] = useState(false);
   const [formSent, setFormSent] = useState(false);
@@ -502,6 +618,12 @@ export default function App() {
     navigator.clipboard.writeText(activeContent.support.iban);
     setCopiedIban(true);
     setTimeout(() => setCopiedIban(false), 2000);
+  };
+
+  const handleCopyPaypal = () => {
+    navigator.clipboard.writeText(activeContent.support.paypalEmail || 'Kairioja777@proton.me');
+    setCopiedPaypal(true);
+    setTimeout(() => setCopiedPaypal(false), 2000);
   };
 
   const handleCopyPrayer = () => {
@@ -942,61 +1064,137 @@ export default function App() {
       </section>
 
       {/* Testimonials */}
-      <section id="tunnistused" className="py-16 sm:py-20 bg-white border-b border-[#E7E0D5]">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-10">
+      <section id="tunnistused" className="py-16 sm:py-24 bg-white border-b border-[#E7E0D5]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-12">
           
-          <div className="text-center space-y-2 max-w-3xl mx-auto">
+          <div className="text-center space-y-3 max-w-3xl mx-auto">
             <span className="text-xs uppercase tracking-widest font-bold text-[#14532D] font-sans">
               {t.testimonials.badge}
             </span>
-            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#1C1917]">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-[#1C1917]">
               {t.testimonials.title}
             </h2>
-            <p className="text-sm sm:text-base font-serif text-stone-600">
+            <p className="text-base sm:text-lg font-serif text-stone-600">
               {t.testimonials.subtitle}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Wide, full-width article view */}
+          <div className="max-w-4xl lg:max-w-5xl mx-auto space-y-8">
             {activeContent.testimonials.map((test) => (
-              <div key={test.id} className="p-8 rounded-3xl bg-[#FAF7F2] border border-[#E2D7C8] shadow-2xs flex flex-col justify-between space-y-6 text-left">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between text-xs text-stone-500 font-sans">
-                    <span className="font-bold uppercase tracking-wider text-[#9A3412]">
-                      {test.type === 'vabanemine' ? (lang === 'en' ? 'Deliverance' : 'Vabanemine') : (lang === 'en' ? 'Healing' : 'Tervenemine')}
-                    </span>
-                    <span>{test.person}</span>
+              <div 
+                key={test.id} 
+                className="p-8 sm:p-12 lg:p-14 rounded-3xl bg-[#FAF7F2] border border-[#E2D7C8] shadow-sm space-y-8 text-left transition-all duration-300"
+              >
+                {/* Header: Author portrait, Name, Type, Date, Facebook link */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-[#E2D7C8]">
+                  <div className="flex items-center gap-4 sm:gap-5">
+                    {test.image && (
+                      <img 
+                        src={test.image} 
+                        alt={test.person} 
+                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-2 border-[#14532D]/30 shadow-md shrink-0" 
+                      />
+                    )}
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="px-3 py-1 rounded-full bg-[#14532D]/10 text-[#14532D] font-sans font-bold text-xs uppercase tracking-wider">
+                          {test.type === 'vabanemine' ? (lang === 'en' ? 'Deliverance' : 'Vabanemislugu') : (lang === 'en' ? 'Healing' : 'Tervenemine')}
+                        </span>
+                        {test.date && (
+                          <span className="text-xs font-mono text-stone-500">{test.date}</span>
+                        )}
+                      </div>
+                      <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#1C1917]">
+                        {test.person}
+                      </h3>
+                      <p className="text-xs sm:text-sm font-serif text-stone-600">
+                        {lang === 'en' ? 'Deliverance from 5 years of severe spiritual bondage' : 'Vabanemine 5 aastat kestnud karmist vaimsest sidumisest'}
+                      </p>
+                    </div>
                   </div>
 
-                  <h3 className="text-2xl font-serif font-bold text-[#1C1917] leading-snug">{test.title}</h3>
-                  
-                  <p className="text-base font-serif text-stone-800 leading-relaxed italic">
-                    «{test.summary}»
-                  </p>
+                  {test.facebookUrl && (
+                    <a
+                      href={test.facebookUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-[#E2D7C8] text-[#14532D] hover:bg-[#14532D] hover:text-white font-sans font-bold text-xs shadow-2xs transition-all cursor-pointer self-start sm:self-auto"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      <span>{test.facebookPageTitle || (lang === 'en' ? 'Facebook Page' : 'Facebooki leht')}</span>
+                    </a>
+                  )}
+                </div>
 
-                  {test.fullStory && (
-                    <p className="text-sm font-serif text-stone-700 leading-relaxed">
-                      {test.fullStory}
+                {/* Main Heading & Summary */}
+                <div className="space-y-4">
+                  <h3 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-[#1C1917] leading-snug">
+                    {test.title}
+                  </h3>
+                  
+                  {test.summary && (
+                    <p className="text-lg sm:text-xl font-serif text-[#14532D] font-medium leading-relaxed italic bg-white/70 p-6 rounded-2xl border border-[#E2D7C8]">
+                      «{test.summary}»
                     </p>
                   )}
                 </div>
+
+                {/* Story content with expand/collapse and large font */}
+                <div className="relative">
+                  {renderTestimonyParagraphs(test.fullStory || '', isTestimonyExpanded)}
+
+                  {/* Gradient overlay when collapsed */}
+                  {!isTestimonyExpanded && (
+                    <div className="absolute bottom-0 left-0 right-0 h-36 bg-gradient-to-t from-[#FAF7F2] via-[#FAF7F2]/90 to-transparent pointer-events-none" />
+                  )}
+                </div>
+
+                {/* Expand / Collapse Toggle Button */}
+                <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <button
+                    onClick={() => {
+                      if (isTestimonyExpanded) {
+                        setIsTestimonyExpanded(false);
+                        const el = document.getElementById('tunnistused');
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                      } else {
+                        setIsTestimonyExpanded(true);
+                      }
+                    }}
+                    className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-serif font-bold text-base sm:text-lg transition-all duration-200 cursor-pointer shadow-md hover:shadow-lg flex items-center justify-center gap-3 active:scale-[0.99]"
+                  >
+                    {isTestimonyExpanded ? (
+                      <>
+                        <ChevronUp className="w-5 h-5 text-amber-300" />
+                        <span>{lang === 'en' ? 'Close story' : 'Sulge tunnistus'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="w-5 h-5 text-amber-300" />
+                        <span>{lang === 'en' ? 'Read full testimony (open in full)' : 'Loe kogu tunnistust (avaneb täismahus)'}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
               </div>
             ))}
           </div>
 
           {/* Share Testimony Callout */}
-          <div className="p-8 rounded-2xl bg-[#F5F0E6] border border-[#E2D7C8] text-center max-w-2xl mx-auto space-y-3">
-            <h4 className="text-xl font-serif font-bold text-[#1C1917]">
+          <div className="p-8 sm:p-10 rounded-3xl bg-[#F5F0E6] border border-[#E2D7C8] text-center max-w-3xl mx-auto space-y-4 shadow-2xs">
+            <h4 className="text-2xl font-serif font-bold text-[#1C1917]">
               {lang === 'en' ? 'Do you have a testimony of God\'s grace?' : 'Kas sul on oma lugu elava Jumala tööst?'}
             </h4>
-            <p className="text-sm font-serif text-stone-700 leading-relaxed">
+            <p className="text-base font-serif text-stone-700 leading-relaxed max-w-xl mx-auto">
               {lang === 'en'
                 ? 'Share how God has touched your life to encourage others and bear witness to the truth.'
                 : 'Kirjuta kirjastusele ja jaga oma tunnistust teiste inimeste julgustuseks ning tõe tunnistuseks.'}
             </p>
             <button
               onClick={() => scrollTo('kontakt')}
-              className="px-6 py-2.5 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-semibold text-xs transition-colors cursor-pointer"
+              className="px-8 py-3 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-semibold text-sm transition-colors cursor-pointer shadow-sm"
             >
               {lang === 'en' ? 'Send your testimony' : 'Saada oma tunnistus'}
             </button>
@@ -1129,15 +1327,15 @@ export default function App() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
             
-            {/* Bank details */}
-            <div className="bg-white p-8 rounded-3xl border border-[#E7E0D5] shadow-2xs space-y-4 text-left">
+            {/* Bank details & Support Methods */}
+            <div className="bg-white p-8 rounded-3xl border border-[#E7E0D5] shadow-2xs space-y-5 text-left">
               <h4 className="font-serif font-bold text-lg text-[#1C1917]">{t.support.bankDetails}</h4>
 
               <div className="space-y-3 text-xs font-sans">
-                {/* RECIPIENT NAME: Saagu Valgus OÜ */}
+                {/* RECIPIENT NAME: Kairi Oja / activeContent */}
                 <div className="p-3.5 bg-[#FAF7F2] rounded-xl border border-[#E7E0D5]">
                   <span className="text-stone-500 block text-[10px] uppercase font-bold">{t.support.recipient}</span>
-                  <span className="font-bold text-stone-900 text-sm">Saagu Valgus OÜ</span>
+                  <span className="font-bold text-stone-900 text-sm">{activeContent.support.recipientName || 'Kairi Oja'}</span>
                 </div>
 
                 <div className="p-3.5 bg-[#FAF7F2] rounded-xl border border-[#E7E0D5] flex items-center justify-between">
@@ -1147,7 +1345,7 @@ export default function App() {
                   </div>
                   <button
                     onClick={handleCopyIban}
-                    className="p-2 rounded-lg bg-white border border-stone-300 text-stone-700 hover:bg-stone-100 font-bold cursor-pointer"
+                    className="p-2 rounded-lg bg-white border border-stone-300 text-stone-700 hover:bg-stone-100 font-bold cursor-pointer transition-colors"
                   >
                     {copiedIban ? t.support.copied : t.support.copyIban}
                   </button>
@@ -1162,6 +1360,29 @@ export default function App() {
                     <span className="text-stone-500 block text-[10px] uppercase font-bold">{t.support.explanation}</span>
                     <span className="font-semibold text-stone-800">{activeContent.support.explanation}</span>
                   </div>
+                </div>
+
+                {/* PayPal donation block */}
+                <div className="p-4 bg-[#F5F0E6] rounded-xl border border-[#E2D7C8] space-y-2">
+                  <span className="text-stone-600 block text-[11px] font-serif italic">
+                    {activeContent.support.paypalNote || 'If this website has been a blessing to You, You may donate here:'}
+                  </span>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono font-bold text-[#14532D] text-xs sm:text-sm truncate">
+                      {activeContent.support.paypalEmail || 'Kairioja777@proton.me'}
+                    </span>
+                    <button
+                      onClick={handleCopyPaypal}
+                      className="px-3 py-1.5 rounded-lg bg-white border border-[#E2D7C8] text-[#14532D] hover:bg-[#14532D] hover:text-white font-bold text-xs cursor-pointer shrink-0 transition-colors"
+                    >
+                      {copiedPaypal ? (lang === 'en' ? 'Copied!' : 'Kopeeritud!') : (lang === 'en' ? 'Copy' : 'Kopeeri')}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Book sales note */}
+                <div className="p-3 bg-white rounded-xl border border-stone-200 text-[11px] text-stone-500 font-serif leading-relaxed">
+                  ℹ️ {activeContent.support.bookSalesNote || 'Raamatute müük ja trükiste arveldus toimub Saagu Valgus OÜ kaudu.'}
                 </div>
               </div>
             </div>

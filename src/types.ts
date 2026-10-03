@@ -83,6 +83,10 @@ export interface TestimonialItem {
   type: 'tervenemine' | 'vabanemine' | 'poordumine';
   summary: string;
   fullStory?: string;
+  image?: string;
+  facebookUrl?: string;
+  facebookPageTitle?: string;
+  date?: string;
   youtubeId?: string; // e.g. "dQw4w9WgXcQ"
   youtubeUrl?: string;
 }
@@ -98,6 +102,9 @@ export interface SupportInfo {
   reference: string;
   explanation: string;
   supportGoals: string[];
+  paypalEmail?: string;
+  paypalNote?: string;
+  bookSalesNote?: string;
 }
 
 export interface LordPrayerInfo {

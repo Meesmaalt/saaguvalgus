@@ -1643,6 +1643,40 @@ ${p.text}
                   />
                 </div>
               </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <div>
+                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">PayPal e-posti aadress (Globaalne)</label>
+                  <input
+                    type="text"
+                    value={content.support.paypalEmail || ''}
+                    onChange={(e) => saveContent({ ...content, support: { ...content.support, paypalEmail: e.target.value } })}
+                    placeholder="Kairioja777@proton.me"
+                    className="w-full px-4 py-3 rounded-xl border border-stone-300 text-sm font-mono font-bold text-[#14532D] bg-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">PayPal annetuse märge (Globaalne)</label>
+                  <input
+                    type="text"
+                    value={content.support.paypalNote || ''}
+                    onChange={(e) => saveContent({ ...content, support: { ...content.support, paypalNote: e.target.value } })}
+                    placeholder="If this website has been a blessing to You, You may donate here:"
+                    className="w-full px-4 py-3 rounded-xl border border-stone-300 text-sm font-serif italic text-stone-800 bg-white"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Märge raamatute müügi arvelduse kohta</label>
+                <input
+                  type="text"
+                  value={content.support.bookSalesNote || ''}
+                  onChange={(e) => saveContent({ ...content, support: { ...content.support, bookSalesNote: e.target.value } })}
+                  placeholder="Raamatute müük ja trükiste arveldus toimub Saagu Valgus OÜ kaudu."
+                  className="w-full px-4 py-3 rounded-xl border border-stone-300 text-xs font-serif text-stone-700 bg-white"
+                />
+              </div>
             </div>
 
             {/* 6. Prayers Section */}
