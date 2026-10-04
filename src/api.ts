@@ -4,7 +4,7 @@ import { INITIAL_SITE_CONTENT, INITIAL_PUBLICATIONS, INITIAL_ORDERS, INITIAL_MES
 const API_BASE = '/api';
 
 // Storage keys for static / offline fallback
-const STORAGE_CONTENT_KEY = 'saaguvalgus_site_content_v6';
+const STORAGE_CONTENT_KEY = 'saaguvalgus_site_content_v10';
 const STORAGE_PUBLICATIONS_KEY = 'saaguvalgus_publications_v2';
 const STORAGE_ORDERS_KEY = 'saaguvalgus_orders_v2';
 const STORAGE_MESSAGES_KEY = 'saaguvalgus_messages_v2';

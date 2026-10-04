@@ -239,7 +239,7 @@ The good news is that we are still in the season of grace! You can return to you
       type: 'vabanemine',
       date: '08.03.2025',
       image: '/src/assets/images/kairi_oja_portrait_1791059785550.jpg',
-      facebookUrl: 'https://www.facebook.com/saaguvalgus',
+      facebookUrl: 'https://www.facebook.com/share/1DUothVLCF/',
       facebookPageTitle: 'Saagu Valgus - Is God Real?',
       summary: 'We live in a spiritual world that dominates visible reality. On March 8, 2025, Jesus Christ set me completely free from five long years (2020–2025) of severe spiritual bondage, torment, and oppression. All praise and glory to the Lord!',
       fullStory: `We live in a spiritual world that dominates the reality we are accustomed to seeing. On March 8, 2025, Jesus Christ set me completely free from five long years (2020–2025) of severe spiritual bondage, torment, and oppression. All glory to the Lord!

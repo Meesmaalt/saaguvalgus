@@ -320,12 +320,15 @@ export default function App() {
     }
     }
     
-    // Always strictly filter out sample/placeholder testimonials and ensure valid photo
+    // Always strictly filter out sample/placeholder testimonials and ensure valid photo & updated facebookUrl
     if (Array.isArray(active.testimonials)) {
       active.testimonials = active.testimonials
         .filter((t) => t.id !== 'vabanemine-esoteerikast' && t.id !== 'ime-ja-tervenemine')
         .map((t) => ({
           ...t,
+          facebookUrl: (!t.facebookUrl || t.facebookUrl === 'https://www.facebook.com/saaguvalgus') 
+            ? 'https://www.facebook.com/share/1DUothVLCF/' 
+            : t.facebookUrl,
           image: t.image && !t.image.includes('kairi_oja_foto_1791058337611') ? t.image : kairiOjaPhoto
         }));
     }
