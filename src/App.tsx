@@ -99,9 +99,9 @@ const renderAuthorParagraphs = (fullText: string) => {
         return (
           <p 
             key={idx} 
-            className={isBibleQuote ? 'p-5 sm:p-6 rounded-2xl bg-[#F5F0E6] border-l-4 border-[#14532D] text-[#14532D] font-serif font-semibold italic text-base sm:text-lg leading-relaxed shadow-2xs my-4' : ''}
+            className={isBibleQuote ? 'p-5 sm:p-6 rounded-2xl bg-[#F5F0E6] border-l-4 border-[#14532D] text-[#14532D] font-serif font-semibold italic text-base sm:text-lg leading-relaxed shadow-2xs my-4' : 'text-stone-800 text-base sm:text-lg font-serif leading-relaxed'}
           >
-            {renderFormattedText(trimmed)}
+            {trimmed}
           </p>
         );
       })}
@@ -119,63 +119,17 @@ const renderTestimonyParagraphs = (fullStory: string, isExpanded: boolean) => {
     <div className="space-y-6 font-serif text-lg sm:text-xl leading-relaxed text-[#292524]">
       {visibleParagraphs.map((p, idx) => {
         const trimmed = p.trim();
-        
-        // Check for subheadings
-        const isSubheading = 
-          trimmed.startsWith('Mis on üldse vaimne sidumine?') ||
-          trimmed.startsWith('Miks see kõik mind tabas?') ||
-          trimmed.startsWith('Aga tagasi minu loo juurde') ||
-          trimmed.startsWith('HOIATUSED:') ||
-          trimmed.startsWith('Aga HEA UUDIS ON') ||
-          trimmed.startsWith('Sain viimaks vabaks');
 
-        if (isSubheading) {
-          return (
-            <h4 key={idx} className="font-serif font-bold text-xl sm:text-2xl text-[#14532D] pt-4 pb-1 border-b border-[#E2D7C8]">
-              {trimmed}
-            </h4>
-          );
-        }
-
-        // Check if paragraph contains bullet list (e.g. HOIATUSED: • ...)
-        if (trimmed.includes('• ')) {
-          const lines = trimmed.split('\n');
-          return (
-            <div key={idx} className="space-y-3 pl-2 sm:pl-4 border-l-2 border-[#14532D]/30 py-1">
-              {lines.map((line, lIdx) => {
-                const lineTrim = line.trim();
-                if (lineTrim.startsWith('•')) {
-                  return (
-                    <div key={lIdx} className="flex items-start gap-3">
-                      <span className="text-[#14532D] font-bold text-lg mt-0.5">•</span>
-                      <span className="text-stone-800 text-lg sm:text-xl font-serif leading-relaxed">
-                        {renderFormattedText(lineTrim.replace(/^•\s*/, ''))}
-                      </span>
-                    </div>
-                  );
-                }
-                const isBibleInBullet = lineTrim.startsWith('“') || lineTrim.includes('Piibel');
-                return (
-                  <p 
-                    key={lIdx}
-                    className={isBibleInBullet ? 'p-4 rounded-xl bg-[#F5F0E6] border-l-4 border-[#14532D] text-[#14532D] font-serif font-semibold italic text-base sm:text-lg leading-relaxed shadow-2xs my-2' : 'text-stone-800 text-lg sm:text-xl font-serif leading-relaxed'}
-                  >
-                    {renderFormattedText(lineTrim)}
-                  </p>
-                );
-              })}
-            </div>
-          );
-        }
-
-        // Check for Scripture Quotes
+        // Check for Scripture Quotes (kirjakohad) - keep them nicely separated
         const isBibleQuote = 
           trimmed.startsWith('“') || 
           trimmed.startsWith('«') || 
           (trimmed.startsWith('"') && trimmed.includes('Piibel')) ||
-          trimmed.includes('(5 Mos 7:25-26') ||
-          trimmed.includes('(5Mos 12:31') ||
-          trimmed.includes('(Ilmutuse raamat 22:15') ||
+          trimmed.includes('(5 Mos') ||
+          trimmed.includes('(5. Mos') ||
+          trimmed.includes('(5Ms') ||
+          trimmed.includes('(5.Ms') ||
+          trimmed.includes('(Ilmutuse') ||
           trimmed.includes('(Rm 6:12') ||
           trimmed.includes('(Gl 6:7') ||
           trimmed.includes('(1 Joh 1:9') ||
@@ -192,14 +146,15 @@ const renderTestimonyParagraphs = (fullStory: string, isExpanded: boolean) => {
               key={idx} 
               className="p-5 sm:p-7 rounded-2xl bg-[#F5F0E6] border border-[#E2D7C8] border-l-4 border-l-[#14532D] text-[#14532D] font-serif font-semibold italic text-lg sm:text-xl leading-relaxed shadow-2xs my-4"
             >
-              {renderFormattedText(trimmed)}
+              {trimmed}
             </div>
           );
         }
 
+        // Clean, beautiful regular paragraph without heavy emphasis
         return (
           <p key={idx} className="text-stone-800 text-lg sm:text-xl font-serif leading-relaxed">
-            {renderFormattedText(trimmed)}
+            {trimmed}
           </p>
         );
       })}
