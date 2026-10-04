@@ -1072,7 +1072,7 @@ export default function App() {
                         {test.person}
                       </h3>
                       <p className="text-xs sm:text-sm font-serif text-stone-600">
-                        {lang === 'en' ? 'Deliverance from 5 years of severe spiritual bondage' : 'Vabanemine 5 aastat kestnud karmist vaimsest sidumisest'}
+                        {lang === 'en' ? 'Deliverance from five years of severe spiritual bondage' : 'Vabanemine viis aastat kestnud karmist vaimsest sidumisest'}
                       </p>
                     </div>
                   </div>
@@ -1360,102 +1360,68 @@ export default function App() {
         </div>
       </section>
 
-      {/* Support Section WITH RECIPIENT SET TO Saagu Valgus OÜ */}
+      {/* Support Section */}
       <section id="toetus" className="py-16 sm:py-20 bg-[#F5F0E6] border-b border-[#E2D7C8]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 space-y-10">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 space-y-6 text-center">
           
-          <div className="text-center space-y-3 max-w-2xl mx-auto">
-            <p className="text-lg sm:text-xl font-serif font-bold text-[#14532D] leading-relaxed border-y border-[#E2D7C8] py-3 bg-white/60 rounded-2xl shadow-2xs">
-              Kui see lehekülg on olnud Sulle õnnistuseks, saad selle toimimist toetada siin:
-            </p>
+          <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1C1917] leading-snug">
+            {lang === 'en' 
+              ? 'If this website has been a blessing to You, You may support its work here:'
+              : 'Kui see lehekülg on olnud Sulle õnnistuseks, saad selle toimimist toetada nii:'}
+          </h2>
 
-            <span className="text-xs uppercase tracking-widest font-bold text-[#9A3412] font-sans block pt-2">
-              {activeContent.support.subtitle}
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#1C1917]">
-              {activeContent.support.title}
-            </h2>
-            <p className="text-sm sm:text-base font-serif text-stone-700 leading-relaxed">
-              {activeContent.support.description}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+          <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#E7E0D5] shadow-xs space-y-5 text-left max-w-xl mx-auto">
             
-            {/* Bank details & Support Methods */}
-            <div className="bg-white p-8 rounded-3xl border border-[#E7E0D5] shadow-2xs space-y-5 text-left">
-              <h4 className="font-serif font-bold text-lg text-[#1C1917]">{t.support.bankDetails}</h4>
+            {/* Bank details */}
+            <div className="space-y-3 font-sans text-xs sm:text-sm">
+              <div className="p-4 bg-[#FAF7F2] rounded-2xl border border-[#E7E0D5] space-y-0.5">
+                <span className="text-stone-500 block text-[11px] uppercase tracking-wider font-bold">
+                  {lang === 'en' ? 'Recipient' : 'Saaja'}
+                </span>
+                <span className="font-serif font-bold text-stone-900 text-lg sm:text-xl block">
+                  {activeContent.support.recipientName || 'Kairi Oja'}
+                </span>
+              </div>
 
-              <div className="space-y-3 text-xs font-sans">
-                {/* RECIPIENT NAME: Kairi Oja / activeContent */}
-                <div className="p-3.5 bg-[#FAF7F2] rounded-xl border border-[#E7E0D5]">
-                  <span className="text-stone-500 block text-[10px] uppercase font-bold">{t.support.recipient}</span>
-                  <span className="font-bold text-stone-900 text-sm">{activeContent.support.recipientName || 'Kairi Oja'}</span>
-                </div>
-
-                <div className="p-3.5 bg-[#FAF7F2] rounded-xl border border-[#E7E0D5] flex items-center justify-between">
-                  <div>
-                    <span className="text-stone-500 block text-[10px] uppercase font-bold">{t.support.account}</span>
-                    <span className="font-mono font-bold text-stone-900 text-sm">{activeContent.support.iban}</span>
-                  </div>
-                  <button
-                    onClick={handleCopyIban}
-                    className="p-2 rounded-lg bg-white border border-stone-300 text-stone-700 hover:bg-stone-100 font-bold cursor-pointer transition-colors"
-                  >
-                    {copiedIban ? t.support.copied : t.support.copyIban}
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3.5 bg-[#FAF7F2] rounded-xl border border-[#E7E0D5]">
-                    <span className="text-stone-500 block text-[10px] uppercase font-bold">{t.support.bank}</span>
-                    <span className="font-semibold text-stone-800">{activeContent.support.bankName}</span>
-                  </div>
-                  <div className="p-3.5 bg-[#FAF7F2] rounded-xl border border-[#E7E0D5]">
-                    <span className="text-stone-500 block text-[10px] uppercase font-bold">{t.support.explanation}</span>
-                    <span className="font-semibold text-stone-800">{activeContent.support.explanation}</span>
-                  </div>
-                </div>
-
-                {/* PayPal donation block */}
-                <div className="p-4 bg-[#F5F0E6] rounded-xl border border-[#E2D7C8] space-y-2">
-                  <span className="text-stone-600 block text-[11px] font-serif italic">
-                    {activeContent.support.paypalNote || 'If this website has been a blessing to You, You may donate here:'}
+              <div className="p-4 bg-[#FAF7F2] rounded-2xl border border-[#E7E0D5] flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <span className="text-stone-500 block text-[11px] uppercase tracking-wider font-bold">
+                    {lang === 'en' ? 'Bank Account (IBAN)' : 'Pangakonto (IBAN)'} • {activeContent.support.bankName || 'LHV Pank'}
                   </span>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="font-mono font-bold text-[#14532D] text-xs sm:text-sm truncate">
-                      {activeContent.support.paypalEmail || 'Kairioja777@proton.me'}
-                    </span>
-                    <button
-                      onClick={handleCopyPaypal}
-                      className="px-3 py-1.5 rounded-lg bg-white border border-[#E2D7C8] text-[#14532D] hover:bg-[#14532D] hover:text-white font-bold text-xs cursor-pointer shrink-0 transition-colors"
-                    >
-                      {copiedPaypal ? (lang === 'en' ? 'Copied!' : 'Kopeeritud!') : (lang === 'en' ? 'Copy' : 'Kopeeri')}
-                    </button>
-                  </div>
+                  <span className="font-mono font-bold text-[#14532D] text-base sm:text-lg block tracking-wide truncate">
+                    {activeContent.support.iban || 'EE537700771000431636'}
+                  </span>
                 </div>
-
-                {/* Book sales note */}
-                <div className="p-3 bg-white rounded-xl border border-stone-200 text-[11px] text-stone-500 font-serif leading-relaxed">
-                  ℹ️ {activeContent.support.bookSalesNote || 'Raamatute müük ja trükiste arveldus toimub Saagu Valgus OÜ kaudu.'}
-                </div>
+                <button
+                  onClick={handleCopyIban}
+                  className="px-4 py-2 rounded-xl bg-white border border-stone-300 text-stone-800 hover:bg-[#14532D] hover:text-white font-bold text-xs cursor-pointer transition-colors shrink-0 shadow-2xs"
+                >
+                  {copiedIban ? (lang === 'en' ? 'Copied!' : 'Kopeeritud!') : (lang === 'en' ? 'Copy' : 'Kopeeri')}
+                </button>
               </div>
             </div>
 
-            {/* Support goals */}
-            <div className="bg-white p-8 rounded-3xl border border-[#E7E0D5] shadow-2xs space-y-4 text-left">
-              <h4 className="font-serif font-bold text-lg text-[#1C1917]">
-                {lang === 'en' ? 'Where Your Support Goes:' : 'Kuhu sinu toetus läheb?'}
-              </h4>
-
-              <div className="space-y-3">
-                {activeContent.support.supportGoals.map((goal, i) => (
-                  <div key={i} className="flex items-start gap-3 p-3.5 rounded-xl bg-[#FAF7F2] border border-[#E7E0D5] text-xs sm:text-sm font-serif text-stone-800">
-                    <span className="font-mono font-bold text-[#14532D] text-xs mt-0.5">0{i + 1}.</span>
-                    <span>{goal}</span>
-                  </div>
-                ))}
+            {/* PayPal donation block */}
+            <div className="p-5 bg-[#FAF7F2] rounded-2xl border border-[#E2D7C8] space-y-2 font-sans">
+              <span className="text-stone-700 block text-xs sm:text-sm font-semibold">
+                {activeContent.support.paypalNote || (lang === 'en' ? 'or by making a donation to the PayPal account:' : 'või tehes annetuse PayPal kontole:')}
+              </span>
+              <div className="flex items-center justify-between gap-3 pt-1">
+                <span className="font-mono font-bold text-[#14532D] text-sm sm:text-base truncate">
+                  {activeContent.support.paypalEmail || 'kairioja777@proton.me'}
+                </span>
+                <button
+                  onClick={handleCopyPaypal}
+                  className="px-4 py-2 rounded-xl bg-white border border-[#E2D7C8] text-[#14532D] hover:bg-[#14532D] hover:text-white font-bold text-xs cursor-pointer shrink-0 transition-colors shadow-2xs"
+                >
+                  {copiedPaypal ? (lang === 'en' ? 'Copied!' : 'Kopeeritud!') : (lang === 'en' ? 'Copy' : 'Kopeeri')}
+                </button>
               </div>
+            </div>
+
+            {/* Book sales note */}
+            <div className="pt-1 text-center text-xs text-stone-500 font-serif">
+              ℹ️ {activeContent.support.bookSalesNote || (lang === 'en' ? 'Book sales and publications distribution are invoiced through Saagu Valgus OÜ.' : 'Raamatute müük ja trükiste tellimine toimub Saagu Valgus OÜ kaudu.')}
             </div>
 
           </div>

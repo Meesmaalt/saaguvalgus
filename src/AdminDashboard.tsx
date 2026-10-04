@@ -183,7 +183,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           title: newPubData.title,
           author: newPubData.author || 'Kirjastus Saagu Valgus',
           category: newPubData.category || 'Trükis',
-          description: newPubData.description || 'Kirjastuse ametlik väljaanne',
+          description: newPubData.description || 'Trükis / infomaterjal',
           pages: Number(newPubData.pages) || 2,
           fileName,
           fileSize,
@@ -192,7 +192,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             {
               pageNumber: 1,
               heading: newPubData.title,
-              text: newPubData.description || 'Kirjastuse ametlik infotrükis.'
+              text: newPubData.description || 'Infotrükis.'
             }
           ]
         });
@@ -203,7 +203,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           title: newPubData.title,
           author: newPubData.author || 'Kirjastus Saagu Valgus',
           category: newPubData.category || 'Trükis',
-          description: newPubData.description || 'Kirjastuse ametlik väljaanne',
+          description: newPubData.description || 'Trükis / infomaterjal',
           pages: Number(newPubData.pages) || 2,
           uploadedAt: new Date().toISOString().split('T')[0],
           fileName: fileName || `${newPubData.title.replace(/\s+/g, '_')}.pdf`,
@@ -214,7 +214,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             {
               pageNumber: 1,
               heading: newPubData.title,
-              text: newPubData.description || 'Kirjastuse ametlik infotrükis.'
+              text: newPubData.description || 'Infotrükis.'
             }
           ]
         };
@@ -878,7 +878,7 @@ ${p.text}
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs sm:text-sm">
                         {/* Book & Quantity */}
                         <div className="space-y-1">
-                          <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Tellitud väljaanne</span>
+                          <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Tellitud raamat</span>
                           <div className="font-bold text-[#144225] text-base">
                             «{ord.bookTitle}»
                           </div>
@@ -1285,7 +1285,7 @@ ${p.text}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Kirjastuse ametlik e-post (Globaalne)</label>
+                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Kirjastuse e-post (info@saaguvalgus.eu)</label>
                   <input
                     type="email"
                     value={content.contactEmail}
@@ -1718,70 +1718,31 @@ ${p.text}
             <div className="space-y-5 pt-4 border-t border-[#E2D7C8] bg-[#FAF7F2] p-6 rounded-2xl border border-[#E2D7C8]">
               <h4 className="font-sans font-bold text-sm text-[#14532D] uppercase tracking-wider flex items-center gap-2">
                 <Heart className="w-4 h-4 text-[#14532D]" />
-                <span>5. Toetuse pangaandmed & Tekstid {editLang === 'en' ? '(Inglise keeles)' : '(Eesti keeles)'}</span>
+                <span>5. Toetuse andmed & Tekstid {editLang === 'en' ? '(Inglise keeles)' : '(Eesti keeles)'}</span>
               </h4>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Toetuse sektsiooni pealkiri</label>
-                  <input
-                    type="text"
-                    value={editLang === 'en' ? (content.en?.support?.title || '') : content.support.title}
-                    onChange={(e) => {
-                      if (editLang === 'en') {
-                        const updatedEn = { ...(content.en || {}) };
-                        updatedEn.support = { ...(updatedEn.support || {}), title: e.target.value } as any;
-                        saveContent({ ...content, en: updatedEn });
-                      } else {
-                        saveContent({ ...content, support: { ...content.support, title: e.target.value } });
-                      }
-                    }}
-                    placeholder={editLang === 'en' ? 'E.g. Support our Ministry!' : ''}
-                    className="w-full px-4 py-3 rounded-xl border border-stone-300 text-base sm:text-lg font-serif font-bold text-stone-900 bg-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Alapealkiri / Teema</label>
-                  <input
-                    type="text"
-                    value={editLang === 'en' ? (content.en?.support?.subtitle || '') : content.support.subtitle}
-                    onChange={(e) => {
-                      if (editLang === 'en') {
-                        const updatedEn = { ...(content.en || {}) };
-                        updatedEn.support = { ...(updatedEn.support || {}), subtitle: e.target.value } as any;
-                        saveContent({ ...content, en: updatedEn });
-                      } else {
-                        saveContent({ ...content, support: { ...content.support, subtitle: e.target.value } });
-                      }
-                    }}
-                    placeholder={editLang === 'en' ? 'E.g. Help us spread the light' : ''}
-                    className="w-full px-4 py-3 rounded-xl border border-stone-300 text-sm sm:text-base font-bold text-stone-900 bg-white"
-                  />
-                </div>
-              </div>
-
               <div>
-                <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Toetuse kirjelduse tekst</label>
-                <textarea
-                  rows={4}
-                  value={editLang === 'en' ? (content.en?.support?.description || '') : content.support.description}
+                <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Toetuse sektsiooni pealkiri</label>
+                <input
+                  type="text"
+                  value={editLang === 'en' ? (content.en?.support?.title || '') : content.support.title}
                   onChange={(e) => {
                     if (editLang === 'en') {
                       const updatedEn = { ...(content.en || {}) };
-                      updatedEn.support = { ...(updatedEn.support || {}), description: e.target.value } as any;
+                      updatedEn.support = { ...(updatedEn.support || {}), title: e.target.value } as any;
                       saveContent({ ...content, en: updatedEn });
                     } else {
-                      saveContent({ ...content, support: { ...content.support, description: e.target.value } });
+                      saveContent({ ...content, support: { ...content.support, title: e.target.value } });
                     }
                   }}
-                  placeholder={editLang === 'en' ? 'E.g. Your support helps us print warnings and books...' : ''}
-                  className="w-full p-4 rounded-xl border border-stone-300 text-base sm:text-lg font-serif leading-relaxed text-stone-900 bg-white"
+                  placeholder={editLang === 'en' ? 'If this website has been a blessing to You, You may support its work here:' : 'Kui see lehekülg on olnud Sulle õnnistuseks, saad selle toimimist toetada nii:'}
+                  className="w-full px-4 py-3 rounded-xl border border-stone-300 text-base sm:text-lg font-serif font-bold text-stone-900 bg-white"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Saaja nimi (OÜ / Kirjastus) (Globaalne)</label>
+                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">Saaja nimi (Kairi Oja) (Globaalne)</label>
                   <input
                     type="text"
                     value={content.support.recipientName}
@@ -1828,17 +1789,25 @@ ${p.text}
                     type="text"
                     value={content.support.paypalEmail || ''}
                     onChange={(e) => saveContent({ ...content, support: { ...content.support, paypalEmail: e.target.value } })}
-                    placeholder="Kairioja777@proton.me"
+                    placeholder="kairioja777@proton.me"
                     className="w-full px-4 py-3 rounded-xl border border-stone-300 text-sm font-mono font-bold text-[#14532D] bg-white"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">PayPal annetuse märge (Globaalne)</label>
+                  <label className="block text-xs font-bold text-stone-800 font-sans mb-1.5">PayPal annetuse märge</label>
                   <input
                     type="text"
-                    value={content.support.paypalNote || ''}
-                    onChange={(e) => saveContent({ ...content, support: { ...content.support, paypalNote: e.target.value } })}
-                    placeholder="If this website has been a blessing to You, You may donate here:"
+                    value={editLang === 'en' ? (content.en?.support?.paypalNote || '') : (content.support.paypalNote || '')}
+                    onChange={(e) => {
+                      if (editLang === 'en') {
+                        const updatedEn = { ...(content.en || {}) };
+                        updatedEn.support = { ...(updatedEn.support || {}), paypalNote: e.target.value } as any;
+                        saveContent({ ...content, en: updatedEn });
+                      } else {
+                        saveContent({ ...content, support: { ...content.support, paypalNote: e.target.value } });
+                      }
+                    }}
+                    placeholder={editLang === 'en' ? 'or by making a donation to the PayPal account:' : 'või tehes annetuse PayPal kontole:'}
                     className="w-full px-4 py-3 rounded-xl border border-stone-300 text-sm font-serif italic text-stone-800 bg-white"
                   />
                 </div>
@@ -1904,7 +1873,7 @@ ${p.text}
             {(() => {
               const testimony = (content.testimonials && content.testimonials[0]) || {
                 id: 'kairi-oja-tunnistus',
-                title: 'Kairi tunnistus – Vabanemine 5 aastat kestnud karmist vaimsest sidumisest',
+                title: 'Kairi tunnistus – Vabanemine viis aastat kestnud karmist vaimsest sidumisest',
                 person: 'Kairi Oja',
                 type: 'vabanemine',
                 date: '08.03.2025',
@@ -2099,7 +2068,7 @@ ${p.text}
                             updateTestimony({ title: e.target.value });
                           }
                         }}
-                        placeholder="Kairi tunnistus – Vabanemine 5 aastat kestnud karmist vaimsest sidumisest"
+                        placeholder="Kairi tunnistus – Vabanemine viis aastat kestnud karmist vaimsest sidumisest"
                         className="w-full px-4 py-3 rounded-xl border border-stone-300 text-base sm:text-lg font-serif font-bold text-stone-900 bg-white"
                       />
                     </div>
@@ -2249,12 +2218,12 @@ ${p.text}
                     <Mail className="w-5 h-5" />
                   </div>
                   <div>
-                    <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Ametlik kontakt</span>
+                    <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider block">Kirjastuse kontakt</span>
                     <h4 className="font-bold text-stone-900 text-sm">info@saaguvalgus.eu</h4>
                   </div>
                 </div>
                 <div className="pt-2 border-t border-stone-100 text-xs text-stone-600 space-y-1">
-                  <p>• Kirjastuse ametlik e-post</p>
+                  <p>• Kirjastuse e-post</p>
                   <p>• Kodulehe päringute sihtkoht</p>
                   <p>• Broneeringute kinnituskirjad</p>
                 </div>

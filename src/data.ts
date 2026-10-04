@@ -246,7 +246,7 @@ Te ei või juua Issanda karikast ja kurjade vaimude karikast, te ei või osa saa
   testimonials: [
     {
       id: 'kairi-oja-tunnistus',
-      title: 'Kairi tunnistus – Vabanemine 5 aastat kestnud karmist vaimsest sidumisest',
+      title: 'Kairi tunnistus – Vabanemine viis aastat kestnud karmist vaimsest sidumisest',
       person: 'Kairi Oja',
       type: 'vabanemine',
       date: '08.03.2025',
@@ -440,25 +440,21 @@ Kairi`
     }
   ],
 
-  // Support / Tule toetajaks
+  // Support / Toetus
   support: {
-    title: 'Tule toetajaks!',
-    subtitle: 'Aita levitada Valgust üle kogu Eestimaa',
-    description: 'Kirjastus Saagu Valgus annab välja evangeelseid materjale ja elumuutvaid tunnistusi. Sinu toetus aitab trükkida uusi infomaterjale, postitada kirjandust ning viia tõe sõnumit nendeni, kes seda kõige enam vajavad.',
+    title: 'Kui see lehekülg on olnud Sulle õnnistuseks, saad selle toimimist toetada nii:',
+    subtitle: 'Toetus',
+    description: '',
     recipientName: 'Kairi Oja',
     iban: 'EE537700771000431636',
     bankName: 'LHV Pank',
     swift: 'LHVBEE22',
-    reference: 'Annetus / Vaimuliku töö toetus',
+    reference: 'Toetus / Annetus',
     explanation: 'Lehe ja vaimuliku töö toetus',
-    paypalEmail: 'Kairioja777@proton.me',
-    paypalNote: 'If this website has been a blessing to You, You can donate here:',
+    paypalEmail: 'kairioja777@proton.me',
+    paypalNote: 'või tehes annetuse PayPal kontole:',
     bookSalesNote: 'Raamatute müük ja trükiste tellimine toimub Saagu Valgus OÜ kaudu.',
-    supportGoals: [
-      'Evangeelsete materjalide ja voldikute trükkimine ning levitamine üle Eesti',
-      'Uute vaimulike raamatute ja tunnistuste väljaandmine',
-      'Vaimuliku toe ja infomaterjalide kättesaadavaks tegemine otsijatele'
-    ]
+    supportGoals: []
   },
 
   salvationPrayerTitle: 'Päästepalve',

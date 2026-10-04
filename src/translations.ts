@@ -234,7 +234,7 @@ The good news is that we are still in the season of grace! You can return to you
   testimonials: [
     {
       id: 'kairi-oja-tunnistus',
-      title: 'Kairi\'s Testimony – Deliverance from 5 Years of Heavy Spiritual Bondage',
+      title: 'Kairi\'s Testimony – Deliverance from five years of severe spiritual bondage',
       person: 'Kairi Oja',
       type: 'vabanemine',
       date: '08.03.2025',
@@ -340,23 +340,19 @@ God loves you and offers salvation through His Son Jesus Christ!
   ],
 
   support: {
-    title: 'Support the Ministry!',
-    subtitle: 'Help spread the Light across the land',
-    description: 'Let There Be Light Publishing produces evangelistic tracts and life-changing literature. Your support helps print new materials, mail literature, and bring truth to those in urgent need.',
+    title: 'If this website has been a blessing to You, You may support its work here:',
+    subtitle: 'Support',
+    description: '',
     recipientName: 'Kairi Oja',
     iban: 'EE537700771000431636',
     bankName: 'LHV Bank',
     swift: 'LHVBEE22',
-    reference: 'Ministry donation',
+    reference: 'Support / Donation',
     explanation: 'Ministry and website support',
-    paypalEmail: 'Kairioja777@proton.me',
-    paypalNote: 'If this website has been a blessing to You, You can donate here:',
-    bookSalesNote: 'Book purchases and publications distribution are invoiced through Saagu Valgus OÜ.',
-    supportGoals: [
-      'Printing and distributing evangelistic tracts across the country',
-      'Publishing new Christian books and true testimonies',
-      'Providing spiritual resources freely to seekers and communities'
-    ]
+    paypalEmail: 'kairioja777@proton.me',
+    paypalNote: 'or by making a donation to the PayPal account:',
+    bookSalesNote: 'Book sales and publications distribution are invoiced through Saagu Valgus OÜ.',
+    supportGoals: []
   },
 
   salvationPrayerTitle: 'Prayer of Salvation',
@@ -506,7 +502,7 @@ export const UI_TRANSLATIONS = {
     orderModal: {
       titleOrder: 'Telli raamat',
       titlePreOrder: 'Ettetelli raamat',
-      bookSelected: 'Valitud väljaanne:',
+      bookSelected: 'Valitud raamat:',
       quantity: 'Kogus (tk):',
       name: 'Sinu täisnimi *',
       email: 'E-posti aadress *',
@@ -526,7 +522,7 @@ export const UI_TRANSLATIONS = {
     publicationsModal: {
       title: 'Trükised',
       badge: 'PDF & Lugemine',
-      subtitle: 'Kirjastuse Saagu Valgus voldikud, infomaterjalid ja trükised',
+      subtitle: 'Nõiduse, new age ehk uusvaimsuse ja jooga eest hoiatava trükise PDF failid',
       searchPlaceholder: 'Otsi trükist...',
       allCategories: 'Kõik',
       page: 'Lehekülg',
@@ -673,7 +669,7 @@ export const UI_TRANSLATIONS = {
     publicationsModal: {
       title: 'Publications',
       badge: 'PDF & Reading',
-      subtitle: 'Let There Be Light Publishing tracts, informational guides, and books',
+      subtitle: 'Warning tracts against witchcraft, New Age, and yoga in PDF format',
       searchPlaceholder: 'Search publication...',
       allCategories: 'All',
       page: 'Page',

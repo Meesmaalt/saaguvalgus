@@ -149,7 +149,7 @@ export const api = {
       title: data.title.trim(),
       author: data.author || 'Kirjastus Saagu Valgus',
       category: data.category || 'Trükis',
-      description: data.description || 'Kirjastuse ametlik väljaanne',
+      description: data.description || 'Trükis / infomaterjal',
       pages: Number(data.pages) || 2,
       uploadedAt: new Date().toISOString().split('T')[0],
       fileName: data.fileName || `${data.title.replace(/\s+/g, '_')}.pdf`,
@@ -158,7 +158,7 @@ export const api = {
       downloadCount: 0,
       contentPages: data.contentPages && data.contentPages.length > 0
         ? data.contentPages
-        : [{ pageNumber: 1, heading: data.title.trim(), text: data.description || 'Kirjastuse ametlik infotrükis.' }]
+        : [{ pageNumber: 1, heading: data.title.trim(), text: data.description || 'Infotrükis.' }]
     };
 
     try {

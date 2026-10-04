@@ -194,7 +194,7 @@ export const PublicationsModal: React.FC<PublicationsModalProps> = ({
             <div class="header">
               <div>
                 <div class="brand">${lang === 'en' ? 'Let There Be Light Publishing' : 'Kirjastus Saagu Valgus'}</div>
-                <div class="subbrand">${lang === 'en' ? 'Official literature & evangelistic resources' : 'Ametlik infotrükis ja evangeelne materjal'}</div>
+                <div class="subbrand">${lang === 'en' ? 'Christian literature & evangelistic resources' : 'Vaimulik kirjandus ja evangeelne materjal'}</div>
               </div>
               <div class="date">${new Date().toLocaleDateString(lang === 'en' ? 'en-US' : 'et-EE')}</div>
             </div>
@@ -244,7 +244,7 @@ export const PublicationsModal: React.FC<PublicationsModalProps> = ({
     }
 
     const content = `======================================================
-${lang === 'en' ? 'LET THERE BE LIGHT PUBLISHING - OFFICIAL PUBLICATION' : 'KIRJASTUS SAAGU VALGUS - AMETLIK TRÜKIS'}
+${lang === 'en' ? 'LET THERE BE LIGHT PUBLISHING' : 'KIRJASTUS SAAGU VALGUS'}
 ======================================================
 ${lang === 'en' ? 'Title' : 'Pealkiri'}: ${currentPub?.title}
 ${lang === 'en' ? 'Category' : 'Kategooria'}: ${currentPub?.category}
@@ -445,7 +445,7 @@ ${lang === 'en' ? 'Email' : 'E-post'}: info@saaguvalgus.eu
 
               {/* Sidebar Footer */}
               <div className="p-2.5 bg-stone-50 border-t border-stone-200 text-center text-[11px] text-stone-500">
-                {lang === 'en' ? 'Let There Be Light Publishing' : 'Kirjastus Saagu Valgus väljaanded'}
+                {lang === 'en' ? 'Let There Be Light' : 'Kirjastus Saagu Valgus'}
               </div>
             </div>
           )}
