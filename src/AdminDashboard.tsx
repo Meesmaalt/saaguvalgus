@@ -1732,7 +1732,7 @@ ${p.text}
                 type: 'vabanemine',
                 date: '08.03.2025',
                 image: '',
-                facebookUrl: 'https://www.facebook.com/saaguvalgus',
+                facebookUrl: 'https://www.facebook.com/share/1DUothVLCF/',
                 facebookPageTitle: 'Saagu Valgus - kas Jumal on reaalne?',
                 summary: '',
                 fullStory: ''
@@ -1886,7 +1886,7 @@ ${p.text}
                         type="text"
                         value={testimony.facebookUrl || ''}
                         onChange={(e) => updateTestimony({ facebookUrl: e.target.value })}
-                        placeholder="https://www.facebook.com/saaguvalgus"
+                        placeholder="https://www.facebook.com/share/1DUothVLCF/"
                         className="w-full px-4 py-2.5 rounded-xl border border-stone-300 text-xs font-mono text-[#14532D] bg-white"
                       />
                     </div>

@@ -35,7 +35,7 @@ import saaguValgusCover from './assets/images/book_saagu_valgus_1790963525251.jp
 import heroPublisherImage from './assets/images/publisher_hero_image_1790963536689.jpg';
 import kairiOjaPhoto from './assets/images/kairi_oja_portrait_1791059785550.jpg';
 
-const STORAGE_KEY = 'saaguvalgus_site_content_v9';
+const STORAGE_KEY = 'saaguvalgus_site_content_v10';
 const ADMIN_SESSION_KEY = 'saaguvalgus_admin_session_v1';
 const LANG_STORAGE_KEY = 'saaguvalgus_lang';
 

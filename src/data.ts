@@ -251,7 +251,7 @@ Te ei või juua Issanda karikast ja kurjade vaimude karikast, te ei või osa saa
       type: 'vabanemine',
       date: '08.03.2025',
       image: '/src/assets/images/kairi_oja_portrait_1791059785550.jpg',
-      facebookUrl: 'https://www.facebook.com/saaguvalgus',
+      facebookUrl: 'https://www.facebook.com/share/1DUothVLCF/',
       facebookPageTitle: 'Saagu Valgus - kas Jumal on reaalne?',
       summary: 'Elame vaimses maailmas, mis domineerib selle reaalsuse üle, mida meie siin maailmas reaalsuseks oleme harjunud pidama. Jeesus Kristus tegi mind 08.03.2025 vabaks viis pikka aastat kestnud karmist vaimsest sidumisest, piinast, vangistusest ja pimedusest.',
       fullStory: `Elame vaimses maailmas, mis domineerib selle reaalsuse üle, mida meie siin maailmas reaalsuseks oleme harjunud pidama.
