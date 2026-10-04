@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { PublicationItem } from './types';
 import { UI_TRANSLATIONS, Language } from './translations';
+import { analytics } from './analytics';
 
 interface PublicationsModalProps {
   isOpen: boolean;
@@ -228,6 +229,10 @@ export const PublicationsModal: React.FC<PublicationsModalProps> = ({
   };
 
   const handleDownload = () => {
+    if (currentPub) {
+      analytics.trackPublicationDownload(currentPub.title, currentPub.fileName);
+    }
+
     if (currentPub?.pdfUrl) {
       const a = document.createElement('a');
       a.href = currentPub.pdfUrl;

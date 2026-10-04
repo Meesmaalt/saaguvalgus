@@ -28,6 +28,7 @@ import { LegalModal, LegalTab } from './LegalModal';
 import { BrandLogo } from './BrandLogo';
 import { api } from './api';
 import { SITE_CONTENT_EN, UI_TRANSLATIONS, Language } from './translations';
+import { initGA, analytics } from './analytics';
 
 import lapsJaJumalCover from './assets/images/book_laps_ja_jumal_1790963503364.jpg';
 import saatanaVangCover from './assets/images/book_saatana_vang_1790963515414.jpg';
@@ -374,17 +375,22 @@ export default function App() {
 
   const handleSetLanguage = (newLang: Language) => {
     setLang(newLang);
+    analytics.trackLanguageSwitch(newLang);
     try {
       localStorage.setItem(LANG_STORAGE_KEY, newLang);
     } catch {}
   };
 
   useEffect(() => {
+    initGA(activeContent.googleAnalyticsId);
+  }, [activeContent.googleAnalyticsId]);
+
+  useEffect(() => {
     document.documentElement.lang = lang;
     document.title = lang === 'en'
       ? 'Let There Be Light Publishing | Christian Literature & Evangelistic Resources'
-      : 'Kirjastus Saagu Valgus | Vaimulik kirjandus ja evangeelsed materjalid';
-  }, [lang]);
+      : (activeContent.metaTitle || 'Kirjastus Saagu Valgus | Vaimulik kirjandus ja evangeelsed materjalid');
+  }, [lang, activeContent.metaTitle]);
 
   useEffect(() => {
     api.fetchContent().then(setContent).catch(console.error);
@@ -495,6 +501,7 @@ export default function App() {
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.message) return;
+    analytics.trackContactMessage();
     try {
       const created = await api.createMessage({
         name: formData.name,
@@ -583,30 +590,35 @@ export default function App() {
   const handleCopyEmail = () => {
     navigator.clipboard.writeText(activeContent.contactEmail);
     setCopiedEmail(true);
+    analytics.trackBankDetailsCopy('email');
     setTimeout(() => setCopiedEmail(false), 2000);
   };
 
   const handleCopyIban = () => {
     navigator.clipboard.writeText(activeContent.support.iban);
     setCopiedIban(true);
+    analytics.trackBankDetailsCopy('iban');
     setTimeout(() => setCopiedIban(false), 2000);
   };
 
   const handleCopyPaypal = () => {
     navigator.clipboard.writeText(activeContent.support.paypalEmail || 'Kairioja777@proton.me');
     setCopiedPaypal(true);
+    analytics.trackBankDetailsCopy('paypal');
     setTimeout(() => setCopiedPaypal(false), 2000);
   };
 
   const handleCopyPrayer = () => {
     navigator.clipboard.writeText(activeContent.salvationPrayerText);
     setCopiedPrayer(true);
+    analytics.trackPrayerCopy('salvation');
     setTimeout(() => setCopiedPrayer(false), 2000);
   };
 
   const handleCopyLordPrayer = () => {
     navigator.clipboard.writeText(activeContent.lordPrayer.text);
     setCopiedLordPrayer(true);
+    analytics.trackPrayerCopy('lords_prayer');
     setTimeout(() => setCopiedLordPrayer(false), 2000);
   };
 

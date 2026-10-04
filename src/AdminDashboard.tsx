@@ -36,7 +36,9 @@ import {
   Eye,
   EyeOff,
   Shield,
-  UserCheck
+  UserCheck,
+  BarChart3,
+  Globe
 } from 'lucide-react';
 import { SiteContent, BookItem, OrderItem, ContactMessage, QuestionItem, PublicationItem } from './types';
 import { SITE_CONTENT_EN } from './translations';
@@ -2205,6 +2207,61 @@ ${p.text}
                 </div>
 
               </form>
+            </div>
+
+            {/* SEO & Google Analytics 4 Configuration */}
+            <div className="bg-white rounded-2xl border border-stone-200 p-6 shadow-xs max-w-2xl space-y-5 text-left">
+              <div className="border-b border-stone-200 pb-4">
+                <div className="flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-[#1a6838]" />
+                  <h3 className="font-bold text-lg text-stone-900 font-display">SEO & Google Analytics 4 seadistus</h3>
+                </div>
+                <p className="text-xs text-stone-500 mt-1">
+                  Sisesta oma Google Analytics 4 mõõtmis-ID (Measurement ID) külastatavuse, tellimuste ja allalaadimiste jälgimiseks.
+                </p>
+              </div>
+
+              <div className="space-y-4 text-xs sm:text-sm">
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">
+                    Google Analytics 4 Mõõtmis-ID (Measurement ID)
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="nt G-XXXXXXXXXX"
+                      value={content.googleAnalyticsId || ''}
+                      onChange={(e) => saveContent({ ...content, googleAnalyticsId: e.target.value.trim() })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 focus:ring-2 focus:ring-[#1a6838] focus:outline-none font-mono text-xs text-stone-900 bg-stone-50/50"
+                    />
+                  </div>
+                  <p className="text-[11px] text-stone-500 mt-1">
+                    {content.googleAnalyticsId ? (
+                      <span className="text-emerald-700 font-bold flex items-center gap-1 mt-1">
+                        <Check className="w-3.5 h-3.5" />
+                        Google Analytics on aktiivne ({content.googleAnalyticsId})
+                      </span>
+                    ) : (
+                      <span>Sisesta oma Google Analytics 4 ID (kujul G-XXXXXXXXXX). Kui väli on tühi, on analüütika välja lülitatud.</span>
+                    )}
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 space-y-2 text-xs text-stone-600">
+                  <div className="font-bold text-stone-800 flex items-center gap-1.5">
+                    <Globe className="w-4 h-4 text-[#1a6838]" />
+                    <span>Seadistatud automaatsed sündmused (Events):</span>
+                  </div>
+                  <ul className="list-disc pl-5 space-y-1 text-[11px] text-stone-600">
+                    <li><strong>Lehevaatamised (page_view)</strong> – esileht, sektsioonid, trükiste aken</li>
+                    <li><strong>Raamatute tellimused (purchase_intent)</strong> – raamatu pealkiri, kogus, tüüp</li>
+                    <li><strong>Trükiste lugemine & allalaadimine (file_download)</strong> – PDF failide vaatamine</li>
+                    <li><strong>Kontaktivormi päringud (generate_lead)</strong> – saadetud sõnumid</li>
+                    <li><strong>Päästepalve ja Meie Isa palve kopeerimine (copy_prayer)</strong></li>
+                    <li><strong>Keelevahetus (select_language)</strong> – ET / EN</li>
+                  </ul>
+                </div>
+              </div>
             </div>
 
           </div>

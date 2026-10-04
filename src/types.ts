@@ -142,5 +142,8 @@ export interface SiteContent {
   salvationPrayerText: string;
   salvationPrayerNextSteps: { title: string; desc: string }[];
   lordPrayer: LordPrayerInfo;
+  googleAnalyticsId?: string;
+  metaTitle?: string;
+  metaDescription?: string;
   en?: Partial<SiteContent>;
 }

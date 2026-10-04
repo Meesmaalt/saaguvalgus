@@ -490,7 +490,11 @@ Aamen.`,
     text: `Meie Isa, kes Sa oled Taevas! Pühitsetud olgu Sinu nimi, Sinu riik tulgu, Sinu tahtmine sündigu, nagu Taevas, nõnda ka maapeal.
 Meie igapäevast leiba anna meile tänapäev, ja anna meile andeks meie võlad, nagu (kui) meiegi andeks anname oma võlglastele. Ja ära saada meid kiusatusse, vaid päästa meid ära kurjast! Sest Sinu päralt on Riik ja Vägi ja Au. Igavesti. Aamen.`,
     ref: 'Piibel'
-  }
+  },
+
+  googleAnalyticsId: '',
+  metaTitle: 'Kirjastus Saagu Valgus | Valgus või pimedus?',
+  metaDescription: 'Kirjastus Saagu Valgus. Vastused elu põhiküsimustele, vaimulik tõde, elumuutvad tunnistused, vabanemine nõidusest ja new age\'ist ning vaimulikud raamatud ja trükised.'
 };
 
 export const INITIAL_PUBLICATIONS: PublicationItem[] = [];
