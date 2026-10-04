@@ -397,6 +397,8 @@ Kairi`
       ],
       isFeatured: true,
       isPreOrder: true,
+      showOnHomepage: true,
+      isVisible: true,
       preOrderNote: 'Valmimisel',
       releaseDate: 'Valmimisel'
     },
@@ -413,6 +415,8 @@ Kairi`
       ],
       isFeatured: true,
       isPreOrder: true,
+      showOnHomepage: true,
+      isVisible: true,
       preOrderNote: 'Valmimisel',
       releaseDate: 'Valmimisel'
     },
@@ -429,6 +433,8 @@ Kairi`
       ],
       isFeatured: true,
       isPreOrder: true,
+      showOnHomepage: true,
+      isVisible: true,
       preOrderNote: 'Valmimisel',
       releaseDate: 'Valmimisel'
     }
@@ -493,6 +499,7 @@ Meie igapäevast leiba anna meile tänapäev, ja anna meile andeks meie võlad, 
   },
 
   googleAnalyticsId: '',
+  maxHomepageBooks: 0,
   metaTitle: 'Kirjastus Saagu Valgus | Valgus või pimedus?',
   metaDescription: 'Kirjastus Saagu Valgus. Vastused elu põhiküsimustele, vaimulik tõde, elumuutvad tunnistused, vabanemine nõidusest ja new age\'ist ning vaimulikud raamatud ja trükised.'
 };

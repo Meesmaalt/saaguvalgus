@@ -31,6 +31,8 @@ export interface BookItem {
   isPreOrder?: boolean;
   preOrderNote?: string;
   releaseDate?: string;
+  showOnHomepage?: boolean;
+  isVisible?: boolean;
 }
 
 export interface OrderItem {
@@ -143,6 +145,7 @@ export interface SiteContent {
   salvationPrayerNextSteps: { title: string; desc: string }[];
   lordPrayer: LordPrayerInfo;
   googleAnalyticsId?: string;
+  maxHomepageBooks?: number;
   metaTitle?: string;
   metaDescription?: string;
   en?: Partial<SiteContent>;

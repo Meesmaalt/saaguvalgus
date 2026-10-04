@@ -1168,12 +1168,12 @@ export default function App() {
 
       {/* Books & Publisher Section */}
       <section id="kirjastus" className="py-16 sm:py-20 bg-[#FAF7F2] border-b border-[#E7E0D5]">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-12">
           
           {/* Publisher Story */}
           <div className="p-8 sm:p-10 rounded-3xl bg-white border border-[#E7E0D5] shadow-xs space-y-4 max-w-4xl mx-auto text-left">
             <span className="text-xs font-bold text-[#14532D] uppercase tracking-widest font-sans">
-              Kirjastuse Saagu Valgus Missioon
+              {lang === 'en' ? 'Publishing House Mission' : 'Kirjastuse Saagu Valgus Missioon'}
             </span>
             <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#1C1917]">
               {activeContent.publisherStoryTitle}
@@ -1183,64 +1183,156 @@ export default function App() {
             </p>
           </div>
 
-          {/* Books Grid */}
-          <div className="space-y-6">
-            <div className="text-center space-y-2">
-              <h3 className="text-3xl sm:text-4xl font-serif font-bold text-[#1C1917]">
-                Kirjastuse Raamatud
-              </h3>
-              <p className="text-sm font-serif text-stone-600">Vaimulik kirjandus ja teosed</p>
-            </div>
+          {/* Dynamic Books Layout based on user selection */}
+          {(() => {
+            const displayedBooks = (activeContent.books || [])
+              .filter((b) => b.showOnHomepage !== false && b.isVisible !== false)
+              .slice(0, activeContent.maxHomepageBooks && activeContent.maxHomepageBooks > 0 ? activeContent.maxHomepageBooks : undefined);
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {activeContent.books.map((book) => {
-                const coverImg = getBookCoverImage(book);
-                return (
-                  <div key={book.id} className="bg-white rounded-3xl border border-[#E7E0D5] p-6 shadow-xs flex flex-col justify-between space-y-6">
-                    
-                    <div className="space-y-4">
-                      <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-[#FAF7F2] border border-[#E2D7C8] shadow-sm relative">
-                        <img
-                          src={coverImg}
-                          alt={book.title}
-                          className="w-full h-full object-cover"
-                          referrerPolicy="no-referrer"
-                        />
-                      </div>
+            if (displayedBooks.length === 0) {
+              return null;
+            }
 
-                      <div className="space-y-1 text-left">
-                        <span className="text-xs text-stone-500 font-sans block">{book.category}</span>
-                        <h4 className="text-xl font-serif font-bold text-[#1C1917]">«{book.title}»</h4>
-                        <p className="text-xs text-stone-500 font-sans">{book.author}</p>
-                      </div>
+            return (
+              <div className="space-y-8">
+                <div className="text-center space-y-2">
+                  <h3 className="text-3xl sm:text-4xl font-serif font-bold text-[#1C1917]">
+                    {lang === 'en' ? 'Publications & Books' : 'Kirjastuse Raamatud'}
+                  </h3>
+                  <p className="text-sm font-serif text-stone-600">
+                    {lang === 'en' ? 'Christian literature and works' : 'Vaimulik kirjandus ja teosed'}
+                  </p>
+                </div>
 
-                      <p className="text-sm font-serif text-stone-700 leading-relaxed text-left">
-                        {book.description}
-                      </p>
-
-                      <div className="space-y-1 text-xs text-stone-600 font-serif text-left pt-2 border-t border-stone-100">
-                        {book.highlights.map((h, i) => (
-                          <div key={i} className="flex items-start gap-2">
-                            <span className="text-[#14532D] font-bold">•</span>
-                            <span>{h}</span>
+                {/* 1 Book Layout: Spotlight presentation */}
+                {displayedBooks.length === 1 ? (
+                  <div className="max-w-3xl mx-auto">
+                    {(() => {
+                      const book = displayedBooks[0];
+                      const coverImg = getBookCoverImage(book);
+                      return (
+                        <div className="bg-white rounded-3xl border border-[#E7E0D5] p-6 sm:p-8 shadow-xs flex flex-col md:flex-row items-center gap-8 text-left">
+                          <div className="w-full md:w-5/12 aspect-[3/4] max-w-xs rounded-2xl overflow-hidden bg-[#FAF7F2] border border-[#E2D7C8] shadow-sm shrink-0">
+                            <img
+                              src={coverImg}
+                              alt={book.title}
+                              className="w-full h-full object-cover"
+                              referrerPolicy="no-referrer"
+                            />
                           </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => setIsPublicationsOpen(true)}
-                      className="w-full py-3 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-semibold text-sm transition-colors cursor-pointer shadow-2xs flex items-center justify-center gap-2"
-                    >
-                      <FileText className="w-4 h-4 text-amber-300" />
-                      <span>{lang === 'en' ? 'View Literature (PDF)' : 'Loe trükist (PDF)'}</span>
-                    </button>
-
+                          <div className="w-full md:w-7/12 space-y-4 flex flex-col justify-between">
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs font-bold text-[#14532D] uppercase tracking-wider bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200 font-sans">
+                                  {book.category}
+                                </span>
+                                {book.isPreOrder && (
+                                  <span className="text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200 font-sans">
+                                    {book.preOrderNote || (lang === 'en' ? 'In preparation' : 'Valmimisel')}
+                                  </span>
+                                )}
+                              </div>
+                              <h4 className="text-2xl sm:text-3xl font-serif font-bold text-[#1C1917]">
+                                «{book.title}»
+                              </h4>
+                              <p className="text-xs text-stone-500 font-sans">{book.author}</p>
+                              <p className="text-base font-serif text-stone-700 leading-relaxed pt-2">
+                                {book.description}
+                              </p>
+                              {book.highlights && book.highlights.length > 0 && (
+                                <div className="space-y-1.5 text-xs text-stone-600 font-serif pt-3 border-t border-stone-100">
+                                  {book.highlights.map((h, i) => (
+                                    <div key={i} className="flex items-start gap-2">
+                                      <span className="text-[#14532D] font-bold">•</span>
+                                      <span>{h}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <div className="pt-3">
+                              <button
+                                onClick={() => setIsPublicationsOpen(true)}
+                                className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-semibold text-sm transition-colors cursor-pointer shadow-2xs flex items-center justify-center gap-2"
+                              >
+                                <FileText className="w-4 h-4 text-amber-300" />
+                                <span>{lang === 'en' ? 'View Literature (PDF)' : 'Loe trükist (PDF)'}</span>
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
-                );
-              })}
-            </div>
-          </div>
+                ) : (
+                  /* 2, 3, or 4+ Books Layout: Responsive balanced Grid */
+                  <div className={`grid gap-8 ${
+                    displayedBooks.length === 2 
+                      ? 'grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto' 
+                      : displayedBooks.length === 3 
+                        ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 max-w-6xl mx-auto' 
+                        : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-w-7xl mx-auto'
+                  }`}>
+                    {displayedBooks.map((book) => {
+                      const coverImg = getBookCoverImage(book);
+                      return (
+                        <div key={book.id} className="bg-white rounded-3xl border border-[#E7E0D5] p-6 shadow-xs flex flex-col justify-between space-y-6 text-left">
+                          
+                          <div className="space-y-4">
+                            <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-[#FAF7F2] border border-[#E2D7C8] shadow-sm relative">
+                              <img
+                                src={coverImg}
+                                alt={book.title}
+                                className="w-full h-full object-cover"
+                                referrerPolicy="no-referrer"
+                              />
+                            </div>
+
+                            <div className="space-y-1 text-left">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs text-stone-500 font-sans block">{book.category}</span>
+                                {book.isPreOrder && (
+                                  <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-sans">
+                                    {book.preOrderNote || (lang === 'en' ? 'In prep' : 'Valmimisel')}
+                                  </span>
+                                )}
+                              </div>
+                              <h4 className="text-xl font-serif font-bold text-[#1C1917]">«{book.title}»</h4>
+                              <p className="text-xs text-stone-500 font-sans">{book.author}</p>
+                            </div>
+
+                            <p className="text-sm font-serif text-stone-700 leading-relaxed text-left">
+                              {book.description}
+                            </p>
+
+                            {book.highlights && book.highlights.length > 0 && (
+                              <div className="space-y-1 text-xs text-stone-600 font-serif text-left pt-2 border-t border-stone-100">
+                                {book.highlights.map((h, i) => (
+                                  <div key={i} className="flex items-start gap-2">
+                                    <span className="text-[#14532D] font-bold">•</span>
+                                    <span>{h}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          <button
+                            onClick={() => setIsPublicationsOpen(true)}
+                            className="w-full py-3 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-semibold text-sm transition-colors cursor-pointer shadow-2xs flex items-center justify-center gap-2"
+                          >
+                            <FileText className="w-4 h-4 text-amber-300" />
+                            <span>{lang === 'en' ? 'View Literature (PDF)' : 'Loe trükist (PDF)'}</span>
+                          </button>
+
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* PDF Viewer Banner */}
           <div className="p-8 rounded-3xl bg-white border border-[#E7E0D5] shadow-xs flex flex-col md:flex-row items-center justify-between gap-6">

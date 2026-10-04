@@ -1401,22 +1401,139 @@ ${p.text}
               ))}
             </div>
 
-            {/* 3. Book Covers & Media Image Editor */}
+            {/* 3. Book Covers & Homepage Display Management */}
             <div className="space-y-6 pt-4 border-t border-[#E2D7C8]">
-              <h4 className="font-sans font-bold text-sm text-[#14532D] uppercase tracking-wider flex items-center gap-2">
-                <Upload className="w-4 h-4 text-[#14532D]" />
-                <span>3. Raamatute Kaanepildid & Meedia Pildid</span>
-              </h4>
-              <p className="text-xs text-stone-600 font-sans">
-                Laadi siin üles raamatute kaanepilte (PNG, JPG, WebP) või sisesta pildi otselink. Muudatused uuendavad pilti koheselt esilehel.
-              </p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E2D7C8] pb-4">
+                <div>
+                  <h4 className="font-sans font-bold text-sm text-[#14532D] uppercase tracking-wider flex items-center gap-2">
+                    <BookOpen className="w-4 h-4 text-[#14532D]" />
+                    <span>3. Raamatute Haldus, Kaanepildid & Esilehel Kuvamine</span>
+                  </h4>
+                  <p className="text-xs text-stone-600 font-sans mt-1">
+                    Vali, mitu raamatut esilehel kuvatakse (asetus ja laius kohanduvad automaatselt), lülita üksikute raamatute nähtavust ning muuda pilte ja kirjeldusi.
+                  </p>
+                </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newBook: BookItem = {
+                      id: `raamat-${Date.now().toString().slice(-4)}`,
+                      title: 'Uus Raamat',
+                      author: 'Kirjastus Saagu Valgus',
+                      category: 'Vaimulik kirjandus',
+                      description: 'Sisesta raamatu lühitutvustus...',
+                      highlights: ['Põhiteema 1', 'Põhiteema 2'],
+                      isFeatured: true,
+                      isPreOrder: true,
+                      showOnHomepage: true,
+                      isVisible: true,
+                      preOrderNote: 'Valmimisel',
+                      releaseDate: 'Valmimisel'
+                    };
+                    saveContent({ ...content, books: [...content.books, newBook] });
+                  }}
+                  className="px-4 py-2.5 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white font-sans font-bold text-xs flex items-center gap-2 cursor-pointer shadow-xs shrink-0 self-start sm:self-auto"
+                >
+                  <Plus className="w-4 h-4 text-amber-300" />
+                  <span>Lisa uus raamat</span>
+                </button>
+              </div>
+
+              {/* Homepage display count selector toolbar */}
+              <div className="bg-[#FAF7F2] p-5 rounded-2xl border border-[#E2D7C8] flex flex-col md:flex-row md:items-center justify-between gap-4 text-left">
+                <div className="space-y-1">
+                  <label className="block text-xs font-bold text-[#14532D] font-sans uppercase tracking-wider">
+                    Esilehel kuvatavate raamatute arv (Küljendus & veergude laius)
+                  </label>
+                  <p className="text-xs text-stone-600 font-sans">
+                    Vastavalt valitud arvule kohandab leht automaatselt ploki laiuse (1 raamatu puhul suur fookusvaade, 2 raamatul 2 veergu, 3 raamatul 3 veergu).
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 shrink-0">
+                  <select
+                    value={content.maxHomepageBooks || 0}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      saveContent({ ...content, maxHomepageBooks: val });
+                    }}
+                    className="px-4 py-2.5 rounded-xl border border-stone-300 text-xs font-bold text-stone-900 bg-white shadow-2xs focus:ring-2 focus:ring-[#14532D]"
+                  >
+                    <option value={0}>Kõik lubatud raamatud (Automaatne veergude asetus)</option>
+                    <option value={1}>1 raamat (Suur esiletõstetud fookusvaade)</option>
+                    <option value={2}>2 raamatut (Kaheveeruline sümmeetriline laius)</option>
+                    <option value={3}>3 raamatut (Kolmeveeruline ruudustik)</option>
+                    <option value={4}>4 raamatut (Neljaveeruline paigutus)</option>
+                  </select>
+
+                  <span className="text-xs font-bold font-sans bg-emerald-100 text-[#14532D] px-3 py-2 rounded-xl border border-emerald-200">
+                    Aktiivseid: {content.books.filter(b => b.showOnHomepage !== false && b.isVisible !== false).slice(0, content.maxHomepageBooks && content.maxHomepageBooks > 0 ? content.maxHomepageBooks : undefined).length} / {content.books.length}
+                  </span>
+                </div>
+              </div>
+
+              {/* Books Grid Editor */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {content.books.map((book, bIdx) => (
-                  <div key={book.id} className="p-5 rounded-2xl bg-[#FAF7F2] border border-[#E2D7C8] space-y-4 shadow-2xs text-left">
+                  <div 
+                    key={book.id} 
+                    className={`p-5 rounded-2xl border space-y-4 shadow-2xs text-left transition-all ${
+                      book.showOnHomepage !== false && book.isVisible !== false
+                        ? 'bg-white border-[#E2D7C8]' 
+                        : 'bg-stone-100/70 border-stone-300 opacity-75'
+                    }`}
+                  >
                     <div className="flex items-center justify-between border-b border-stone-200 pb-2">
-                      <span className="font-serif font-bold text-sm text-[#14532D]">«{book.title}»</span>
-                      <span className="text-[11px] font-mono text-stone-500">ID: {book.id}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-serif font-bold text-sm text-[#14532D]">«{book.title}»</span>
+                        {book.showOnHomepage !== false && book.isVisible !== false ? (
+                          <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md">
+                            Esilehel
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold bg-stone-200 text-stone-600 px-2 py-0.5 rounded-md">
+                            Peidetud
+                          </span>
+                        )}
+                      </div>
+                      
+                      {content.books.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm(`Kas soovid raamatu «${book.title}» eemaldada?`)) {
+                              const updated = content.books.filter((_, idx) => idx !== bIdx);
+                              saveContent({ ...content, books: updated });
+                            }
+                          }}
+                          className="p-1 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 cursor-pointer"
+                          title="Kustuta raamat"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Visibility Toggle for this specific book */}
+                    <div className="p-3 rounded-xl bg-[#FAF7F2] border border-[#E7E0D5] flex items-center justify-between">
+                      <span className="text-xs font-bold text-stone-800 font-sans">
+                        Kuva see raamat esilehel:
+                      </span>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={book.showOnHomepage !== false && book.isVisible !== false}
+                          onChange={(e) => {
+                            const updated = [...content.books];
+                            updated[bIdx].showOnHomepage = e.target.checked;
+                            updated[bIdx].isVisible = e.target.checked;
+                            saveContent({ ...content, books: updated });
+                          }}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-stone-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#14532D]"></div>
+                      </label>
                     </div>
 
                     {/* Image Preview */}
@@ -1492,6 +1609,64 @@ ${p.text}
                         Taasta algne pilt
                       </button>
                     )}
+
+                    {/* Title, Category & Description Fields */}
+                    <div className="space-y-2 pt-2 border-t border-stone-200">
+                      <div>
+                        <label className="block text-[11px] font-bold text-stone-700 mb-1">Raamatu pealkiri</label>
+                        <input
+                          type="text"
+                          value={book.title}
+                          onChange={(e) => {
+                            const updated = [...content.books];
+                            updated[bIdx].title = e.target.value;
+                            saveContent({ ...content, books: updated });
+                          }}
+                          className="w-full px-3 py-2 rounded-lg border border-stone-300 text-xs font-serif font-bold bg-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-stone-700 mb-1">Autor & Kategooria</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            value={book.author}
+                            onChange={(e) => {
+                              const updated = [...content.books];
+                              updated[bIdx].author = e.target.value;
+                              saveContent({ ...content, books: updated });
+                            }}
+                            placeholder="Autor"
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs bg-white"
+                          />
+                          <input
+                            type="text"
+                            value={book.category}
+                            onChange={(e) => {
+                              const updated = [...content.books];
+                              updated[bIdx].category = e.target.value;
+                              saveContent({ ...content, books: updated });
+                            }}
+                            placeholder="Kategooria"
+                            className="w-full px-2.5 py-1.5 rounded-lg border border-stone-300 text-xs bg-white"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-stone-700 mb-1">Lühikirjeldus</label>
+                        <textarea
+                          rows={3}
+                          value={book.description}
+                          onChange={(e) => {
+                            const updated = [...content.books];
+                            updated[bIdx].description = e.target.value;
+                            saveContent({ ...content, books: updated });
+                          }}
+                          className="w-full p-2.5 rounded-lg border border-stone-300 text-xs font-serif bg-white"
+                        />
+                      </div>
+                    </div>
+
                   </div>
                 ))}
               </div>
