@@ -12,6 +12,8 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ size = 'md', className = '
     <div className={`inline-flex items-center select-none ${className}`}>
       {/* 1:1 Vector SVG matching user's uploaded logo image.png with distinct separated leaves */}
       <svg 
+        role="img"
+        aria-label="Kirjastus SAAGU VALGUS"
         viewBox="0 0 540 180" 
         className={`${height} w-auto`}
         fill="none" 

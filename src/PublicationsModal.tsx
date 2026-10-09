@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   FileText, 
   Printer, 
@@ -46,12 +46,41 @@ export const PublicationsModal: React.FC<PublicationsModalProps> = ({
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isWideMode, setIsWideMode] = useState(false);
 
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!isOpen) return;
+    const previouslyFocused = document.activeElement as HTMLElement;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    dialogRef.current?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeRef.current();
+      if (event.key === 'Tab') {
+        const nodes = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], input, select, iframe') || []);
+        const first = nodes[0], last = nodes[nodes.length - 1];
+        if (event.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) {
+          event.preventDefault(); last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault(); first?.focus();
+        }
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', onKey);
+      previouslyFocused?.focus();
+    };
+  }, [isOpen]);
+
   const t = UI_TRANSLATIONS[lang]?.publicationsModal || UI_TRANSLATIONS.et.publicationsModal;
 
   if (!isOpen) return null;
 
   const currentPub = publications.find(p => p.id === selectedId) || publications[0];
-  const totalPages = currentPub?.contentPages?.length || currentPub?.pages || 1;
+  const totalPages = currentPub?.pdfUrl ? (currentPub.pages || 1) : (currentPub?.contentPages?.length || currentPub?.pages || 1);
   const activePageData = currentPub?.contentPages?.find(p => p.pageNumber === currentPage) || currentPub?.contentPages?.[0];
 
   const categories = ['all', ...Array.from(new Set(publications.map(p => p.category)))];
@@ -73,6 +102,10 @@ export const PublicationsModal: React.FC<PublicationsModalProps> = ({
   const handlePrint = () => {
     if (!currentPub) return;
 
+    if (currentPub.pdfUrl) {
+      window.open(currentPub.pdfUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
     try {
       const printWindow = window.open('', '_blank', 'width=850,height=950,top=50,left=50');
       if (!printWindow) {
@@ -80,18 +113,19 @@ export const PublicationsModal: React.FC<PublicationsModalProps> = ({
         return;
       }
 
+      const escape = (value: string) => String(value || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
       const pagesHtml = (currentPub.contentPages && currentPub.contentPages.length > 0)
         ? currentPub.contentPages.map((cp) => `
             <div class="page-block">
               <div class="page-num">${t.page} ${cp.pageNumber} / ${totalPages}</div>
-              <div class="page-heading">${cp.heading}</div>
-              <div class="page-text">${cp.text}</div>
+              <div class="page-heading">${escape(cp.heading)}</div>
+              <div class="page-text">${escape(cp.text)}</div>
             </div>
           `).join('')
         : `
             <div class="page-block">
-              <div class="page-heading">${currentPub.title}</div>
-              <div class="page-text">${currentPub.description}</div>
+              <div class="page-heading">${escape(currentPub.title)}</div>
+              <div class="page-text">${escape(currentPub.description)}</div>
             </div>
           `;
 
@@ -101,7 +135,7 @@ export const PublicationsModal: React.FC<PublicationsModalProps> = ({
         <html lang="${lang}">
           <head>
             <meta charset="utf-8">
-            <title>${currentPub.title} - ${lang === 'en' ? 'Let There Be Light Publishing' : 'Kirjastus Saagu Valgus'}</title>
+            <title>${escape(currentPub.title)} - ${lang === 'en' ? 'Let There Be Light Publishing' : 'Kirjastus Saagu Valgus'}</title>
             <style>
               @page { 
                 size: A4 portrait; 
@@ -200,8 +234,8 @@ export const PublicationsModal: React.FC<PublicationsModalProps> = ({
             </div>
 
             <span class="category">${currentPub.category || (lang === 'en' ? 'Publication' : 'Trükis')}</span>
-            <h1 class="title">${currentPub.title}</h1>
-            <p class="desc">${currentPub.description}</p>
+            <h1 class="title">${escape(currentPub.title)}</h1>
+            <p class="desc">${escape(currentPub.description)}</p>
 
             ${pagesHtml}
 
@@ -280,7 +314,7 @@ ${lang === 'en' ? 'Email' : 'E-post'}: info@saaguvalgus.eu
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.origin + '#trukised');
+    navigator.clipboard.writeText(new URL(currentPub?.pdfUrl || '#trukised', window.location.origin).href);
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   };
@@ -288,7 +322,7 @@ ${lang === 'en' ? 'Email' : 'E-post'}: info@saaguvalgus.eu
   return (
     <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 md:p-5 overflow-hidden animate-in fade-in duration-150">
       
-      <div className="bg-[#f8faf8] rounded-3xl border border-stone-200 shadow-2xl w-full max-w-[96vw] 2xl:max-w-[1520px] h-[94vh] flex flex-col overflow-hidden text-stone-900">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={lang === 'en' ? 'Publications' : 'Trükised'} tabIndex={-1} className="bg-[#f8faf8] rounded-3xl border border-stone-200 shadow-2xl w-full max-w-[96vw] 2xl:max-w-[1520px] h-[94vh] flex flex-col overflow-hidden text-stone-900">
         
         {/* Top Header Bar */}
         <div className="bg-[#144225] text-white px-4 sm:px-6 py-3.5 flex items-center justify-between border-b border-[#1b5430] shrink-0">
@@ -523,7 +557,7 @@ ${lang === 'en' ? 'Email' : 'E-post'}: info@saaguvalgus.eu
               {currentPub?.pdfUrl ? (
                 <div className="w-full h-full min-h-[550px] bg-white rounded-2xl shadow-md overflow-hidden border border-stone-300">
                   <iframe 
-                    src={currentPub.pdfUrl} 
+                    src={`${currentPub.pdfUrl.split('#')[0]}#page=${currentPage}&zoom=${zoomLevel}`} 
                     className="w-full h-full min-h-[550px]" 
                     title={currentPub.title} 
                   />

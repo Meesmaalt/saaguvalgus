@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   ShieldAlert, 
   Mail, 
@@ -18,7 +18,9 @@ import {
   ChevronDown,
   ChevronUp,
   ExternalLink,
-  DollarSign
+  DollarSign,
+  Menu,
+  X
 } from 'lucide-react';
 import { INITIAL_SITE_CONTENT, INITIAL_PUBLICATIONS } from './data';
 import { SiteContent, BookItem, OrderItem, ContactMessage, PublicationItem } from './types';
@@ -42,16 +44,7 @@ const LANG_STORAGE_KEY = 'saaguvalgus_lang';
 
 const INITIAL_ORDERS: OrderItem[] = [];
 
-const INITIAL_MESSAGES: ContactMessage[] = [
-  {
-    id: 'msg-201',
-    name: 'Andres Kuusk',
-    email: 'andres.kuusk@mail.ee',
-    message: 'Tere! Kas teie trükiseid ja raamatuid saab tellida ka suuremas koguses kohalikule kogudusele levitamiseks?',
-    createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-    read: false
-  }
-];
+const INITIAL_MESSAGES: ContactMessage[] = [];
 
 // Helper to render text with italicized "new age"
 const renderFormattedText = (text: string) => {
@@ -61,7 +54,7 @@ const renderFormattedText = (text: string) => {
     <>
       {parts.map((part, idx) => 
         part.toLowerCase() === 'new age' ? (
-          <em key={idx} className="italic font-serif font-semibold text-[#14532D]">new age</em>
+          <em key={idx} className="italic font-serif font-semibold text-[#14532D]">{part}</em>
         ) : (
           <span key={idx}>{part}</span>
         )
@@ -330,7 +323,7 @@ export default function App() {
           facebookUrl: (!t.facebookUrl || t.facebookUrl === 'https://www.facebook.com/saaguvalgus') 
             ? 'https://www.facebook.com/share/1DUothVLCF/' 
             : t.facebookUrl,
-          image: t.image && !t.image.includes('kairi_oja_foto_1791058337611') ? t.image : kairiOjaPhoto
+          image: t.image && !t.image.startsWith('/src/assets/') ? t.image : kairiOjaPhoto
         }));
     }
     
@@ -340,7 +333,12 @@ export default function App() {
   const [orders, setOrders] = useState<OrderItem[]>(INITIAL_ORDERS);
   const [messages, setMessages] = useState<ContactMessage[]>(INITIAL_MESSAGES);
   const [publications, setPublications] = useState<PublicationItem[]>(INITIAL_PUBLICATIONS);
-  const [isPublicationsOpen, setIsPublicationsOpen] = useState(false);
+  const [isPublicationsOpen, setIsPublicationsOpen] = useState(() => window.location.hash === '#trukised');
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [saveError, setSaveError] = useState('');
+  const saveQueue = useRef(Promise.resolve());
+  const saveRevision = useRef(0);
 
   // Legal Modal State (Privaatsuspoliitika, Müügitingimused jne)
   const [isLegalModalOpen, setIsLegalModalOpen] = useState(false);
@@ -390,13 +388,14 @@ export default function App() {
     document.title = lang === 'en'
       ? 'Let There Be Light Publishing | Christian Literature & Evangelistic Resources'
       : (activeContent.metaTitle || 'Kirjastus Saagu Valgus | Vaimulik kirjandus ja evangeelsed materjalid');
-  }, [lang, activeContent.metaTitle]);
+    const description = document.querySelector('meta[name="description"]');
+    if (description && activeContent.metaDescription) description.setAttribute('content', activeContent.metaDescription);
+  }, [lang, activeContent.metaTitle, activeContent.metaDescription]);
 
   useEffect(() => {
     api.fetchContent().then(setContent).catch(console.error);
     api.fetchPublications().then(setPublications).catch(console.error);
-    api.fetchOrders().then(setOrders).catch(console.error);
-    api.fetchMessages().then(setMessages).catch(console.error);
+
 
     const token = sessionStorage.getItem(ADMIN_SESSION_KEY);
     if (token) {
@@ -410,8 +409,15 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    if (!isAdminAuthenticated) return;
+    api.fetchOrders().then(setOrders).catch(console.error);
+    api.fetchMessages().then(setMessages).catch(console.error);
+  }, [isAdminAuthenticated]);
+
+  useEffect(() => {
     const handleHashChange = () => {
       setIsAdminView(window.location.hash === '#admin');
+      if (window.location.hash === '#trukised') setIsPublicationsOpen(true);
     };
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
@@ -460,8 +466,19 @@ export default function App() {
 
   const saveContent = (newContent: SiteContent) => {
     setContent(newContent);
-    api.saveContent(newContent).catch(err => {
-      console.error('Error saving content:', err);
+    const revision = ++saveRevision.current;
+    setSaveStatus('saving');
+    // Serialize autosaves so an older response cannot overwrite a newer edit.
+    saveQueue.current = saveQueue.current.catch(() => {}).then(async () => {
+      try {
+        await api.saveContent(newContent);
+        if (revision === saveRevision.current) setSaveStatus('saved');
+      } catch (error) {
+        if (revision === saveRevision.current) {
+          setSaveStatus('error');
+          setSaveError((error as Error).message);
+        }
+      }
     });
   };
 
@@ -512,18 +529,7 @@ export default function App() {
       setFormSent(true);
       setFormData({ name: '', email: '', message: '' });
     } catch (err) {
-      const msgId = 'msg-' + Date.now().toString().slice(-6);
-      const newMsg: ContactMessage = {
-        id: msgId,
-        name: formData.name,
-        email: formData.email,
-        message: formData.message,
-        createdAt: new Date().toISOString(),
-        read: false
-      };
-      setMessages(prev => [newMsg, ...prev]);
-      setFormSent(true);
-      setFormData({ name: '', email: '', message: '' });
+      alert((err as Error).message || 'Sõnumi saatmine ebaõnnestus. Palun proovi uuesti.');
     }
   };
 
@@ -533,7 +539,7 @@ export default function App() {
         const resetContent = await api.resetContent();
         setContent(resetContent);
       } catch (err) {
-        saveContent(INITIAL_SITE_CONTENT);
+        alert((err as Error).message);
       }
     }
   };
@@ -581,6 +587,7 @@ export default function App() {
   }, []);
 
   const scrollTo = (id: string) => {
+    setMobileNavOpen(false);
     const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
@@ -730,6 +737,9 @@ export default function App() {
     return (
       <AdminDashboard
         content={content}
+        saveStatus={saveStatus}
+        saveError={saveError}
+        onRetrySave={() => saveContent(content)}
         saveContent={saveContent}
         orders={orders}
         saveOrders={saveOrders}
@@ -748,11 +758,12 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#1C1917] flex flex-col font-sans selection:bg-[#14532D]/15 selection:text-[#14532D] relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#FAF7F2] text-[#1C1917] flex flex-col font-sans selection:bg-[#14532D]/15 selection:text-[#14532D] relative overflow-x-hidden public-site">
       
+      <a href="#kusimused" className="skip-link">{lang === 'en' ? 'Skip to content' : 'Liigu sisuni'}</a>
       {/* Top Bar with Official Brand Logo */}
       <header className="sticky top-0 z-40 bg-[#FAF7F2]/95 backdrop-blur-md border-b border-[#E7E0D5] shadow-2xs">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between gap-4">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 site-header-inner flex items-center justify-between gap-4">
           
           {/* Zone 1: Official Brand Logo */}
           <a href="#" className="flex items-center hover:opacity-90 transition-opacity">
@@ -785,6 +796,10 @@ export default function App() {
             </button>
           </nav>
 
+          <button type="button" className="md:hidden mobile-menu-button" aria-expanded={mobileNavOpen}
+            aria-controls="mobile-navigation" aria-label={lang === 'en' ? 'Menu' : 'Menüü'} onClick={() => setMobileNavOpen(!mobileNavOpen)}>
+            {mobileNavOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
           {/* Zone 3: Language & PDF Action Button */}
           <div className="flex items-center gap-3 shrink-0">
             <div className="flex items-center text-xs font-semibold text-stone-600 border border-[#E2D7C8] rounded-lg p-0.5 bg-white">
@@ -815,15 +830,23 @@ export default function App() {
             </button>
           </div>
         </div>
+        {mobileNavOpen && <nav id="mobile-navigation" className="md:hidden mobile-navigation" aria-label={lang === 'en' ? 'Navigation' : 'Navigeerimine'}>
+          {[
+            ['kusimused', lang === 'en' ? 'Questions' : 'Põhiküsimused'],
+            ['tunnistused', t.nav.testimonials], ['kirjastus', t.nav.books],
+            ['toetus', t.nav.support], ['paastepalve', t.nav.prayer], ['kontakt', t.nav.contact]
+          ].map(([id, label]) => <a key={id} href={`#${id}`} onClick={() => setMobileNavOpen(false)}>{label}</a>)}
+        </nav>}
       </header>
 
+      <main>
       {/* Hero Section WITH 3 PÕHIKÜSIMUST FRONT & CENTER */}
-      <section id="kusimused" className="relative pt-10 pb-16 sm:pt-14 sm:pb-20 border-b border-[#E7E0D5] bg-[#FAF7F2] paper-grain">
+      <section id="kusimused" className="site-hero relative pt-10 pb-16 sm:pt-14 sm:pb-20 border-b border-[#E7E0D5] bg-[#FAF7F2] paper-grain">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-10">
           
           <div className="text-center space-y-3 max-w-3xl mx-auto">
             <span className="text-xs font-semibold tracking-widest text-[#9A3412] uppercase font-sans">
-              Kirjastus Saagu Valgus
+              {activeContent.brandName}
             </span>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-[#1C1917] tracking-tight leading-[1.12]">
@@ -842,7 +865,7 @@ export default function App() {
             
             <div className="flex items-center justify-between border-b border-[#E2D7C8] pb-3">
               <h2 className="text-xl sm:text-2xl font-serif font-bold text-[#1C1917]">
-                3 Põhiküsimust
+                {lang === 'en' ? '3 Core Questions' : '3 Põhiküsimust'}
               </h2>
               <span className="text-xs font-semibold text-stone-500 font-sans">
                 {lang === 'en' ? 'Select question to read answer:' : 'Vali küsimus vastuse lugemiseks:'}
@@ -856,11 +879,13 @@ export default function App() {
                 return (
                   <button
                     key={q.id}
+                    aria-pressed={isSelected}
+                    aria-controls="question-answer"
                     onClick={() => setActiveCentralQuestion(q.id)}
                     className={`p-6 sm:p-7 rounded-3xl border text-left transition-all duration-200 cursor-pointer flex flex-col justify-between gap-5 relative overflow-hidden ${
                       isSelected 
-                        ? 'bg-gradient-to-br from-[#14532D] via-[#0F3D24] to-[#14532D] text-white border-[#14532D] shadow-lg scale-[1.02] ring-2 ring-amber-300/50' 
-                        : 'bg-gradient-to-b from-white to-[#FAF7F2] hover:bg-[#F5F0E6] border-[#E2D7C8] border-l-4 border-l-[#14532D] text-[#1C1917] shadow-sm hover:shadow-md'
+                        ? 'bg-[#14532D] text-white border-[#14532D] shadow-sm'
+                        : 'bg-white hover:bg-[#F5F0E6] border-[#E2D7C8] text-[#1C1917] shadow-2xs'
                     }`}
                   >
                     <div className="flex items-center justify-between text-xs font-sans">
@@ -890,12 +915,13 @@ export default function App() {
             {/* Full Answer Reader for Selected Question */}
             {(() => {
               const current = activeContent.centralQuestions.find(q => q.id === activeCentralQuestion) || activeContent.centralQuestions[0];
+              if (!current) return null;
               return (
-                <div className="bg-gradient-to-b from-white via-white to-[#FAF7F2] rounded-3xl border border-[#E2D7C8] border-t-4 border-t-[#14532D] p-6 sm:p-10 shadow-md space-y-8 text-left relative">
+                <div id="question-answer" className="answer-reader bg-white rounded-3xl border border-[#E2D7C8] border-t-4 border-t-[#14532D] p-6 sm:p-10 shadow-md space-y-8 text-left relative">
                   
                   <div className="border-b border-[#E2D7C8] pb-6 space-y-2">
                     <div className="flex items-center gap-3 text-xs text-stone-500 font-sans">
-                      <span className="font-mono font-bold text-[#9A3412] text-sm px-3 py-1 bg-[#F5F0E6] rounded-lg">Põhiküsimus 0{current.number}.</span>
+                      <span className="font-mono font-bold text-[#9A3412] text-sm px-3 py-1 bg-[#F5F0E6] rounded-lg">{lang === 'en' ? 'Question' : 'Põhiküsimus'} 0{current.number}.</span>
                       <span className="font-semibold">{lang === 'en' ? 'Spiritual Truth' : 'Vaimulik tõde & Piibellik vastus'}</span>
                     </div>
                     <h3 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-[#1C1917] leading-tight pt-1">
@@ -1630,6 +1656,7 @@ export default function App() {
       </section>
 
       {/* Footer with Merchant Compliance & Legal Links */}
+      </main>
       <footer className="bg-white border-t border-[#E7E0D5] py-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
           
