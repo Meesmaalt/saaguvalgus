@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   saaguvalgus-app:
     build:
@@ -11,9 +9,25 @@ services:
     ports:
       - "3002:80"
     environment:
-      - NODE_ENV=production
-      - PORT=80
+      NODE_ENV: production
+      PORT: 80
+      DATA_DIR: /var/lib/saaguvalgus/data
+      UPLOADS_DIR: /var/lib/saaguvalgus/uploads
+      # Used only when initializing a NEW database; existing password is retained.
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
     volumes:
-      - ./data:/app/data
-      - ./uploads:/app/uploads
+      - saaguvalgus-data:/var/lib/saaguvalgus/data
+      - saaguvalgus-uploads:/var/lib/saaguvalgus/uploads
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1/api/status').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
 
+# Explicit names remain stable across Portainer checkout paths and stack names.
+volumes:
+  saaguvalgus-data:
+    name: saaguvalgus-data
+  saaguvalgus-uploads:
+    name: saaguvalgus-uploads

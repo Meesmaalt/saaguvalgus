@@ -41,10 +41,14 @@ import {
   Globe
 } from 'lucide-react';
 import { SiteContent, BookItem, OrderItem, ContactMessage, QuestionItem, PublicationItem } from './types';
+import { api } from './api';
 import { SITE_CONTENT_EN } from './translations';
 
 interface AdminDashboardProps {
   content: SiteContent;
+  saveStatus: 'idle' | 'saving' | 'saved' | 'error';
+  saveError: string;
+  onRetrySave: () => void;
   saveContent: (newContent: SiteContent) => void;
   orders: OrderItem[];
   saveOrders: (newOrders: OrderItem[]) => void;
@@ -73,6 +77,9 @@ interface AdminDashboardProps {
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   content,
+  saveStatus,
+  saveError,
+  onRetrySave,
   saveContent,
   orders,
   saveOrders,
@@ -163,6 +170,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
     setIsUploadingPub(true);
     try {
+      if (newPubData.file && (newPubData.file.size > 10 * 1024 * 1024 || !/\.pdf$/i.test(newPubData.file.name))) {
+        throw new Error('Vali PDF fail suurusega kuni 10 MB.');
+      }
       let pdfBase64: string | undefined = undefined;
       let fileName: string | undefined = undefined;
       let fileSize: string | undefined = undefined;
@@ -196,29 +206,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             }
           ]
         });
-        savePublications([created, ...publications]);
+        // Parent updates the list from the confirmed server record.
       } else {
-        const newPub: PublicationItem = {
-          id: 'pub-' + Date.now(),
-          title: newPubData.title,
-          author: newPubData.author || 'Kirjastus Saagu Valgus',
-          category: newPubData.category || 'Trükis',
-          description: newPubData.description || 'Trükis / infomaterjal',
-          pages: Number(newPubData.pages) || 2,
-          uploadedAt: new Date().toISOString().split('T')[0],
-          fileName: fileName || `${newPubData.title.replace(/\s+/g, '_')}.pdf`,
-          fileSize: fileSize || '1.2 MB',
-          pdfUrl: pdfBase64,
-          downloadCount: 0,
-          contentPages: [
-            {
-              pageNumber: 1,
-              heading: newPubData.title,
-              text: newPubData.description || 'Infotrükis.'
-            }
-          ]
-        };
-        savePublications([newPub, ...publications]);
+        throw new Error('Serveri üleslaadimine ei ole saadaval.');
       }
 
       setNewPubModalOpen(false);
@@ -277,13 +267,12 @@ ${p.text}
   };
 
   const handleDeletePublication = async (pubId: string) => {
-    if (window.confirm('Kas oled kindel, et soovid selle trükise kustutada?')) {
-      if (onDeletePublication) {
-        await onDeletePublication(pubId);
-      }
-      savePublications(publications.filter(p => p.id !== pubId));
+    if (!window.confirm('Kas oled kindel, et soovid selle trükise kustutada?')) return;
+    try {
+      if (!onDeletePublication) throw new Error('Serveri ühendus puudub.');
+      await onDeletePublication(pubId);
       notifySaved();
-    }
+    } catch (error) { alert((error as Error).message); }
   };
 
   // New Manual Order State
@@ -314,66 +303,49 @@ ${p.text}
     setTimeout(() => setSaveSuccessMsg(false), 2500);
   };
 
-  // Order Handlers
-  const handleUpdateOrderStatus = (orderId: string, newStatus: OrderItem['status']) => {
-    const updated = orders.map(ord => ord.id === orderId ? { ...ord, status: newStatus } : ord);
-    saveOrders(updated);
-    notifySaved();
-  };
-
-  const handleDeleteOrder = (orderId: string) => {
-    if (window.confirm('Kas oled kindel, et soovid selle tellimuse kustutada?')) {
-      const updated = orders.filter(ord => ord.id !== orderId);
-      saveOrders(updated);
+  // Confirm server persistence before updating the admin view.
+  const handleUpdateOrderStatus = async (orderId: string, status: OrderItem['status']) => {
+    try {
+      await api.updateOrderStatus(orderId, status);
+      saveOrders(await api.fetchOrders());
       notifySaved();
-    }
+    } catch (error) { alert((error as Error).message); }
   };
-
-  const handleAddManualOrder = (e: React.FormEvent) => {
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!window.confirm('Kas oled kindel, et soovid selle tellimuse kustutada?')) return;
+    try {
+      await api.deleteOrder(orderId);
+      saveOrders(await api.fetchOrders());
+      notifySaved();
+    } catch (error) { alert((error as Error).message); }
+  };
+  const handleAddManualOrder = async (e: React.FormEvent) => {
     e.preventDefault();
-    const selectedBook = content.books.find(b => b.id === manualOrder.bookId) || content.books[0];
-    const newOrd: OrderItem = {
-      id: 'ord-' + Date.now(),
-      type: manualOrder.type,
-      bookId: selectedBook.id,
-      bookTitle: selectedBook.title,
-      quantity: Number(manualOrder.quantity) || 1,
-      name: manualOrder.name,
-      email: manualOrder.email,
-      phone: manualOrder.phone,
-      address: manualOrder.address,
-      notes: manualOrder.notes,
-      status: manualOrder.status,
-      createdAt: new Date().toISOString()
-    };
-    saveOrders([newOrd, ...orders]);
-    setNewOrderModalOpen(false);
-    setManualOrder({
-      type: 'preorder',
-      bookId: content.books[0]?.id || '',
-      quantity: 1,
-      name: '',
-      email: '',
-      phone: '',
-      address: '',
-      notes: '',
-      status: 'uus'
-    });
-    notifySaved();
-  };
-
-  // Message Handlers
-  const handleToggleMessageRead = (msgId: string) => {
-    const updated = messages.map(m => m.id === msgId ? { ...m, read: !m.read } : m);
-    saveMessages(updated);
-  };
-
-  const handleDeleteMessage = (msgId: string) => {
-    if (window.confirm('Kas soovid selle sõnumi kustutada?')) {
-      const updated = messages.filter(m => m.id !== msgId);
-      saveMessages(updated);
+    const book = content.books.find(b => b.id === manualOrder.bookId);
+    if (!book) return;
+    try {
+      const created = await api.createOrder({ ...manualOrder, bookTitle: book.title });
+      if (manualOrder.status !== 'uus') await api.updateOrderStatus(created.id, manualOrder.status);
+      saveOrders(await api.fetchOrders());
+      setNewOrderModalOpen(false);
+      setManualOrder({ type: 'preorder', bookId: content.books[0]?.id || '', quantity: 1,
+        name: '', email: '', phone: '', address: '', notes: '', status: 'uus' });
       notifySaved();
-    }
+    } catch (error) { alert((error as Error).message); }
+  };
+  const handleToggleMessageRead = async (msgId: string) => {
+    try {
+      await api.markMessageRead(msgId, !messages.find(m => m.id === msgId)?.read);
+      saveMessages(await api.fetchMessages());
+    } catch (error) { alert((error as Error).message); }
+  };
+  const handleDeleteMessage = async (msgId: string) => {
+    if (!window.confirm('Kas soovid selle sõnumi kustutada?')) return;
+    try {
+      await api.deleteMessage(msgId);
+      saveMessages(await api.fetchMessages());
+      notifySaved();
+    } catch (error) { alert((error as Error).message); }
   };
 
   // Book Handlers
@@ -389,7 +361,6 @@ ${p.text}
       return b;
     });
     saveContent({ ...content, books: updatedBooks });
-    notifySaved();
   };
 
   const handleSaveBook = (bookToSave: BookItem) => {
@@ -403,14 +374,12 @@ ${p.text}
     saveContent({ ...content, books: updatedBooks });
     setEditingBook(null);
     setNewBookModalOpen(false);
-    notifySaved();
   };
 
   const handleDeleteBook = (bookId: string) => {
     if (window.confirm('Kas soovid selle raamatu kataloogist eemaldada?')) {
       const updatedBooks = content.books.filter(b => b.id !== bookId);
       saveContent({ ...content, books: updatedBooks });
-      notifySaved();
     }
   };
 
@@ -442,42 +411,26 @@ ${p.text}
     document.body.removeChild(link);
   };
 
-  // Full backup JSON export
-  const handleExportFullJSON = () => {
-    const fullBackup = {
-      version: '2.0',
-      exportedAt: new Date().toISOString(),
-      content,
-      orders,
-      messages,
-      publications
-    };
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(fullBackup, null, 2));
-    const dlAnchor = document.createElement('a');
-    dlAnchor.setAttribute('href', dataStr);
-    dlAnchor.setAttribute('download', `saaguvalgus-varundus-${new Date().toISOString().slice(0, 10)}.json`);
-    document.body.appendChild(dlAnchor);
-    dlAnchor.click();
-    dlAnchor.remove();
+  // The server backup includes all persisted content and uploaded PDF files.
+  const handleExportFullJSON = async () => {
+    try {
+      const backup = await api.exportBackup();
+      const url = URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `saaguvalgus-varundus-${new Date().toISOString().slice(0, 10)}.json`;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (error) { alert((error as Error).message); }
   };
-
-  const handleImportFullJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportFullJSON = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const parsed = JSON.parse(event.target?.result as string);
-        if (parsed.content) saveContent(parsed.content);
-        if (parsed.orders && Array.isArray(parsed.orders)) saveOrders(parsed.orders);
-        if (parsed.messages && Array.isArray(parsed.messages)) saveMessages(parsed.messages);
-        if (parsed.publications && Array.isArray(parsed.publications)) savePublications(parsed.publications);
-        alert('Kõik andmed (sisu, trükised, tellimused ja sõnumid) edukalt imporditud!');
-      } catch (err) {
-        alert('Viga faili lugemisel. Palun kontrolli faili formaati.');
-      }
-    };
-    reader.readAsText(file);
+    if (!window.confirm('Taastamine asendab praeguse sisu, tellimused, sõnumid ja trükised. Kas jätkata?')) return;
+    try {
+      await api.importBackup(JSON.parse(await file.text()));
+      window.location.reload();
+    } catch (error) { alert((error as Error).message); }
   };
 
   // Filter orders
@@ -541,6 +494,7 @@ ${p.text}
             )}
             <button
               onClick={handleExportFullJSON}
+              disabled={saveStatus === 'saving'}
               className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer text-white"
             >
               <Download className="w-3.5 h-3.5" />
@@ -569,6 +523,10 @@ ${p.text}
       {/* Main Content Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-6">
         
+        <div role="status" aria-live="polite" className={`p-4 rounded-xl border text-sm flex flex-wrap items-center justify-between gap-3 ${saveStatus === 'error' ? 'bg-red-50 border-red-200 text-red-800' : 'bg-white border-stone-200 text-stone-600'}`}>
+          <span>{saveStatus === 'saving' ? 'Salvestan muudatusi serverisse…' : saveStatus === 'saved' ? 'Muudatused on serverisse salvestatud.' : saveStatus === 'error' ? saveError : 'Sisu salvestatakse automaatselt serverisse. Trükised on avalikud pärast edukat üleslaadimist.'}</span>
+          {saveStatus === 'error' && <button onClick={onRetrySave} className="font-semibold underline cursor-pointer">Proovi uuesti</button>}
+        </div>
         {/* KPI / Overview Summary Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           
@@ -1230,7 +1188,7 @@ ${p.text}
                 <p className="text-xs sm:text-sm text-stone-600 font-sans mt-0.5">Kõik muudatused salvestatakse automaatselt serverisse ning on nähtavad kõigile külastajatele.</p>
               </div>
               <button
-                onClick={() => notifySaved()}
+                onClick={() => saveContent(content)}
                 className="px-6 py-3 rounded-xl bg-[#14532D] hover:bg-[#0F3D24] text-white text-sm font-bold flex items-center gap-2 transition-colors cursor-pointer shadow-md shrink-0"
               >
                 <Save className="w-4 h-4 text-amber-300" />
@@ -2145,6 +2103,7 @@ ${p.text}
                 </p>
                 <button
                   onClick={handleExportFullJSON}
+              disabled={saveStatus === 'saving'}
                   className="px-4 py-2 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
@@ -2163,7 +2122,7 @@ ${p.text}
                 <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold cursor-pointer transition-colors">
                   <Upload className="w-3.5 h-3.5" />
                   <span>Vali JSON fail</span>
-                  <input type="file" accept=".json" onChange={handleImportFullJSON} className="hidden" />
+                  <input type="file" accept=".json" disabled={saveStatus === 'saving'} onChange={handleImportFullJSON} className="hidden" />
                 </label>
               </div>
 
@@ -2785,10 +2744,11 @@ ${p.text}
                 </button>
                 <button
                   type="submit"
+                  disabled={isUploadingPub}
                   className="flex-1 py-2.5 rounded-xl bg-[#1a6838] hover:bg-[#15542d] text-white font-bold transition-colors cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
                 >
                   <Upload className="w-4 h-4" />
-                  <span>Salvesta ja laadi üles</span>
+                  <span>{isUploadingPub ? 'Laadin üles…' : 'Salvesta ja laadi üles'}</span>
                 </button>
               </div>
             </form>

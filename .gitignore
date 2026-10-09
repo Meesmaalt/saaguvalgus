@@ -11,3 +11,5 @@ data/*.tmp.*
 uploads/*
 !uploads/.gitkeep
 
+
+data/db.json.bak

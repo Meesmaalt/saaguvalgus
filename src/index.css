@@ -54,3 +54,49 @@
   border: 1px solid #E2D7C8;
 }
 
+
+/* Quiet editorial layout. Author capitalization is preserved as entered. */
+html { scroll-padding-top: 6.5rem; }
+body { margin: 0; }
+button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 3px solid #789f8a; outline-offset: 4px; }
+button:disabled { cursor: wait; opacity: .65; }
+.public-site h1, .public-site h2, .public-site h3 { text-wrap: balance; }
+.public-site p { overflow-wrap: anywhere; }
+.public-site .paper-grain {
+  background-image: radial-gradient(ellipse at 50% 0, #ece9dc 0, transparent 65%);
+  background-size: auto;
+  opacity: 1;
+}
+.public-site .site-hero { padding-top: clamp(2.75rem, 6vw, 5rem); }
+.public-site .site-hero > div > div:first-child { margin-bottom: 3.25rem; }
+.public-site .site-hero h1 { font-weight: 500; line-height: 1.18; }
+.public-site .site-hero h1 + p { margin-top: 1.4rem; font-style: normal; color: #57534e; }
+.public-site .site-hero button[aria-pressed] { border-radius: 1rem; }
+.public-site .answer-reader { box-shadow: 0 4px 24px rgb(28 25 23 / 3%); border-radius: 1rem; }
+.public-site .answer-reader > div { max-width: 70ch; margin-inline: auto; }
+.public-site .answer-reader p { line-height: 1.85; }
+.public-site section[id] { scroll-margin-top: 6rem; }
+.public-site .paper-card { box-shadow: 0 3px 18px rgb(28 25 23 / 3%); }
+.skip-link { position: fixed; top: -5rem; left: 1rem; z-index: 100; background: #14532d; color: white; padding: .8rem 1.2rem; border-radius: .5rem; }
+.skip-link:focus { top: 1rem; }
+.mobile-menu-button { padding: .65rem; border: 1px solid #e2d7c8; border-radius: .5rem; color: #14532d; margin-left: auto; }
+.mobile-navigation { padding: .75rem 1rem 1rem; border-top: 1px solid #e7e0d5; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .35rem; }
+.mobile-navigation a { padding: .7rem; border-radius: .5rem; color: #14532d; font-size: .9rem; }
+.mobile-navigation a:hover { background: #ebe5da; }
+@media (max-width: 767px) {
+  .mobile-navigation { display: grid; }
+  .site-header-inner { gap: .5rem; height: 4.5rem; }
+  .site-header-inner > div:last-child { gap: .5rem; }
+  .site-header-inner > div:last-child > button { padding: .6rem; }
+  .site-header-inner > div:last-child > button span { display: none; }
+  .public-site .site-hero > div > div:first-child { margin-bottom: 2rem; }
+  .public-site .site-hero h1 { font-size: clamp(2.2rem, 9vw, 3.4rem); }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+@media (max-width: 400px) {
+  .site-header-inner > a svg { height: 2.25rem; }
+}

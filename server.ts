@@ -8,10 +8,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const PORT = Number(process.env.PORT) || 3000;
-const DATA_DIR = path.resolve(__dirname, 'data');
-const UPLOADS_DIR = path.resolve(__dirname, 'uploads');
+const DATA_DIR = path.resolve(process.env.DATA_DIR || path.join(__dirname, 'data'));
+const UPLOADS_DIR = path.resolve(process.env.UPLOADS_DIR || path.join(__dirname, 'uploads'));
 const DB_FILE = path.join(DATA_DIR, 'db.json');
-const INITIAL_DB_FILE = path.join(DATA_DIR, 'initial-db.json');
+const INITIAL_DB_FILE = path.join(__dirname, 'data', 'initial-db.json');
 
 // Ensure directories exist
 if (!fs.existsSync(DATA_DIR)) {
@@ -34,67 +34,68 @@ const activeTokens = new Set<string>();
 
 // Read or initialize database
 function getDatabase(): DatabaseSchema {
-  try {
-    if (fs.existsSync(DB_FILE)) {
-      const data = fs.readFileSync(DB_FILE, 'utf-8');
-      const parsed = JSON.parse(data);
-      if (parsed && typeof parsed === 'object') {
-        return {
-          adminPassword: parsed.adminPassword || 'admin',
-          publications: Array.isArray(parsed.publications) ? parsed.publications : [],
-          orders: Array.isArray(parsed.orders) ? parsed.orders : [],
-          messages: Array.isArray(parsed.messages) ? parsed.messages : [],
-          content: parsed.content || {},
-        };
-      }
+  // Never replace existing user data with seed data after a read/parse failure.
+  if (fs.existsSync(DB_FILE)) {
+    const parsed = JSON.parse(fs.readFileSync(DB_FILE, 'utf-8'));
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      throw new Error('Invalid database; restore from backup instead of resetting it.');
     }
-  } catch (err) {
-    console.error('Error reading db.json:', err);
+    return {
+      adminPassword: parsed.adminPassword || 'admin',
+      publications: Array.isArray(parsed.publications) ? parsed.publications : [],
+      orders: Array.isArray(parsed.orders) ? parsed.orders : [],
+      messages: Array.isArray(parsed.messages) ? parsed.messages : [],
+      content: parsed.content || {},
+    };
   }
-
-  // Check initial-db.json fallback
-  try {
-    if (fs.existsSync(INITIAL_DB_FILE)) {
-      const initData = fs.readFileSync(INITIAL_DB_FILE, 'utf-8');
-      const parsed = JSON.parse(initData);
-      saveDatabase(parsed);
-      return parsed;
-    }
-  } catch (err) {
-    console.error('Error reading initial-db.json:', err);
-  }
-
-  // Minimal safe fallback
-  const defaultDb: DatabaseSchema = {
-    adminPassword: 'admin',
-    publications: [],
-    orders: [],
-    messages: [],
-    content: {},
-  };
-  saveDatabase(defaultDb);
-  return defaultDb;
+  const db: DatabaseSchema = fs.existsSync(INITIAL_DB_FILE)
+    ? JSON.parse(fs.readFileSync(INITIAL_DB_FILE, 'utf-8'))
+    : { adminPassword: 'admin', publications: [], orders: [], messages: [], content: {} };
+  db.adminPassword = process.env.ADMIN_PASSWORD || db.adminPassword || 'admin';
+  saveDatabase(db);
+  return db;
 }
 
 function saveDatabase(db: DatabaseSchema) {
+  const tempFile = `${DB_FILE}.tmp.${crypto.randomUUID()}`;
   try {
-    const tempFile = `${DB_FILE}.tmp.${Date.now()}`;
-    fs.writeFileSync(tempFile, JSON.stringify(db, null, 2), 'utf-8');
+    const fd = fs.openSync(tempFile, 'wx', 0o600);
+    try {
+      fs.writeFileSync(fd, JSON.stringify(db, null, 2), 'utf-8');
+      fs.fsyncSync(fd);
+    } finally { fs.closeSync(fd); }
+    if (fs.existsSync(DB_FILE)) fs.copyFileSync(DB_FILE, `${DB_FILE}.bak`);
     fs.renameSync(tempFile, DB_FILE);
-  } catch (err) {
-    console.error('Error saving db.json:', err);
+  } finally {
+    if (fs.existsSync(tempFile)) fs.unlinkSync(tempFile);
   }
 }
 
 async function startServer() {
+  getDatabase();
   const app = express();
+  app.use((_req, res, next) => { res.setHeader('X-Content-Type-Options', 'nosniff'); next(); });
 
   // Allow up to 50MB for PDF file uploads
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-  // Static uploads directory for PDFs and assets
-  app.use('/uploads', express.static(UPLOADS_DIR));
+  app.use('/api', (_req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store');
+    next();
+  });
+  // Public PDF URLs must stay public; missing PDFs must return 404, never SPA HTML.
+  app.use('/uploads', express.static(UPLOADS_DIR, { fallthrough: false, dotfiles: 'deny' }));
+  app.use('/api', (req, res, next) => {
+    const publicRead = req.method === 'GET' && ['/status', '/content', '/publications'].includes(req.path);
+    const publicPost = req.method === 'POST' && ['/auth/login', '/auth/verify', '/orders', '/messages'].includes(req.path);
+    if (publicRead || publicPost) return next();
+    const token = req.headers.authorization?.replace(/^Bearer /, '');
+    if (!token || !activeTokens.has(token)) {
+      return res.status(401).json({ error: 'Administraatori sessioon on aegunud. Logi uuesti sisse.' });
+    }
+    next();
+  });
 
   // --- API ROUTES ---
 
@@ -167,7 +168,7 @@ async function startServer() {
 
   app.put('/api/content', (req, res) => {
     const newContent = req.body;
-    if (!newContent || typeof newContent !== 'object') {
+    if (!newContent || typeof newContent !== 'object' || Array.isArray(newContent) || !newContent.brandName) {
       return res.status(400).json({ error: 'Vigased andmed' });
     }
     const db = getDatabase();
@@ -206,7 +207,7 @@ async function startServer() {
     }
 
     const db = getDatabase();
-    const id = 'pub-' + Date.now();
+    const id = 'pub-' + crypto.randomUUID();
     let pdfUrl: string | undefined = undefined;
     let savedFileName = fileName || `${title.replace(/[^a-zA-Z0-9_\u00C0-\u017F]/g, '_')}.pdf`;
     let calculatedFileSize = fileSize || '1.0 MB';
@@ -214,15 +215,18 @@ async function startServer() {
     // If PDF base64 was sent, save it as a real file in /uploads
     if (pdfBase64 && typeof pdfBase64 === 'string') {
       try {
-        const matches = pdfBase64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-        let buffer: Buffer;
-        if (matches && matches.length === 3) {
-          buffer = Buffer.from(matches[2], 'base64');
-        } else {
-          buffer = Buffer.from(pdfBase64, 'base64');
+        const encoded = pdfBase64.replace(/^data:[^;,]*;base64,/, '');
+        if (!/^[A-Za-z0-9+/]+={0,2}$/.test(encoded)) {
+          return res.status(400).json({ error: 'Vigane PDF fail.' });
         }
-
-        const safeName = `${id}-${savedFileName.replace(/[^a-zA-Z0-9_.-]/g, '_')}`;
+        const buffer = Buffer.from(encoded, 'base64');
+        if (buffer.length > 10 * 1024 * 1024) {
+          return res.status(413).json({ error: 'PDF peab olema kuni 10 MB.' });
+        }
+        if (buffer.subarray(0, 5).toString() !== '%PDF-') {
+          return res.status(400).json({ error: 'Valitud fail ei ole PDF.' });
+        }
+        const safeName = `${id}.pdf`;
         const filePath = path.join(UPLOADS_DIR, safeName);
         fs.writeFileSync(filePath, buffer);
         pdfUrl = `/uploads/${safeName}`;
@@ -230,6 +234,7 @@ async function startServer() {
         console.log(`[Upload] Saved PDF to ${filePath} (${calculatedFileSize})`);
       } catch (err) {
         console.error('Error saving uploaded PDF file:', err);
+        return res.status(500).json({ error: 'PDF salvestamine ebaõnnestus. Kontrolli serveri kettaruumi ja õigusi.' });
       }
     }
 
@@ -257,7 +262,10 @@ async function startServer() {
     };
 
     db.publications.unshift(newPub);
-    saveDatabase(db);
+    try { saveDatabase(db); } catch (error) {
+      if (pdfUrl) fs.rmSync(path.join(UPLOADS_DIR, path.basename(pdfUrl)), { force: true });
+      throw error;
+    }
 
     res.json(newPub);
   });
@@ -269,18 +277,12 @@ async function startServer() {
     if (index !== -1) {
       const pub = db.publications[index];
       // Clean up uploaded file if local
-      if (pub.pdfUrl && pub.pdfUrl.startsWith('/uploads/')) {
-        const localFile = path.join(UPLOADS_DIR, path.basename(pub.pdfUrl));
-        if (fs.existsSync(localFile)) {
-          try {
-            fs.unlinkSync(localFile);
-          } catch (e) {
-            console.error('Error deleting file:', e);
-          }
-        }
-      }
       db.publications.splice(index, 1);
       saveDatabase(db);
+      if (pub.pdfUrl && pub.pdfUrl.startsWith('/uploads/')) {
+        try { fs.rmSync(path.join(UPLOADS_DIR, path.basename(pub.pdfUrl)), { force: true }); }
+        catch (error) { console.error('Unable to remove unused PDF:', error); }
+      }
     }
     res.json({ success: true });
   });
@@ -378,7 +380,7 @@ async function startServer() {
     const db = getDatabase();
     const msg = db.messages.find((m: any) => m.id === id);
     if (msg) {
-      msg.read = true;
+      msg.read = typeof req.body?.read === 'boolean' ? req.body.read : true;
       saveDatabase(db);
     }
     res.json({ success: true });
@@ -393,6 +395,63 @@ async function startServer() {
       saveDatabase(db);
     }
     res.json({ success: true });
+  });
+
+  // Portable backup includes PDF bytes, not just URLs into the old server.
+  app.get('/api/backup', (_req, res) => {
+    const { adminPassword: _password, ...db } = getDatabase();
+    const files: Record<string, string> = {};
+    for (const publication of db.publications) {
+      if (publication.pdfUrl?.startsWith('/uploads/')) {
+        const name = path.basename(publication.pdfUrl);
+        files[name] = fs.readFileSync(path.join(UPLOADS_DIR, name)).toString('base64');
+      }
+    }
+    res.json({ version: '3.0', exportedAt: new Date().toISOString(), ...db, files });
+  });
+  app.put('/api/backup', (req, res) => {
+    const input = req.body;
+    if (!input?.content?.brandName || !Array.isArray(input.orders) ||
+        !Array.isArray(input.messages) || !Array.isArray(input.publications)) {
+      return res.status(400).json({ error: 'Vigane varundusfail.' });
+    }
+    // Stage restored PDFs under unique names to preserve the current site if restore fails.
+    const created: string[] = [];
+    try {
+      const publications = input.publications.map((publication: any) => {
+        if (!publication.pdfUrl) return publication;
+        const name = path.basename(publication.pdfUrl);
+        const bytes = publication.pdfUrl.startsWith('data:application/pdf;base64,')
+          ? publication.pdfUrl.split(',')[1] : input.files?.[name];
+        if (!bytes) {
+          if (publication.pdfUrl.startsWith('/uploads/') && fs.existsSync(path.join(UPLOADS_DIR, name))) return publication;
+          throw new Error('Varundus ei sisalda kõiki PDF faile. Taasta ka uploads kaust.');
+        }
+        const buffer = Buffer.from(bytes, 'base64');
+        if (buffer.subarray(0, 5).toString() !== '%PDF-' || buffer.length > 10 * 1024 * 1024) {
+          throw new Error('Varunduses on vigane või liiga suur PDF.');
+        }
+        const restoredName = `restore-${crypto.randomUUID()}.pdf`;
+        const file = path.join(UPLOADS_DIR, restoredName);
+        fs.writeFileSync(file, buffer);
+        created.push(file);
+        return { ...publication, pdfUrl: `/uploads/${restoredName}` };
+      });
+      const db = getDatabase();
+      Object.assign(db, { content: input.content, orders: input.orders, messages: input.messages, publications });
+      saveDatabase(db);
+      res.json({ content: db.content, orders: db.orders, messages: db.messages, publications });
+    } catch (error) {
+      created.forEach(file => fs.rmSync(file, { force: true }));
+      res.status(400).json({ error: (error as Error).message });
+    }
+  });
+
+  app.use('/api', (_req, res) => res.status(404).json({ error: 'API endpoint not found' }));
+  app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    console.error('Request failed:', err);
+    res.status(err.status || 500).json({ error: err.status === 404 ? 'Faili ei leitud.' :
+      err.status === 413 ? 'Fail või sisu on liiga suur.' : 'Server ei saanud andmeid salvestada või lugeda. Palun proovi uuesti.' });
   });
 
   // --- VITE MIDDLEWARES / STATIC SPA SERVING ---

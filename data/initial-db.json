@@ -1,46 +1,8 @@
 {
   "adminPassword": "admin",
   "publications": [],
-  "orders": [
-    {
-      "id": "ord-101",
-      "type": "preorder",
-      "bookId": "saagu-valgus-raamat",
-      "bookTitle": "Saagu Valgus: Tõde ja vabanemine",
-      "quantity": 2,
-      "name": "Marek Tamm",
-      "email": "marek.tamm@gmail.com",
-      "phone": "+372 5551 2345",
-      "address": "Omniva Tallinna Kristiine Keskus",
-      "notes": "Soovin kindlasti esimese trüki eksemplari.",
-      "status": "uus",
-      "createdAt": "2026-09-30T10:01:52.919Z"
-    },
-    {
-      "id": "ord-102",
-      "type": "order",
-      "bookId": "laps-ja-jumal",
-      "bookTitle": "Laps ja Jumal",
-      "quantity": 1,
-      "name": "Kristiina Kallas",
-      "email": "kristiina.kallas@neti.ee",
-      "phone": "+372 5123 9876",
-      "address": "Smartpost Tartu Kaubamaja",
-      "notes": "Palun pakkida kingitusena.",
-      "status": "kinnitatud",
-      "createdAt": "2026-09-29T15:01:52.920Z"
-    }
-  ],
-  "messages": [
-    {
-      "id": "msg-201",
-      "name": "Andres Kuusk",
-      "email": "andres.kuusk@mail.ee",
-      "message": "Tere! Kas teie trükiseid ja raamatuid saab tellida ka suuremas koguses kohalikule kogudusele levitamiseks?",
-      "createdAt": "2026-09-30T03:01:52.920Z",
-      "read": false
-    }
-  ],
+  "orders": [],
+  "messages": [],
   "content": {
     "brandName": "Kirjastus Saagu Valgus",
     "brandTagline": "Vaimuliku kirjanduse, elumuutvate tunnistuste ja evangeelsete materjalide kirjastamine Eestis.",
