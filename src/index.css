@@ -72,7 +72,7 @@ button:disabled { cursor: wait; opacity: .65; }
 .public-site .site-hero > div > div:first-child { margin-bottom: 3.25rem; }
 .public-site .site-hero h1 { font-weight: 500; line-height: 1.18; }
 .public-site .site-hero h1 + p { margin-top: 1.4rem; font-style: normal; color: #57534e; }
-.public-site .site-hero button[aria-pressed] { border-radius: 1rem; }
+.public-site .site-hero button[aria-pressed] { border-radius: calc(var(--site-radius, 24px) * .666667); }
 .public-site .answer-reader { box-shadow: 0 4px 24px rgb(28 25 23 / 3%); border-radius: 1rem; }
 .public-site .answer-reader > div { max-width: 70ch; margin-inline: auto; }
 .public-site .answer-reader p { line-height: 1.85; }
@@ -99,4 +99,65 @@ button:disabled { cursor: wait; opacity: .65; }
 }
 @media (max-width: 400px) {
   .site-header-inner > a svg { height: 2.25rem; }
+}
+
+/* Persistent, scoped public-site design settings. Admin controls keep their own sizing. */
+.public-site :is(h1, h2, h3, h4, h5, h6) {
+  overflow-wrap: anywhere;
+  --text-xs: calc(.75rem * var(--site-heading-scale, 1));
+  --text-sm: calc(.875rem * var(--site-heading-scale, 1));
+  --text-base: calc(1rem * var(--site-heading-scale, 1));
+  --text-lg: calc(1.125rem * var(--site-heading-scale, 1));
+  --text-xl: calc(1.25rem * var(--site-heading-scale, 1));
+  --text-2xl: calc(1.5rem * var(--site-heading-scale, 1));
+  --text-3xl: calc(1.875rem * var(--site-heading-scale, 1));
+  --text-4xl: calc(2.25rem * var(--site-heading-scale, 1));
+  --text-5xl: calc(3rem * var(--site-heading-scale, 1));
+  --text-6xl: calc(3.75rem * var(--site-heading-scale, 1));
+}
+.public-site[data-body-font="serif"] :is(p, li, blockquote, textarea),
+.public-site[data-body-font="serif"] :is(p, li, blockquote) .font-serif { font-family: var(--font-serif); }
+.public-site[data-body-font="sans"] :is(p, li, blockquote, textarea),
+.public-site[data-body-font="sans"] :is(p, li, blockquote) .font-serif { font-family: var(--font-sans); }
+.public-site[data-heading-font="serif"] :is(h1, h2, h3, h4, h5, h6) { font-family: var(--font-serif); }
+.public-site[data-heading-font="editorial"] :is(h1, h2, h3, h4, h5, h6) { font-family: var(--font-editorial); }
+.public-site[data-heading-font="sans"] :is(h1, h2, h3, h4, h5, h6) { font-family: var(--font-sans); }
+.public-site :is(p, li, blockquote) { line-height: var(--site-line-height, 1.85); }
+.public-site .site-header-inner { height: auto; min-height: max(5rem, calc(var(--site-logo-height, 56px) + 24px)); padding-block: .75rem; }
+.public-site .site-header-inner > a { flex-shrink: 0; }
+.public-site .site-header-inner > nav { flex: 1; }
+.public-site .site-header-inner .brand-logo svg,
+.design-preview .preview-header-logo svg { height: var(--site-logo-height, 56px); width: auto; max-width: 100%; }
+.public-site > footer .brand-logo svg { height: var(--site-footer-logo-height, 40px); width: auto; }
+.public-site > main > section > .max-w-6xl,
+.public-site > footer > .max-w-6xl { max-width: var(--site-content-width, 1152px); }
+.public-site > main > section > .max-w-5xl { max-width: calc(var(--site-content-width, 1152px) * .888889); }
+.public-site > main > section > .max-w-4xl { max-width: calc(var(--site-content-width, 1152px) * .777778); }
+.public-site .answer-reader > div,
+.public-site .reading-prose { max-width: var(--site-reading-width, 70ch); margin-inline: auto; }
+.public-site .answer-reader p { line-height: var(--site-line-height, 1.85); }
+.public-site > main > section:not(.site-hero) { padding-block: calc(clamp(4rem, 6vw, 5rem) * var(--site-spacing, 1)); }
+.public-site .site-hero { padding-top: calc(clamp(2.75rem, 6vw, 5rem) * var(--site-spacing, 1)); padding-bottom: calc(5rem * var(--site-spacing, 1)); }
+.public-site .site-hero h1 { font-size: var(--site-hero-size, 60px); }
+.public-site .rounded-3xl { border-radius: var(--site-radius, 24px); }
+.public-site .rounded-2xl { border-radius: calc(var(--site-radius, 24px) * .666667); }
+.public-site section[id] { scroll-margin-top: calc(var(--site-logo-height, 56px) + 8rem); }
+@media (max-width: 1023px) and (min-width: 640px) {
+  .public-site .site-hero h1 { font-size: calc(var(--site-hero-size, 60px) * .8); }
+}
+@media (max-width: 767px) {
+  .public-site .site-header-inner { min-height: max(4.5rem, calc(var(--site-mobile-logo-height, 48px) + 24px)); }
+  .public-site .site-header-inner .brand-logo svg { height: var(--site-mobile-logo-height, 48px); max-width: max(72px, calc(100vw - 210px)); }
+  .public-site section[id] { scroll-margin-top: calc(var(--site-mobile-logo-height, 48px) + 4rem); }
+}
+@media (max-width: 639px) {
+  .public-site .site-hero h1 { font-size: calc(var(--site-hero-size, 60px) * .6); }
+}
+.design-preview .site-hero { padding: 0; }
+.design-preview .preview-header-logo { max-width: 100%; }
+.design-preview .site-hero h1 { font-size: calc(var(--site-hero-size, 60px) * .65); }
+
+.public-site > footer .brand-logo { max-width: 100%; }
+@media (max-width: 639px) {
+  .public-site > footer > div > div > div:first-child { flex-wrap: wrap; justify-content: center; }
 }

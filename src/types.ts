@@ -117,7 +117,24 @@ export interface LordPrayerInfo {
   ref: string;
 }
 
+export interface DesignSettings {
+  headerLogoHeight: number;
+  mobileLogoHeight: number;
+  footerLogoHeight: number;
+  textScale: number;
+  headingScale: number;
+  heroFontSize: number;
+  lineHeight: number;
+  contentWidth: number;
+  readingWidth: number;
+  sectionSpacing: number;
+  cornerRadius: number;
+  bodyFont: 'original' | 'serif' | 'sans';
+  headingFont: 'original' | 'serif' | 'editorial' | 'sans';
+}
+
 export interface SiteContent {
+  design?: Partial<DesignSettings>;
   brandName: string;
   brandTagline: string;
   contactEmail: string;

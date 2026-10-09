@@ -9,7 +9,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ size = 'md', className = '
   const height = size === 'sm' ? 'h-9 sm:h-10' : size === 'lg' ? 'h-16 sm:h-20' : 'h-12 sm:h-14';
 
   return (
-    <div className={`inline-flex items-center select-none ${className}`}>
+    <div className={`brand-logo inline-flex items-center select-none ${className}`}>
       {/* 1:1 Vector SVG matching user's uploaded logo image.png with distinct separated leaves */}
       <svg 
         role="img"

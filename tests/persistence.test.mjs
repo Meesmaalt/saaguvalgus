@@ -48,6 +48,7 @@ test('public PDFs and all admin data survive server replacement; failures never 
     assert.ok(token);
     const content = (await call('/api/content')).data;
     content.heroTitle = 'TEST CAPS Preserve';
+    content.design = { headerLogoHeight: 76, mobileLogoHeight: 38, textScale: 120, contentWidth: 1280, bodyFont: 'sans' };
     assert.equal((await call('/api/content', 'PUT', content)).status, 200);
     const pdf = Buffer.from('%PDF-1.4\n%Integration test\n%%EOF');
     const publication = (await call('/api/publications', 'POST', { title: 'PDF TRÜKIS', fileName: '../proov.pdf', pdfBase64: `data:application/pdf;base64,${pdf.toString('base64')}` })).data;
@@ -70,6 +71,7 @@ test('public PDFs and all admin data survive server replacement; failures never 
     token = (await call('/api/auth/login', 'POST', { password: 'replacement-password' })).data.token;
     assert.ok(token, 'Password is persisted instead of replaced by initial ADMIN_PASSWORD');
     assert.equal((await call('/api/content')).data.heroTitle, 'TEST CAPS Preserve');
+    assert.deepEqual((await call('/api/content')).data.design, content.design);
     assert.ok((await call('/api/publications', 'GET', undefined, false)).data.some(p => p.id === publication.id));
     assert.equal((await call('/api/orders')).data.find(o => o.id === order.id).status, 'kinnitatud');
     assert.equal((await call('/api/messages')).data.find(m => m.id === message.id).read, true);
