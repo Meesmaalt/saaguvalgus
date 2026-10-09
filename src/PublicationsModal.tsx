@@ -19,6 +19,7 @@ import {
 import { PublicationItem } from './types';
 import { UI_TRANSLATIONS, Language } from './translations';
 import { analytics } from './analytics';
+import { copyText } from './clipboard';
 
 interface PublicationsModalProps {
   isOpen: boolean;
@@ -42,6 +43,7 @@ export const PublicationsModal: React.FC<PublicationsModalProps> = ({
   const [searchFilter, setSearchFilter] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [copiedLink, setCopiedLink] = useState(false);
+  const [copyError, setCopyError] = useState('');
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isWideMode, setIsWideMode] = useState(false);
@@ -59,7 +61,8 @@ export const PublicationsModal: React.FC<PublicationsModalProps> = ({
       if (event.key === 'Escape') closeRef.current();
       if (event.key === 'Tab') {
         const nodes = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], input, select, iframe') || []);
-        const first = nodes[0], last = nodes[nodes.length - 1];
+        const visible = nodes.filter(node => node.getClientRects().length > 0);
+        const first = visible[0], last = visible[visible.length - 1];
         if (event.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) {
           event.preventDefault(); last?.focus();
         } else if (!event.shiftKey && document.activeElement === last) {
@@ -77,17 +80,28 @@ export const PublicationsModal: React.FC<PublicationsModalProps> = ({
 
   const t = UI_TRANSLATIONS[lang]?.publicationsModal || UI_TRANSLATIONS.et.publicationsModal;
 
+  const currentPub = publications.find(p => p.id === selectedId) || publications[0];
+  useEffect(() => {
+    if (!isOpen) return;
+    setCurrentPage(1);
+    setZoomLevel(100);
+    setCopiedLink(false);
+    setCopyError('');
+  }, [isOpen, currentPub?.id]);
+  useEffect(() => {
+    if (isOpen && initialPublicationId) setSelectedId(initialPublicationId);
+  }, [isOpen, initialPublicationId]);
+
   if (!isOpen) return null;
 
-  const currentPub = publications.find(p => p.id === selectedId) || publications[0];
-  const totalPages = currentPub?.pdfUrl ? (currentPub.pages || 1) : (currentPub?.contentPages?.length || currentPub?.pages || 1);
+  const totalPages = Math.max(1, Math.floor(Number(currentPub?.pdfUrl ? currentPub.pages : currentPub?.contentPages?.length || currentPub?.pages) || 1));
   const activePageData = currentPub?.contentPages?.find(p => p.pageNumber === currentPage) || currentPub?.contentPages?.[0];
 
   const categories = ['all', ...Array.from(new Set(publications.map(p => p.category)))];
 
   const filteredPubs = publications.filter(p => {
     const matchesSearch = p.title.toLowerCase().includes(searchFilter.toLowerCase()) || 
-                          p.description.toLowerCase().includes(searchFilter.toLowerCase());
+                          (p.description || '').toLowerCase().includes(searchFilter.toLowerCase());
     const matchesCat = categoryFilter === 'all' || p.category === categoryFilter;
     return matchesSearch && matchesCat;
   });
@@ -263,6 +277,7 @@ export const PublicationsModal: React.FC<PublicationsModalProps> = ({
   };
 
   const handleDownload = () => {
+    if (!currentPub) return;
     if (currentPub) {
       analytics.trackPublicationDownload(currentPub.title, currentPub.fileName);
     }
@@ -313,10 +328,16 @@ ${lang === 'en' ? 'Email' : 'E-post'}: info@saaguvalgus.eu
     URL.revokeObjectURL(url);
   };
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(new URL(currentPub?.pdfUrl || '#trukised', window.location.origin).href);
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
+  const handleCopyLink = async () => {
+    if (!currentPub) return;
+    setCopyError('');
+    try {
+      await copyText(new URL(currentPub.pdfUrl || '#trukised', window.location.origin).href);
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    } catch {
+      setCopyError(lang === 'en' ? 'Could not copy the link. Please try again.' : 'Lingi kopeerimine ebaõnnestus. Palun proovi uuesti.');
+    }
   };
 
   return (
@@ -325,7 +346,7 @@ ${lang === 'en' ? 'Email' : 'E-post'}: info@saaguvalgus.eu
       <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={lang === 'en' ? 'Publications' : 'Trükised'} tabIndex={-1} className="bg-[#f8faf8] rounded-3xl border border-stone-200 shadow-2xl w-full max-w-[96vw] 2xl:max-w-[1520px] h-[94vh] flex flex-col overflow-hidden text-stone-900">
         
         {/* Top Header Bar */}
-        <div className="bg-[#144225] text-white px-4 sm:px-6 py-3.5 flex items-center justify-between border-b border-[#1b5430] shrink-0">
+        <div className="bg-[#144225] text-white px-4 sm:px-6 py-3.5 flex flex-wrap items-center justify-between gap-3 border-b border-[#1b5430] shrink-0">
           
           <div className="flex items-center gap-3">
             <button
@@ -368,6 +389,7 @@ ${lang === 'en' ? 'Email' : 'E-post'}: info@saaguvalgus.eu
 
             <button
               onClick={handlePrint}
+              disabled={!currentPub}
               className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
               title={t.print}
             >
@@ -377,6 +399,7 @@ ${lang === 'en' ? 'Email' : 'E-post'}: info@saaguvalgus.eu
 
             <button
               onClick={handleDownload}
+              disabled={!currentPub}
               className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-stone-900 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
               title={t.download}
             >
@@ -399,7 +422,7 @@ ${lang === 'en' ? 'Email' : 'E-post'}: info@saaguvalgus.eu
           
           {/* Left Sidebar: Publications Selector */}
           {isSidebarOpen && (
-            <div className="w-full md:w-72 lg:w-80 bg-white border-r border-stone-200 flex flex-col shrink-0 h-44 md:h-auto overflow-hidden animate-in slide-in-from-left-2 duration-150">
+            <div className="w-full md:w-72 lg:w-80 bg-white border-r border-stone-200 flex flex-col shrink-0 h-[min(35vh,18rem)] md:h-auto min-h-0 overflow-hidden animate-in slide-in-from-left-2 duration-150">
               
               {/* Search and Category Filter */}
               <div className="p-3 border-b border-stone-100 space-y-2 bg-stone-50/70">
@@ -462,13 +485,13 @@ ${lang === 'en' ? 'Email' : 'E-post'}: info@saaguvalgus.eu
                           </span>
                         </div>
 
-                        <h3 className={`text-xs font-bold leading-snug line-clamp-2 ${
+                        <h3 className={`text-xs font-bold leading-snug break-words ${
                           isSelected ? 'text-[#144225]' : 'text-stone-800'
                         }`}>
                           {pub.title}
                         </h3>
 
-                        <p className="text-[11px] text-stone-500 line-clamp-1 leading-relaxed">
+                        <p className="text-xs text-stone-600 whitespace-pre-wrap break-words leading-relaxed">
                           {pub.description}
                         </p>
                       </button>
@@ -485,10 +508,10 @@ ${lang === 'en' ? 'Email' : 'E-post'}: info@saaguvalgus.eu
           )}
 
           {/* Right Main Viewer Area */}
-          <div className="flex-1 flex flex-col bg-[#e6ebe7] overflow-hidden">
+          <div className="flex-1 min-h-0 min-w-0 flex flex-col bg-[#e6ebe7] overflow-hidden">
             
             {/* Viewer Toolbar */}
-            <div className="bg-white border-b border-stone-200 px-4 sm:px-6 py-2 flex items-center justify-between shrink-0 shadow-2xs">
+            <div className="bg-white border-b border-stone-200 px-3 sm:px-6 py-2 flex flex-wrap gap-2 items-center justify-between shrink-0 shadow-2xs">
               
               <div className="flex items-center gap-3">
                 <span className="text-xs font-bold text-stone-700">
@@ -542,6 +565,7 @@ ${lang === 'en' ? 'Email' : 'E-post'}: info@saaguvalgus.eu
 
                 <button
                   onClick={handleCopyLink}
+                  disabled={!currentPub}
                   className="px-2.5 py-1.5 rounded-lg border border-stone-200 bg-white hover:bg-stone-50 text-xs font-semibold text-stone-700 flex items-center gap-1 cursor-pointer transition-colors"
                   title={t.copyLink}
                 >
@@ -551,14 +575,21 @@ ${lang === 'en' ? 'Email' : 'E-post'}: info@saaguvalgus.eu
               </div>
             </div>
 
+            {copyError && <p role="alert" className="px-4 py-2 bg-red-50 text-red-800 text-sm">{copyError}</p>}
             {/* Document Reader Screen */}
-            <div className="flex-1 overflow-y-auto p-3 sm:p-6 md:p-8 flex justify-center items-start">
+            <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-6 md:p-8 flex flex-col items-center gap-5">
               
-              {currentPub?.pdfUrl ? (
-                <div className="w-full h-full min-h-[550px] bg-white rounded-2xl shadow-md overflow-hidden border border-stone-300">
+              {currentPub?.description && (
+                <section aria-label={lang === 'en' ? 'Publication description' : 'Trükise kirjeldus'} className="w-full shrink-0 rounded-2xl bg-white border border-stone-200 p-5 sm:p-6 text-left">
+                  <h3 className="font-serif text-lg sm:text-xl font-semibold text-[#144225] break-words">{currentPub.title}</h3>
+                  <p className="mt-3 text-sm sm:text-base text-stone-700 leading-relaxed whitespace-pre-wrap [overflow-wrap:anywhere] max-w-prose">{currentPub.description}</p>
+                </section>
+              )}
+              {!currentPub ? <p role="status" className="py-12 text-center text-stone-600">{t.noPubs}</p> : currentPub.pdfUrl ? (
+                <div className="w-full shrink-0 h-[70vh] min-h-[400px] bg-white rounded-2xl shadow-md overflow-hidden border border-stone-300">
                   <iframe 
                     src={`${currentPub.pdfUrl.split('#')[0]}#page=${currentPage}&zoom=${zoomLevel}`} 
-                    className="w-full h-full min-h-[550px]" 
+                    className="w-full h-full"
                     title={currentPub.title} 
                   />
                 </div>
@@ -600,13 +631,6 @@ ${lang === 'en' ? 'Email' : 'E-post'}: info@saaguvalgus.eu
                     </div>
                   </div>
 
-                  {/* Document Description/Subtitle */}
-                  {currentPub?.description && (
-                    <div className="p-4 rounded-2xl bg-[#f4f8f5] border border-[#8ab897]/40 text-stone-700 text-sm sm:text-base italic leading-relaxed font-serif">
-                      «{currentPub.description}»
-                    </div>
-                  )}
-
                   {/* Document Page Content */}
                   <div className="space-y-5 min-h-[360px]">
                     {activePageData ? (
@@ -634,6 +658,7 @@ ${lang === 'en' ? 'Email' : 'E-post'}: info@saaguvalgus.eu
                     <div className="flex items-center gap-3">
                       <button
                         onClick={handlePrint}
+              disabled={!currentPub}
                         className="text-[#1a6838] font-bold hover:underline flex items-center gap-1.5 cursor-pointer"
                       >
                         <Printer className="w-4 h-4" />
@@ -642,6 +667,7 @@ ${lang === 'en' ? 'Email' : 'E-post'}: info@saaguvalgus.eu
                       <span className="text-stone-300">•</span>
                       <button
                         onClick={handleDownload}
+              disabled={!currentPub}
                         className="text-stone-700 font-bold hover:underline flex items-center gap-1.5 cursor-pointer"
                       >
                         <Download className="w-4 h-4" />

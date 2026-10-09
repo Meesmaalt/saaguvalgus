@@ -38,10 +38,12 @@ import {
   Shield,
   UserCheck,
   BarChart3,
-  Globe
+  Globe,
+  Palette
 } from 'lucide-react';
 import { SiteContent, BookItem, OrderItem, ContactMessage, QuestionItem, PublicationItem } from './types';
 import { api } from './api';
+import { DesignSettingsPanel } from './DesignSettingsPanel';
 import { SITE_CONTENT_EN } from './translations';
 
 interface AdminDashboardProps {
@@ -95,7 +97,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onClose,
   onResetToDefault,
 }) => {
-  const [activeTab, setActiveTab] = useState<'orders' | 'messages' | 'publications' | 'books' | 'content' | 'settings' | 'backup'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'messages' | 'publications' | 'books' | 'content' | 'settings' | 'design' | 'backup'>('orders');
   const [editLang, setEditLang] = useState<'et' | 'en'>('et');
   const [orderFilter, setOrderFilter] = useState<'all' | 'preorder' | 'order' | 'uus' | 'kinnitatud' | 'postitatud'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -660,6 +662,14 @@ ${p.text}
           >
             <Edit3 className="w-4 h-4" />
             <span>Kodulehe sisu (CMS)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('design')}
+            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 transition-all cursor-pointer ${activeTab === 'design' ? 'bg-[#1a6838] text-white shadow-sm' : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200'}`}
+          >
+            <Palette className="w-4 h-4" />
+            <span>Kujundus</span>
           </button>
 
           <button
@@ -2148,6 +2158,10 @@ ${p.text}
         {/* ========================================================================= */}
         {/* TAB 6: KONTO & TURVALISUS (PAROOLI MUUTMINE JA SESSIOON) */}
         {/* ========================================================================= */}
+        {activeTab === 'design' && (
+          <DesignSettingsPanel content={content} onChange={(design) => saveContent({ ...content, design })} onPreview={onClose} />
+        )}
+
         {activeTab === 'settings' && (
           <div className="space-y-6">
             

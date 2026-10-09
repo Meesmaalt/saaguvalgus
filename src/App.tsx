@@ -29,6 +29,8 @@ import { PublicationsModal } from './PublicationsModal';
 import { LegalModal, LegalTab } from './LegalModal';
 import { BrandLogo } from './BrandLogo';
 import { api } from './api';
+import { normalizeDesign, designStyle } from './design';
+import { copyText } from './clipboard';
 import { SITE_CONTENT_EN, UI_TRANSLATIONS, Language } from './translations';
 import { initGA, analytics } from './analytics';
 
@@ -68,7 +70,7 @@ const renderAuthorParagraphs = (fullText: string) => {
   if (!fullText) return null;
   const paragraphs = fullText.split(/\n\s*\n/);
   return (
-    <div className="space-y-5 font-serif text-base sm:text-lg leading-relaxed text-[#292524]">
+    <div className="reading-prose space-y-5 font-serif text-base sm:text-lg leading-relaxed text-[#292524]">
       {paragraphs.map((p, idx) => {
         const trimmed = p.trim();
         const isBibleQuote = 
@@ -110,7 +112,7 @@ const renderTestimonyParagraphs = (fullStory: string, isExpanded: boolean) => {
   const visibleParagraphs = isExpanded ? rawParagraphs : rawParagraphs.slice(0, 3);
 
   return (
-    <div className="space-y-6 font-serif text-lg sm:text-xl leading-relaxed text-[#292524]">
+    <div className="reading-prose space-y-6 font-serif text-lg sm:text-xl leading-relaxed text-[#292524]">
       {visibleParagraphs.map((p, idx) => {
         const trimmed = p.trim();
 
@@ -470,6 +472,7 @@ export default function App() {
     setSaveStatus('saving');
     // Serialize autosaves so an older response cannot overwrite a newer edit.
     saveQueue.current = saveQueue.current.catch(() => {}).then(async () => {
+      if (revision !== saveRevision.current) return;
       try {
         await api.saveContent(newContent);
         if (revision === saveRevision.current) setSaveStatus('saved');
@@ -594,43 +597,49 @@ export default function App() {
     }
   };
 
-  const handleCopyEmail = () => {
-    navigator.clipboard.writeText(activeContent.contactEmail);
-    setCopiedEmail(true);
-    analytics.trackBankDetailsCopy('email');
-    setTimeout(() => setCopiedEmail(false), 2000);
+  const handleCopyEmail = async () => {
+    try {
+      await copyText(activeContent.contactEmail);
+      setCopiedEmail(true);
+      analytics.trackBankDetailsCopy('email');
+      setTimeout(() => setCopiedEmail(false), 2000);
+    } catch (error) { alert((error as Error).message); }
   };
-
-  const handleCopyIban = () => {
-    navigator.clipboard.writeText(activeContent.support.iban);
-    setCopiedIban(true);
-    analytics.trackBankDetailsCopy('iban');
-    setTimeout(() => setCopiedIban(false), 2000);
+  const handleCopyIban = async () => {
+    try {
+      await copyText(activeContent.support.iban);
+      setCopiedIban(true);
+      analytics.trackBankDetailsCopy('iban');
+      setTimeout(() => setCopiedIban(false), 2000);
+    } catch (error) { alert((error as Error).message); }
   };
-
-  const handleCopyPaypal = () => {
-    navigator.clipboard.writeText(activeContent.support.paypalEmail || 'Kairioja777@proton.me');
-    setCopiedPaypal(true);
-    analytics.trackBankDetailsCopy('paypal');
-    setTimeout(() => setCopiedPaypal(false), 2000);
+  const handleCopyPaypal = async () => {
+    try {
+      await copyText(activeContent.support.paypalEmail || 'Kairioja777@proton.me');
+      setCopiedPaypal(true);
+      analytics.trackBankDetailsCopy('paypal');
+      setTimeout(() => setCopiedPaypal(false), 2000);
+    } catch (error) { alert((error as Error).message); }
   };
-
-  const handleCopyPrayer = () => {
-    navigator.clipboard.writeText(activeContent.salvationPrayerText);
-    setCopiedPrayer(true);
-    analytics.trackPrayerCopy('salvation');
-    setTimeout(() => setCopiedPrayer(false), 2000);
+  const handleCopyPrayer = async () => {
+    try {
+      await copyText(activeContent.salvationPrayerText);
+      setCopiedPrayer(true);
+      analytics.trackPrayerCopy('salvation');
+      setTimeout(() => setCopiedPrayer(false), 2000);
+    } catch (error) { alert((error as Error).message); }
   };
-
-  const handleCopyLordPrayer = () => {
-    navigator.clipboard.writeText(activeContent.lordPrayer.text);
-    setCopiedLordPrayer(true);
-    analytics.trackPrayerCopy('lords_prayer');
-    setTimeout(() => setCopiedLordPrayer(false), 2000);
+  const handleCopyLordPrayer = async () => {
+    try {
+      await copyText(activeContent.lordPrayer.text);
+      setCopiedLordPrayer(true);
+      analytics.trackPrayerCopy('lords_prayer');
+      setTimeout(() => setCopiedLordPrayer(false), 2000);
+    } catch (error) { alert((error as Error).message); }
   };
-
   const toggleSpeech = () => {
     if ('speechSynthesis' in window) {
+      setIsSpeakingLordPrayer(false);
       if (isSpeaking) {
         window.speechSynthesis.cancel();
         setIsSpeaking(false);
@@ -649,6 +658,7 @@ export default function App() {
 
   const toggleSpeechLordPrayer = () => {
     if ('speechSynthesis' in window) {
+      setIsSpeaking(false);
       if (isSpeakingLordPrayer) {
         window.speechSynthesis.cancel();
         setIsSpeakingLordPrayer(false);
@@ -664,6 +674,8 @@ export default function App() {
       }
     }
   };
+
+  const design = normalizeDesign(content.design);
 
   if (isAdminView) {
     if (!isAdminAuthenticated) {
@@ -758,7 +770,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#1C1917] flex flex-col font-sans selection:bg-[#14532D]/15 selection:text-[#14532D] relative overflow-x-hidden public-site">
+    <div style={designStyle(design)} data-body-font={design.bodyFont} data-heading-font={design.headingFont} className="min-h-screen bg-[#FAF7F2] text-[#1C1917] flex flex-col font-sans selection:bg-[#14532D]/15 selection:text-[#14532D] relative overflow-x-hidden public-site">
       
       <a href="#kusimused" className="skip-link">{lang === 'en' ? 'Skip to content' : 'Liigu sisuni'}</a>
       {/* Top Bar with Official Brand Logo */}
@@ -771,7 +783,7 @@ export default function App() {
           </a>
 
           {/* Zone 2: Clean Navigation Links */}
-          <nav className="hidden md:flex items-center gap-6 text-xs sm:text-sm font-medium text-stone-700">
+          <nav className="hidden md:flex min-w-0 flex-wrap justify-center items-center gap-x-5 gap-y-2 text-xs sm:text-sm font-medium text-stone-700">
             <button onClick={() => scrollTo('tunnistused')} className="hover:text-[#14532D] transition-colors cursor-pointer">
               {t.nav.testimonials}
             </button>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, ShieldCheck, FileText, CreditCard, Truck, Building2 } from 'lucide-react';
 
 export type LegalTab = 'privacy' | 'terms' | 'delivery';
@@ -12,11 +12,42 @@ interface LegalModalProps {
 export const LegalModal: React.FC<LegalModalProps> = ({ isOpen, onClose, initialTab = 'privacy' }) => {
   const [activeTab, setActiveTab] = useState<LegalTab>(initialTab);
 
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  useEffect(() => {
+    if (isOpen) setActiveTab(initialTab);
+  }, [isOpen, initialTab]);
+  useEffect(() => {
+    if (!isOpen) return;
+    const focus = document.activeElement as HTMLElement;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    dialogRef.current?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeRef.current();
+      if (event.key !== 'Tab') return;
+      const nodes = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>('button, a[href]') || []).filter(node => node.getClientRects().length > 0);
+      const first = nodes[0], last = nodes[nodes.length - 1];
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) {
+        event.preventDefault(); last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault(); first?.focus();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = overflow;
+      document.removeEventListener('keydown', onKey);
+      focus?.focus();
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-      <div className="bg-white rounded-3xl border border-[#E2D7C8] shadow-2xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 my-6 text-left flex flex-col max-h-[90vh]">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-label="Õiguslik info ja müügitingimused" tabIndex={-1} className="bg-white rounded-3xl border border-[#E2D7C8] shadow-2xl w-full max-w-4xl overflow-hidden animate-in fade-in zoom-in-95 duration-150 my-6 text-left flex flex-col max-h-[90vh]">
         
         {/* Modal Header */}
         <div className="px-6 py-5 bg-[#14532D] text-white flex items-center justify-between border-b border-[#0F3D24]">
@@ -41,7 +72,7 @@ export const LegalModal: React.FC<LegalModalProps> = ({ isOpen, onClose, initial
         </div>
 
         {/* Modal Tabs */}
-        <div className="flex border-b border-[#E7E0D5] bg-[#FAF7F2] px-6 gap-2 pt-3 font-sans text-xs sm:text-sm font-semibold">
+        <div className="flex flex-wrap border-b border-[#E7E0D5] bg-[#FAF7F2] px-6 gap-2 pt-3 font-sans text-xs sm:text-sm font-semibold">
           <button
             onClick={() => setActiveTab('privacy')}
             className={`px-4 py-2.5 rounded-t-xl border-t border-x transition-colors cursor-pointer flex items-center gap-2 ${
