@@ -147,7 +147,7 @@ button:disabled { cursor: wait; opacity: .65; }
 }
 @media (max-width: 767px) {
   .public-site .site-header-inner { min-height: max(4.5rem, calc(var(--site-mobile-logo-height, 48px) + 24px)); }
-  .public-site .site-header-inner .brand-logo svg { height: var(--site-mobile-logo-height, 48px); max-width: max(72px, calc(100vw - 210px)); }
+  .public-site .site-header-inner .brand-logo svg { height: var(--site-mobile-logo-height, 48px); max-width: max(72px, calc(100vw - 230px)); }
   .public-site section[id] { scroll-margin-top: calc(var(--site-mobile-logo-height, 48px) + 4rem); }
 }
 @media (max-width: 639px) {
