@@ -29,6 +29,7 @@ import { PublicationsModal } from './PublicationsModal';
 import { LegalModal, LegalTab } from './LegalModal';
 import { BrandLogo } from './BrandLogo';
 import { api } from './api';
+import { copyText } from './clipboard';
 import { SITE_CONTENT_EN, UI_TRANSLATIONS, Language } from './translations';
 import { initGA, analytics } from './analytics';
 
@@ -594,43 +595,49 @@ export default function App() {
     }
   };
 
-  const handleCopyEmail = () => {
-    navigator.clipboard.writeText(activeContent.contactEmail);
-    setCopiedEmail(true);
-    analytics.trackBankDetailsCopy('email');
-    setTimeout(() => setCopiedEmail(false), 2000);
+  const handleCopyEmail = async () => {
+    try {
+      await copyText(activeContent.contactEmail);
+      setCopiedEmail(true);
+      analytics.trackBankDetailsCopy('email');
+      setTimeout(() => setCopiedEmail(false), 2000);
+    } catch (error) { alert((error as Error).message); }
   };
-
-  const handleCopyIban = () => {
-    navigator.clipboard.writeText(activeContent.support.iban);
-    setCopiedIban(true);
-    analytics.trackBankDetailsCopy('iban');
-    setTimeout(() => setCopiedIban(false), 2000);
+  const handleCopyIban = async () => {
+    try {
+      await copyText(activeContent.support.iban);
+      setCopiedIban(true);
+      analytics.trackBankDetailsCopy('iban');
+      setTimeout(() => setCopiedIban(false), 2000);
+    } catch (error) { alert((error as Error).message); }
   };
-
-  const handleCopyPaypal = () => {
-    navigator.clipboard.writeText(activeContent.support.paypalEmail || 'Kairioja777@proton.me');
-    setCopiedPaypal(true);
-    analytics.trackBankDetailsCopy('paypal');
-    setTimeout(() => setCopiedPaypal(false), 2000);
+  const handleCopyPaypal = async () => {
+    try {
+      await copyText(activeContent.support.paypalEmail || 'Kairioja777@proton.me');
+      setCopiedPaypal(true);
+      analytics.trackBankDetailsCopy('paypal');
+      setTimeout(() => setCopiedPaypal(false), 2000);
+    } catch (error) { alert((error as Error).message); }
   };
-
-  const handleCopyPrayer = () => {
-    navigator.clipboard.writeText(activeContent.salvationPrayerText);
-    setCopiedPrayer(true);
-    analytics.trackPrayerCopy('salvation');
-    setTimeout(() => setCopiedPrayer(false), 2000);
+  const handleCopyPrayer = async () => {
+    try {
+      await copyText(activeContent.salvationPrayerText);
+      setCopiedPrayer(true);
+      analytics.trackPrayerCopy('salvation');
+      setTimeout(() => setCopiedPrayer(false), 2000);
+    } catch (error) { alert((error as Error).message); }
   };
-
-  const handleCopyLordPrayer = () => {
-    navigator.clipboard.writeText(activeContent.lordPrayer.text);
-    setCopiedLordPrayer(true);
-    analytics.trackPrayerCopy('lords_prayer');
-    setTimeout(() => setCopiedLordPrayer(false), 2000);
+  const handleCopyLordPrayer = async () => {
+    try {
+      await copyText(activeContent.lordPrayer.text);
+      setCopiedLordPrayer(true);
+      analytics.trackPrayerCopy('lords_prayer');
+      setTimeout(() => setCopiedLordPrayer(false), 2000);
+    } catch (error) { alert((error as Error).message); }
   };
-
   const toggleSpeech = () => {
     if ('speechSynthesis' in window) {
+      setIsSpeakingLordPrayer(false);
       if (isSpeaking) {
         window.speechSynthesis.cancel();
         setIsSpeaking(false);
@@ -649,6 +656,7 @@ export default function App() {
 
   const toggleSpeechLordPrayer = () => {
     if ('speechSynthesis' in window) {
+      setIsSpeaking(false);
       if (isSpeakingLordPrayer) {
         window.speechSynthesis.cancel();
         setIsSpeakingLordPrayer(false);
