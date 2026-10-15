@@ -829,7 +829,7 @@ export default function App() {
                   lang === 'en' ? 'bg-[#14532D] text-white font-bold' : 'hover:text-stone-900'
                 }`}
               >
-                EN
+                ENG
               </button>
             </div>
 
@@ -945,6 +945,18 @@ export default function App() {
                   <div>
                     {renderAuthorParagraphs(current.fullText)}
                   </div>
+
+                  {current.id === 'jooga-tegelik-olemus' && (
+                    <a
+                      href="https://www.facebook.com/share/v/1C2nsJErpn/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-xl border border-[#E2D7C8] bg-[#F5F0E6] px-5 py-3 text-sm font-semibold text-[#14532D] hover:bg-[#EBE5DA] transition-colors"
+                    >
+                      <ExternalLink className="w-4 h-4 shrink-0" aria-hidden="true" />
+                      {lang === 'en' ? 'Watch the video on Facebook' : 'Vaata videot Facebookis'}
+                    </a>
+                  )}
 
                   {/* Practical Steps */}
                   {current.practicalSteps && (
